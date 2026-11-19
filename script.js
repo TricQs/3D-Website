@@ -857,6 +857,23 @@ const RULER_YEARS = [
   2023, 2024, 2025, 2026
 ];
 
+const POPULAR_RADIO_HITS = [
+  { id: "idol", title: "Idol (アイドル)", artist: "YOASOBI", views: "580M+ views", previewUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f0/db/16/f0db16be-457e-f10f-98b6-f30b11de34e4/mzaf_5189430943078523093.plus.aac.p.m4a" },
+  { id: "lemon", title: "Lemon", artist: "Kenshi Yonezu", views: "880M+ views", previewUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/27/17/9b/27179b15-2153-25e8-d035-35fdb4d059d8/mzaf_757024838235216109.plus.aac.p.m4a" },
+  { id: "pretender", title: "Pretender", artist: "Official HIGE DANdism", views: "540M+ views", previewUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/71/93/7a/71937a82-5662-3d08-c78d-65179c560a6b/mzaf_4128339501254480840.plus.aac.p.m4a" },
+  { id: "kaikai", title: "Kaikai Kitan (廻廻奇譚)", artist: "Eve", views: "380M+ views", previewUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/17/47/ca/1747ca2b-1ab8-a43f-35d5-e0d01d9be305/mzaf_17560760129565806208.plus.aac.p.m4a" },
+  { id: "bbbb", title: "Bling-Bang-Bang-Born", artist: "Creepy Nuts", views: "320M+ views", previewUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/5c/54/5e/5c545e9a-c8ca-c673-f85d-a74b14c2c882/mzaf_2313943576213161760.plus.aac.p.m4a" },
+  { id: "zenzenzense", title: "Zenzenzense (前前前世)", artist: "RADWIMPS", views: "320M+ views", previewUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f8/fd/9f/f8fd9f88-67e8-ce12-f44d-1b4fe421f1f9/mzaf_5313510550820503304.plus.aac.p.m4a" },
+  { id: "yoru", title: "Yoru ni Kakeru (夜に駆ける)", artist: "YOASOBI", views: "290M+ views", previewUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/4e/73/ae/4e73ae7f-96d6-5100-d3d3-3c50c28a1f19/mzaf_6031201848020469124.plus.aac.p.m4a" },
+  { id: "zankyo", title: "Zankyosanka (残響散歌)", artist: "Aimer", views: "250M+ views", previewUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/e7/65/bc/e765bc4b-7710-5c13-c35d-8cd30d7bcacd/mzaf_5473058310448658183.plus.aac.p.m4a" },
+  { id: "inferno", title: "Inferno (インフェルノ)", artist: "Mrs. GREEN APPLE", views: "240M+ views", previewUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/70/25/37/70253773-995d-296e-19db-6a2457b9f3db/mzaf_2716666302310961916.plus.aac.p.m4a" },
+  { id: "silhouette", title: "Silhouette (シルエット)", artist: "KANA-BOON", views: "230M+ views", previewUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/68/4b/e0/684be0b1-7d5a-b7a8-a6d9-f369de931320/mzaf_6309023904855490382.plus.aac.p.m4a" },
+  { id: "kickback", title: "KICK BACK", artist: "Kenshi Yonezu", views: "210M+ views", previewUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/86/2d/45/862d4572-805c-3a72-49a4-905a8c327888/mzaf_14805576631717868964.plus.aac.p.m4a" },
+  { id: "gurenge", title: "Gurenge (紅蓮華)", artist: "LiSA", views: "200M+ views", previewUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/d7/45/22/d7452274-6107-7ace-420b-1b509d55d067/mzaf_15546458713313472040.plus.aac.p.m4a" },
+  { id: "shinjidai", title: "New Genesis (新時代)", artist: "Ado", views: "190M+ views", previewUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/6b/f3/59/6bf35909-9a90-8642-b4fc-0932fcd4f862/mzaf_9878820709909147000.plus.aac.p.m4a" },
+  { id: "aonosumika", title: "Where Our Blue Is (青のすみか)", artist: "Tatsuya Kitani", views: "150M+ views", previewUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/92/c9/7a/92c97ab2-5fdd-d00b-34eb-b2b58cd3c610/mzaf_15460441178714099183.plus.aac.p.m4a" }
+];
+
 /* ============================================================================
    🖼️ HIGH-DPI HTML5 <CANVAS> TEXTURES (OFFICIAL ANIME ART + SWISS FALLBACK)
    ============================================================================ */
@@ -928,8 +945,9 @@ function drawProceduralIllustration(ctx, release, x, y, w, h) {
   ctx.restore();
 }
 
-function getSpineTexture(release) {
-  if (spineTexCache.has(release.id)) return spineTexCache.get(release.id);
+function getSpineTexture(release, externalImg = null) {
+  const key = `${release.id}_${externalImg ? "sp_img_v3" : "sp_proc_v3"}`;
+  if (spineTexCache.has(key)) return spineTexCache.get(key);
 
   const canvas = document.createElement("canvas");
   canvas.width = 256;
@@ -938,59 +956,72 @@ function getSpineTexture(release) {
 
   ctx.fillStyle = release.spineColor;
   ctx.fillRect(0, 0, 256, 1024);
-  drawPaperGrain(ctx, 256, 1024, 0.04);
+  drawPaperGrain(ctx, 256, 1024, 0.045);
 
   const grad = ctx.createLinearGradient(0, 0, 256, 0);
-  grad.addColorStop(0, "rgba(0,0,0,0.24)");
-  grad.addColorStop(0.08, "rgba(255,255,255,0.12)");
-  grad.addColorStop(0.92, "rgba(255,255,255,0.06)");
-  grad.addColorStop(1, "rgba(0,0,0,0.28)");
+  grad.addColorStop(0, "rgba(0,0,0,0.30)");
+  grad.addColorStop(0.09, "rgba(255,255,255,0.16)");
+  grad.addColorStop(0.92, "rgba(255,255,255,0.08)");
+  grad.addColorStop(1, "rgba(0,0,0,0.34)");
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, 256, 1024);
+
+  ctx.fillStyle = release.rating >= 9.0 ? "#E05A3A" : release.spineTextColor;
+  ctx.globalAlpha = release.rating >= 9.0 ? 0.95 : 0.28;
+  ctx.fillRect(0, 0, 256, 14);
+  ctx.fillRect(0, 1010, 256, 14);
+  ctx.globalAlpha = 1;
 
   ctx.fillStyle = release.spineTextColor;
   ctx.strokeStyle = release.spineTextColor;
   ctx.lineWidth = 2;
-  ctx.strokeRect(28, 36, 200, 56);
+  ctx.strokeRect(30, 38, 196, 52);
   ctx.font = "700 22px 'IBM Plex Mono', monospace";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(release.catalogCode, 128, 64);
+  ctx.fillText(release.catalogCode, 128, 65);
 
-  ctx.font = "700 20px 'IBM Plex Mono', monospace";
+  ctx.font = "700 19px 'IBM Plex Mono', monospace";
   ctx.globalAlpha = 0.85;
-  ctx.fillText(String(release.releaseYear), 128, 122);
+  ctx.fillText(String(release.releaseYear), 128, 118);
   ctx.globalAlpha = 1;
 
-  if (release.rating >= 9.0 || release.isOngoing) {
-    ctx.fillStyle = "#E05A3A";
+  if (externalImg) {
+    ctx.save();
     ctx.beginPath();
-    ctx.arc(128, 160, 9, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.rect(34, 146, 188, 134);
+    ctx.clip();
+    drawCoverImage(ctx, externalImg, 34, 146, 188, 134, 0.22);
+    ctx.restore();
+    ctx.strokeStyle = release.spineTextColor;
+    ctx.globalAlpha = 0.45;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(34, 146, 188, 134);
+    ctx.globalAlpha = 1;
   }
 
   ctx.save();
-  ctx.translate(128, 535);
+  ctx.translate(128, 590);
   ctx.rotate(Math.PI / 2);
   ctx.fillStyle = release.spineTextColor;
-  ctx.font = "700 34px 'Inter', sans-serif";
+  ctx.font = "800 32px 'Inter', sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "bottom";
   ctx.fillText(release.shortTitle.toUpperCase(), 0, -4);
   ctx.globalAlpha = 0.78;
-  ctx.font = "500 20px 'IBM Plex Mono', monospace";
+  ctx.font = "500 18px 'IBM Plex Mono', monospace";
   ctx.textBaseline = "top";
-  ctx.fillText(`${release.songArtist.toUpperCase()}  •  ${release.releaseYear}`, 0, 8);
+  ctx.fillText(`${release.songArtist.toUpperCase()}  •  ${release.studio.toUpperCase()}`, 0, 8);
   ctx.restore();
 
   ctx.fillStyle = release.spineTextColor;
   ctx.font = "700 26px 'IBM Plex Mono', monospace";
   ctx.textAlign = "center";
-  ctx.fillText(release.rating >= 10 ? "★ 10.0" : `★ ${release.rating.toFixed(1)}`, 128, 945);
+  ctx.fillText(release.rating >= 10 ? "★ 10.0" : `★ ${release.rating.toFixed(1)}`, 128, 942);
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.anisotropy = 8;
-  spineTexCache.set(release.id, tex);
+  spineTexCache.set(key, tex);
   return tex;
 }
 
@@ -1102,26 +1133,76 @@ function getFrontCoverTexture(release, externalImg = null) {
   return tex;
 }
 
-function getBackCoverTexture(release) {
-  if (backTexCache.has(release.id)) return backTexCache.get(release.id);
+function getBackCoverTexture(release, externalImg = null) {
+  const key = `${release.id}_${externalImg ? "bk_art_v3" : "bk_dark_v3"}`;
+  if (backTexCache.has(key)) return backTexCache.get(key);
 
   const canvas = document.createElement("canvas");
   canvas.width = 1024;
   canvas.height = 1024;
   const ctx = canvas.getContext("2d");
 
-  ctx.fillStyle = release.coverBgColor;
+  ctx.fillStyle = "#181817";
   ctx.fillRect(0, 0, 1024, 1024);
-  ctx.strokeStyle = release.coverInkColor;
-  ctx.lineWidth = 3;
-  ctx.strokeRect(48, 48, 928, 928);
 
-  ctx.fillStyle = release.coverInkColor;
-  ctx.font = "700 28px 'IBM Plex Mono', monospace";
-  ctx.fillText(`${release.catalogCode}  //  ${release.releaseYear} TRACKLIST`, 84, 118);
+  if (externalImg) {
+    ctx.save();
+    ctx.globalAlpha = 0.28;
+    drawCoverImage(ctx, externalImg, 0, 0, 1024, 1024, 0.25);
+    ctx.restore();
+  }
+
+  const vign = ctx.createLinearGradient(0, 0, 1024, 1024);
+  vign.addColorStop(0, "rgba(20, 20, 19, 0.78)");
+  vign.addColorStop(1, "rgba(14, 14, 13, 0.94)");
+  ctx.fillStyle = vign;
+  ctx.fillRect(0, 0, 1024, 1024);
+
+  ctx.fillStyle = release.spineColor;
+  ctx.fillRect(0, 0, 88, 1024);
+  ctx.fillStyle = "#E05A3A";
+  ctx.fillRect(88, 0, 6, 1024);
+
+  ctx.strokeStyle = "rgba(255,255,255,0.22)";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(126, 48, 850, 928);
+
+  ctx.fillStyle = "#FAF9F6";
+  ctx.textAlign = "left";
+  ctx.font = "800 42px 'Inter', sans-serif";
+  ctx.fillText(release.shortTitle.toUpperCase(), 164, 128);
+
+  ctx.fillStyle = "#E05A3A";
+  ctx.font = "700 22px 'IBM Plex Mono', monospace";
+  ctx.fillText(`${release.catalogCode}  //  ${release.studio.toUpperCase()}  •  ${release.releaseYear}  •  ★ ${release.rating.toFixed(1)}`, 164, 172);
+
+  release.tracks.forEach((tr, i) => {
+    const ty = 274 + i * 102;
+    ctx.fillStyle = "#E05A3A";
+    ctx.font = "700 22px 'IBM Plex Mono', monospace";
+    ctx.fillText(tr.number, 164, ty);
+    ctx.fillStyle = "#FAF9F6";
+    ctx.font = "600 24px 'Inter', sans-serif";
+    ctx.fillText(tr.title.slice(0, 38), 216, ty);
+    ctx.fillStyle = "rgba(234,234,232,0.62)";
+    ctx.font = "500 18px 'IBM Plex Mono', monospace";
+    ctx.fillText(`${tr.role.slice(0, 42)}  •  ${tr.bpm} BPM  •  ${tr.duration}`, 216, ty + 32);
+  });
+
+  ctx.fillStyle = "#FAF9F6";
+  ctx.fillRect(736, 822, 198, 106);
+  ctx.fillStyle = "#141413";
+  let bx = 750;
+  for (let b = 0; b < 34; b++) {
+    const bw = ((b * 7 + release.releaseYear) % 3) + 1.5;
+    if (b % 2 === 0) ctx.fillRect(bx, 834, bw, 68);
+    bx += bw + 2.2;
+    if (bx > 920) break;
+  }
 
   const tex = new THREE.CanvasTexture(canvas);
-  backTexCache.set(release.id, tex);
+  tex.anisotropy = 8;
+  backTexCache.set(key, tex);
   return tex;
 }
 
@@ -1354,23 +1435,90 @@ function startTrackSynth(track, realOstUrl, onTick, onDone) {
 const appState = {
   category: "all",
   releases: [...WATCHED_RELEASES],
-  activeIndex: 6, // Start near chronological center (2016 Your Name.) for symmetrical spine stacks!
+  activeIndex: 6,
   scrollCurrent: 6,
   scrollVelocity: 0,
   diveState: "shelf",
-  isHoveredCenter: false,
-  radioActive: false,
+  hoveredIndex: null,
+  isHoveredDisc: false,
+  radioActive: true, // Radio ON by default with YouTube Top-Viewed Mega-Hits!
+  radioHitIndex: 0,
   soundEnabled: true,
-  useOfficialPosters: true,
   playingTrackNum: null,
   trackProgress: 0,
-  spinBoost: 0
+  spinBoost: 0,
+  waveProgress: 1,
+  isDetailSwitching: false,
+  pointerX: 0,
+  pointerY: 0
 };
 
-let scene, camera, renderer, platterGroup, sleevesGroup, discGroup, discSpinMesh;
+let scene, camera, renderer, platterGroup, sleevesGroup, discGroup, discSpinGroup, discSpinMesh, opOverlayMesh;
+let opReelCanvas, opReelCtx, opReelTex;
 let sleeveEntries = [];
 const raycaster = new THREE.Raycaster();
 const pointerNDC = new THREE.Vector2();
+const loadedBannerImages = {};
+
+function formatMMSS(sec) {
+  const s = Math.max(0, Math.floor(Number.isFinite(sec) ? sec : 0));
+  return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+}
+
+function playFadeVolume(audio, from, to, ms, onDone) {
+  const start = performance.now();
+  audio.volume = Math.max(0, Math.min(1, from));
+  const step = (now) => {
+    const t = Math.min(1, (now - start) / Math.max(1, ms));
+    const ease = t * t * (3 - 2 * t);
+    audio.volume = Math.max(0, Math.min(1, from + (to - from) * ease));
+    if (t < 1) requestAnimationFrame(step);
+    else if (onDone) onDone();
+  };
+  requestAnimationFrame(step);
+}
+
+function playPopularRadio(hitIdx) {
+  if (!appState.radioActive || !appState.soundEnabled || appState.diveState !== "shelf") return;
+  const hit = POPULAR_RADIO_HITS[hitIdx % POPULAR_RADIO_HITS.length];
+  if (!hit) return;
+  const txt = document.getElementById("radio-banner-text");
+  const sub = document.getElementById("radio-banner-sub");
+  if (txt) txt.textContent = `RADIO FM: ♪ ${hit.title}`;
+  if (sub) sub.textContent = `${hit.artist} • ${hit.views}`;
+
+  const launch = () => {
+    if (!ostAudio) {
+      ostAudio = new Audio();
+      ostAudio.crossOrigin = "anonymous";
+    }
+    ostAudio.src = hit.previewUrl;
+    ostAudio.volume = 0;
+    ostAudio.onended = () => {
+      appState.radioHitIndex = (appState.radioHitIndex + 1) % POPULAR_RADIO_HITS.length;
+      playPopularRadio(appState.radioHitIndex);
+    };
+    ostAudio.play().then(() => {
+      playFadeVolume(ostAudio, 0, 0.72, 600);
+    }).catch(() => {
+      if (sub) sub.textContent = `${hit.artist} • CLICK ANYWHERE TO UNMUTE`;
+      const unlock = () => {
+        playPopularRadio(appState.radioHitIndex);
+      };
+      window.addEventListener("pointerdown", unlock, { once: true });
+      window.addEventListener("keydown", unlock, { once: true });
+    });
+  };
+
+  if (ostAudio && !ostAudio.paused && ostAudio.volume > 0.02) {
+    playFadeVolume(ostAudio, ostAudio.volume, 0, 240, () => {
+      ostAudio.pause();
+      launch();
+    });
+  } else {
+    launch();
+  }
+}
 
 function computeAccordionTransform(d) {
   const absD = Math.abs(d);
@@ -1398,7 +1546,7 @@ function computeAccordionTransform(d) {
 
   const rotY = (1 - centerWeight) * (Math.PI / 2 - d * 0.022);
   const z = -0.042 * (x * x) + 0.5 * centerWeight - 0.14 * (1 - centerWeight);
-  const y = 0.69 + 0.05 * centerWeight;
+  const y = 0.85 + 0.05 * centerWeight;
   const scale = absD > 8.5 ? Math.max(0.001, 1 - (absD - 8.5) * 1.4) : 1;
 
   return { x, y, z, rotY, centerWeight, scale, isVisible: absD < 9.2 };
@@ -1426,15 +1574,24 @@ function getBaseCameraZ() {
 
 function preloadOfficialAnimeArtwork() {
   ALL_RELEASES.forEach((rel) => {
-    if (!rel.coverUrl || loadedPosterImages[rel.id]) return;
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => {
-      loadedPosterImages[rel.id] = img;
-      rebuildSleeveMaterials();
-      updateActiveDiscTexture();
-    };
-    img.src = `https://wsrv.nl/?url=${encodeURIComponent(rel.coverUrl)}&w=900&output=webp`;
+    if (rel.coverUrl && !loadedPosterImages[rel.id]) {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        loadedPosterImages[rel.id] = img;
+        rebuildSleeveMaterials();
+        updateActiveDiscTexture();
+      };
+      img.src = `https://wsrv.nl/?url=${encodeURIComponent(rel.coverUrl)}&w=900&output=webp`;
+    }
+    if (rel.bannerUrl && !loadedBannerImages[rel.id]) {
+      const bImg = new Image();
+      bImg.crossOrigin = "anonymous";
+      bImg.onload = () => {
+        loadedBannerImages[rel.id] = bImg;
+      };
+      bImg.src = `https://wsrv.nl/?url=${encodeURIComponent(rel.bannerUrl)}&w=900&output=webp`;
+    }
   });
 }
 
@@ -1444,8 +1601,8 @@ function initThreeScene() {
 
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(33, window.innerWidth / window.innerHeight, 0.04, 48);
-  camera.position.set(0, 0.72, getBaseCameraZ());
-  camera.lookAt(0, 0.24, 0);
+  camera.position.set(0, 0.88, getBaseCameraZ());
+  camera.lookAt(0, 0.42, 0);
 
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -1455,9 +1612,9 @@ function initThreeScene() {
   container.innerHTML = "";
   container.appendChild(renderer.domElement);
 
-  scene.add(new THREE.AmbientLight("#FAF9F5", 1.4));
+  scene.add(new THREE.AmbientLight("#FAF9F5", 1.42));
 
-  const dirLight = new THREE.DirectionalLight("#FFFDF9", 1.38);
+  const dirLight = new THREE.DirectionalLight("#FFFDF9", 1.36);
   dirLight.position.set(4.5, 9.5, 7.5);
   dirLight.castShadow = true;
   dirLight.shadow.mapSize.width = 2048;
@@ -1468,49 +1625,34 @@ function initThreeScene() {
   fillLight.position.set(-6, 4.5, 4);
   scene.add(fillLight);
 
-  // 1. Curved Perforated Brushed-Silver Turntable Platter Rim (Bright Studio Contrast!)
+  // 1. Clean Minimalist Brushed-Silver Studio Pedestal (NO chunky dark blocks behind title!)
   const platterRoot = new THREE.Group();
-  platterRoot.position.set(0, -0.49, -9.85);
+  platterRoot.position.set(0, -0.22, -9.95);
   scene.add(platterRoot);
 
   platterGroup = new THREE.Group();
   platterRoot.add(platterGroup);
 
   const rimMesh = new THREE.Mesh(
-    new THREE.CylinderGeometry(11.12, 11.66, 0.42, 128),
-    new THREE.MeshStandardMaterial({ color: "#B8B9B4", metalness: 0.58, roughness: 0.32 })
+    new THREE.CylinderGeometry(11.15, 11.28, 0.12, 128),
+    new THREE.MeshStandardMaterial({ color: "#C2C3BE", metalness: 0.55, roughness: 0.34 })
   );
-  rimMesh.position.y = -0.04;
+  rimMesh.position.y = 0.02;
   rimMesh.receiveShadow = true;
   platterGroup.add(rimMesh);
 
   const lowerLip = new THREE.Mesh(
-    new THREE.CylinderGeometry(11.66, 11.48, 0.1, 128),
-    new THREE.MeshStandardMaterial({ color: "#979892", metalness: 0.65, roughness: 0.28 })
+    new THREE.CylinderGeometry(11.24, 11.12, 0.035, 128),
+    new THREE.MeshStandardMaterial({ color: "#9FA09B", metalness: 0.62, roughness: 0.28 })
   );
-  lowerLip.position.y = -0.29;
+  lowerLip.position.y = -0.055;
   platterGroup.add(lowerLip);
 
-  const slotGeom = new THREE.BoxGeometry(0.23, 0.18, 0.06);
-  const slotMat = new THREE.MeshStandardMaterial({ color: "#181818", metalness: 0.18, roughness: 0.85 });
-  const slotCount = 148;
-  for (let i = 0; i < slotCount; i++) {
-    const angle = (i / slotCount) * Math.PI * 2;
-    const holder = new THREE.Group();
-    holder.position.set(Math.sin(angle) * 11.42, -0.03, Math.cos(angle) * 11.42);
-    holder.rotation.y = angle;
-    const slotMesh = new THREE.Mesh(slotGeom, slotMat);
-    slotMesh.rotation.x = -0.56;
-    holder.add(slotMesh);
-    platterGroup.add(holder);
-  }
-
-  // Warm Matte Light-Silver Platter Mat Surface
   const matMesh = new THREE.Mesh(
-    new THREE.CylinderGeometry(10.92, 11.0, 0.04, 128),
-    new THREE.MeshStandardMaterial({ color: "#CECFCA", metalness: 0.22, roughness: 0.72 })
+    new THREE.CylinderGeometry(11.06, 11.12, 0.03, 128),
+    new THREE.MeshStandardMaterial({ color: "#D6D7D2", metalness: 0.18, roughness: 0.78 })
   );
-  matMesh.position.y = 0.21;
+  matMesh.position.y = 0.09;
   matMesh.receiveShadow = true;
   platterGroup.add(matMesh);
 
@@ -1518,10 +1660,13 @@ function initThreeScene() {
   sleevesGroup = new THREE.Group();
   scene.add(sleevesGroup);
 
-  // 3. Non-Clipping Floating Mini Vinyl / CD Disc with Hollow Spindle Hole
+  // 3. Floating Black Vinyl Disc + 20% Layered Spinning OP/Wallpaper Motion Projection
   discGroup = new THREE.Group();
-  discGroup.position.set(0.88, 0.72, 0.76);
+  discGroup.position.set(0.88, 0.88, 0.76);
   scene.add(discGroup);
+
+  discSpinGroup = new THREE.Group();
+  discGroup.add(discSpinGroup);
 
   const discGeom = createHollowDiscGeometry(0.095, 0.72, 96);
   const discMat = new THREE.MeshStandardMaterial({
@@ -1533,11 +1678,30 @@ function initThreeScene() {
   });
   discSpinMesh = new THREE.Mesh(discGeom, discMat);
   discSpinMesh.userData = { isFloatingDisc: true };
-  discGroup.add(discSpinMesh);
+  discSpinGroup.add(discSpinMesh);
+
+  // Live 20%-opacity spinning motion reel layered IN FRONT OF the black vinyl grooves
+  opReelCanvas = document.createElement("canvas");
+  opReelCanvas.width = 512;
+  opReelCanvas.height = 512;
+  opReelCtx = opReelCanvas.getContext("2d");
+  opReelTex = new THREE.CanvasTexture(opReelCanvas);
+
+  const opOverlayGeom = createHollowDiscGeometry(0.196, 0.714, 96);
+  const opOverlayMat = new THREE.MeshBasicMaterial({
+    map: opReelTex,
+    transparent: true,
+    opacity: 0.2,
+    depthWrite: false,
+    side: THREE.FrontSide
+  });
+  opOverlayMesh = new THREE.Mesh(opOverlayGeom, opOverlayMat);
+  opOverlayMesh.position.z = 0.005;
+  discSpinGroup.add(opOverlayMesh);
 
   const outerRim = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.72, 0.72, 0.022, 96, 1, true),
-    new THREE.MeshStandardMaterial({ color: "#1B1B1A", metalness: 0.5, roughness: 0.35, side: THREE.DoubleSide })
+    new THREE.CylinderGeometry(0.72, 0.72, 0.026, 96, 1, true),
+    new THREE.MeshStandardMaterial({ color: "#1D1D1C", metalness: 0.62, roughness: 0.28, side: THREE.DoubleSide })
   );
   outerRim.rotation.x = Math.PI / 2;
   discGroup.add(outerRim);
@@ -1546,6 +1710,7 @@ function initThreeScene() {
     new THREE.RingGeometry(0.093, 0.117, 64),
     new THREE.MeshStandardMaterial({ color: "#D8D8D4", metalness: 0.88, roughness: 0.18, side: THREE.DoubleSide })
   );
+  spindleCollar.position.z = 0.006;
   discGroup.add(spindleCollar);
 
   buildShelfMeshes();
@@ -1562,15 +1727,15 @@ function initThreeScene() {
 }
 
 function buildSleeveMaterialsForRelease(release) {
-  const spineTex = getSpineTexture(release);
-  const extImg = appState.useOfficialPosters ? loadedPosterImages[release.id] : null;
+  const extImg = loadedPosterImages[release.id] || null;
+  const spineTex = getSpineTexture(release, extImg);
   const frontTex = getFrontCoverTexture(release, extImg);
-  const backTex = getBackCoverTexture(release);
+  const backTex = getBackCoverTexture(release, extImg);
 
-  const spineMat = new THREE.MeshStandardMaterial({ map: spineTex, roughness: 0.42, metalness: 0.04 });
-  const frontMat = new THREE.MeshStandardMaterial({ map: frontTex, roughness: 0.34, metalness: 0.05 });
-  const backMat = new THREE.MeshStandardMaterial({ map: backTex, roughness: 0.44, metalness: 0.04 });
-  const edgeMat = new THREE.MeshStandardMaterial({ color: release.spineColor, roughness: 0.55, metalness: 0.04 });
+  const spineMat = new THREE.MeshStandardMaterial({ map: spineTex, roughness: 0.38, metalness: 0.08 });
+  const frontMat = new THREE.MeshStandardMaterial({ map: frontTex, roughness: 0.32, metalness: 0.06 });
+  const backMat = new THREE.MeshStandardMaterial({ map: backTex, roughness: 0.4, metalness: 0.08 });
+  const edgeMat = new THREE.MeshStandardMaterial({ color: release.spineColor, roughness: 0.48, metalness: 0.08 });
 
   return [spineMat, spineMat, edgeMat, edgeMat, frontMat, backMat];
 }
@@ -1612,7 +1777,7 @@ function rebuildSleeveMaterials() {
 function updateActiveDiscTexture() {
   const activeRel = appState.releases[appState.activeIndex];
   if (!activeRel || !discSpinMesh) return;
-  const extImg = appState.useOfficialPosters ? loadedPosterImages[activeRel.id] : null;
+  const extImg = loadedPosterImages[activeRel.id] || null;
   discSpinMesh.material.map = getVinylDiscTexture(activeRel, extImg);
   discSpinMesh.material.needsUpdate = true;
 }
@@ -1633,10 +1798,12 @@ function startRenderLoop() {
     appState.scrollCurrent += appState.scrollVelocity * delta;
 
     if (platterGroup) {
-      platterGroup.rotation.y = -appState.scrollCurrent * 0.038 + now * 0.00003;
+      platterGroup.rotation.y = -appState.scrollCurrent * 0.036 + now * 0.000025;
     }
 
-    const damp = Math.min(1, delta * 14);
+    const damp = Math.min(1, delta * 13);
+    const isCenterHover = appState.hoveredIndex === appState.activeIndex || appState.isHoveredDisc;
+
     sleeveEntries.forEach((entry) => {
       const d = entry.index - appState.scrollCurrent;
       const t = computeAccordionTransform(d);
@@ -1644,32 +1811,80 @@ function startRenderLoop() {
       if (!t.isVisible) return;
 
       const isCenter = entry.index === appState.activeIndex;
-      const tiltX = isCenter && appState.isHoveredCenter ? -0.05 : 0;
-      const tiltY = t.rotY + (isCenter && appState.isHoveredCenter ? -0.07 : 0);
-      const liftY = t.y + (isCenter && appState.isHoveredCenter ? 0.04 : 0);
+      const isThisHovered = appState.hoveredIndex === entry.index;
+
+      // Kinetic Category Switch Wave Offset
+      const staggerDelay = Math.min(0.45, Math.abs(d) * 0.055);
+      const localWave = Math.max(0, Math.min(1, (appState.waveProgress - staggerDelay) / (1 - staggerDelay)));
+      const inv = 1 - localWave;
+      const waveEase = 1 - inv * inv * inv;
+      const waveYOffset = (1 - waveEase) * -0.82;
+      const waveScaleMult = 0.72 + 0.28 * waveEase;
+      const waveRotExtra = (1 - waveEase) * (d >= 0 ? 0.35 : -0.35);
+
+      let hoverLiftY = 0;
+      let hoverPullZ = 0;
+      let hoverRotY = 0;
+      let hoverRotX = 0;
+
+      if (isThisHovered) {
+        if (isCenter) {
+          hoverLiftY = 0.055;
+          hoverPullZ = 0.04;
+          hoverRotY = appState.pointerX * 0.14;
+          hoverRotX = -appState.pointerY * 0.09;
+        } else {
+          // Hovering inactive side cover lifts it up & peeks gently toward the cursor!
+          hoverLiftY = 0.26;
+          hoverPullZ = 0.36;
+          hoverRotY = d > 0 ? -0.34 : 0.34;
+          hoverRotX = -0.05 - appState.pointerY * 0.05;
+        }
+      }
 
       entry.group.position.x = THREE.MathUtils.lerp(entry.group.position.x, t.x, damp);
-      entry.group.position.y = THREE.MathUtils.lerp(entry.group.position.y, liftY, damp);
-      entry.group.position.z = THREE.MathUtils.lerp(entry.group.position.z, t.z, damp);
-      entry.group.rotation.x = THREE.MathUtils.lerp(entry.group.rotation.x, tiltX, damp);
-      entry.group.rotation.y = THREE.MathUtils.lerp(entry.group.rotation.y, tiltY, damp);
+      entry.group.position.y = THREE.MathUtils.lerp(entry.group.position.y, t.y + hoverLiftY + waveYOffset, damp);
+      entry.group.position.z = THREE.MathUtils.lerp(entry.group.position.z, t.z + hoverPullZ, damp);
+      entry.group.rotation.x = THREE.MathUtils.lerp(entry.group.rotation.x, hoverRotX, damp);
+      entry.group.rotation.y = THREE.MathUtils.lerp(entry.group.rotation.y, t.rotY + hoverRotY + waveRotExtra, damp);
       entry.group.scale.setScalar(
-        THREE.MathUtils.lerp(entry.group.scale.x, t.scale * (1 + t.centerWeight * 0.02), damp)
+        THREE.MathUtils.lerp(entry.group.scale.x, t.scale * (1 + t.centerWeight * 0.02) * waveScaleMult, damp)
       );
     });
 
-    if (discSpinMesh) {
-      const speed = (appState.isHoveredCenter ? 3.2 : 1.15) + appState.spinBoost;
-      discSpinMesh.rotation.z -= delta * speed;
+    // Spin both the black vinyl AND the layered 20%-opacity OP motion projection together!
+    if (discSpinGroup) {
+      const speed = (isCenterHover ? 3.1 : 1.15) + appState.spinBoost;
+      discSpinGroup.rotation.z -= delta * speed;
+    }
+
+    // Animate 20%-opacity live Ken Burns motion reel on the vinyl groove layer
+    const activeRel = appState.releases[appState.activeIndex];
+    const motionImg = activeRel ? (loadedBannerImages[activeRel.id] || loadedPosterImages[activeRel.id]) : null;
+    if (motionImg && opReelCtx && opReelTex) {
+      const iw = motionImg.naturalWidth || motionImg.width;
+      const ih = motionImg.naturalHeight || motionImg.height;
+      if (iw && ih) {
+        const sec = now * 0.001;
+        opReelCtx.clearRect(0, 0, 512, 512);
+        const zoom = 1.12 + Math.sin(sec * 0.45) * 0.08;
+        const sc = Math.max(512 / iw, 512 / ih) * zoom;
+        const dw = iw * sc;
+        const dh = ih * sc;
+        const panX = Math.sin(sec * 0.35) * ((dw - 512) * 0.42);
+        const panY = Math.cos(sec * 0.28) * ((dh - 512) * 0.25);
+        opReelCtx.drawImage(motionImg, (512 - dw) / 2 + panX, (512 - dh) / 2 + panY, dw, dh);
+        opReelTex.needsUpdate = true;
+      }
     }
 
     if (discGroup && appState.diveState === "shelf") {
       const settleDiff = Math.abs(appState.activeIndex - appState.scrollCurrent);
       const visFactor = Math.max(0, 1 - settleDiff * 2.2);
-      const targetX = appState.isHoveredCenter ? 1.04 : 0.88;
-      const targetY = 0.72 + Math.sin(now * 0.0024) * 0.022;
-      const targetZ = appState.isHoveredCenter ? 0.82 : 0.76;
-      const targetRotY = appState.isHoveredCenter ? -0.14 : -0.05;
+      const targetX = isCenterHover ? 1.04 : 0.88;
+      const targetY = 0.88 + Math.sin(now * 0.0024) * 0.022;
+      const targetZ = isCenterHover ? 0.82 : 0.76;
+      const targetRotY = isCenterHover ? -0.14 : -0.05;
 
       discGroup.position.x = THREE.MathUtils.lerp(discGroup.position.x, targetX, damp);
       discGroup.position.y = THREE.MathUtils.lerp(discGroup.position.y, targetY, damp);
@@ -1679,10 +1894,16 @@ function startRenderLoop() {
         THREE.MathUtils.lerp(discGroup.scale.x, 0.94 * (0.25 + 0.75 * visFactor), damp)
       );
       discSpinMesh.material.opacity = THREE.MathUtils.lerp(discSpinMesh.material.opacity, visFactor, damp);
+      if (opOverlayMesh) {
+        opOverlayMesh.material.opacity = THREE.MathUtils.lerp(opOverlayMesh.material.opacity, 0.2 * visFactor, damp);
+      }
       discGroup.visible = visFactor > 0.02;
     } else if (discGroup) {
       discGroup.visible = true;
       discSpinMesh.material.opacity = 1;
+      if (opOverlayMesh) {
+        opOverlayMesh.material.opacity = THREE.MathUtils.lerp(opOverlayMesh.material.opacity, 0, Math.min(1, delta * 10));
+      }
     }
 
     renderer.render(scene, camera);
@@ -1700,7 +1921,7 @@ function triggerSignatureDiveIn() {
   playDiveWhoosh(true, appState.soundEnabled);
 
   const veilEl = document.getElementById("dive-aperture-veil");
-  const animState = { fov: camera.fov, lookY: 0.24, veil: 0 };
+  const animState = { fov: camera.fov, lookY: 0.42, veil: 0 };
   const baseZ = getBaseCameraZ();
 
   const tl = gsap.timeline({
@@ -1717,27 +1938,25 @@ function triggerSignatureDiveIn() {
     }
   });
 
-  tl.to(sleevesGroup.position, { z: -1.45, y: -0.22, duration: 0.48, ease: "power3.inOut" }, 0);
-  tl.to(discGroup.position, { x: 0, y: 0.72, z: 2.28, duration: 0.46, ease: "expo.out" }, 0);
+  tl.to(sleevesGroup.position, { z: -1.5, y: -0.24, duration: 0.48, ease: "power3.inOut" }, 0);
+  tl.to(discGroup.position, { x: 0, y: 0.88, z: 2.28, duration: 0.46, ease: "expo.out" }, 0);
   tl.to(discGroup.rotation, { x: 0, y: 0, z: 0, duration: 0.44, ease: "power3.out" }, 0);
   tl.to(discGroup.scale, { x: 2.15, y: 2.15, z: 2.15, duration: 0.48, ease: "expo.out" }, 0);
-  tl.to(appState, { spinBoost: 6.2, duration: 0.55, ease: "power2.in" }, 0);
+  tl.to(appState, { spinBoost: 6.4, duration: 0.55, ease: "power2.in" }, 0);
 
-  tl.to(animState, { lookY: 0.72, duration: 0.36, ease: "power2.out" }, 0);
-  tl.to(camera.position, { x: 0, y: 0.72, z: baseZ + 0.32, duration: 0.3, ease: "power2.out" }, 0);
+  tl.to(animState, { lookY: 0.88, duration: 0.36, ease: "power2.out" }, 0);
+  tl.to(camera.position, { x: 0, y: 0.88, z: baseZ + 0.32, duration: 0.3, ease: "power2.out" }, 0);
 
-  tl.to(camera.position, { x: 0, y: 0.72, z: 2.04, duration: 0.62, ease: "power4.in" }, 0.34);
+  tl.to(camera.position, { x: 0, y: 0.88, z: 2.04, duration: 0.62, ease: "power4.in" }, 0.34);
   tl.to(animState, { fov: 54, duration: 0.34, ease: "power2.in" }, 0.34);
   tl.to(animState, { fov: 26, duration: 0.28, ease: "power3.out" }, 0.68);
   tl.to(animState, { veil: 1, duration: 0.24, ease: "power2.in" }, 0.74);
 }
 
 function triggerReverseDiveOut() {
-  if (appState.diveState !== "detail" || !discGroup || !sleevesGroup) return;
-  if (!appState.radioActive) {
-    stopTrackSynth();
-    appState.playingTrackNum = null;
-  }
+  if (appState.diveState !== "detail" || !discGroup || !sleevesGroup || appState.isDetailSwitching) return;
+  stopTrackSynth();
+  appState.playingTrackNum = null;
 
   const ytEl = document.getElementById("detail-yt-iframe");
   if (ytEl) ytEl.src = "";
@@ -1757,7 +1976,7 @@ function triggerReverseDiveOut() {
 
       appState.diveState = "diving-out";
       const baseZ = getBaseCameraZ();
-      const animState = { fov: 26, lookY: 0.72, veil: 1 };
+      const animState = { fov: 26, lookY: 0.88, veil: 1 };
 
       const tl = gsap.timeline({
         onUpdate: () => {
@@ -1770,20 +1989,96 @@ function triggerReverseDiveOut() {
           if (veilEl) veilEl.style.opacity = "0";
           appState.spinBoost = 0;
           appState.diveState = "shelf";
+          if (appState.radioActive && appState.soundEnabled) {
+            playPopularRadio(appState.radioHitIndex);
+          }
         }
       });
 
       tl.to(animState, { veil: 0, duration: 0.24, ease: "power2.out" }, 0);
-      tl.to(camera.position, { x: 0, y: 0.72, z: baseZ, duration: 0.72, ease: "expo.out" }, 0.04);
+      tl.to(camera.position, { x: 0, y: 0.88, z: baseZ, duration: 0.72, ease: "expo.out" }, 0.04);
       tl.to(animState, { fov: 46, duration: 0.24, ease: "power2.out" }, 0.04);
       tl.to(animState, { fov: 33, duration: 0.48, ease: "power3.out" }, 0.28);
-      tl.to(animState, { lookY: 0.24, duration: 0.65, ease: "power3.out" }, 0.14);
+      tl.to(animState, { lookY: 0.42, duration: 0.65, ease: "power3.out" }, 0.14);
       tl.to(appState, { spinBoost: 0, duration: 0.68, ease: "power3.out" }, 0.08);
-      tl.to(discGroup.position, { x: 0.88, y: 0.72, z: 0.76, duration: 0.62, ease: "expo.inOut" }, 0.16);
+      tl.to(discGroup.position, { x: 0.88, y: 0.88, z: 0.76, duration: 0.62, ease: "expo.inOut" }, 0.16);
       tl.to(discGroup.scale, { x: 0.94, y: 0.94, z: 0.94, duration: 0.62, ease: "expo.inOut" }, 0.16);
       tl.to(sleevesGroup.position, { z: 0, y: 0, duration: 0.65, ease: "expo.out" }, 0.14);
     }
   });
+}
+
+function transitionDetailWithVinylBounce(nextIdx, direction) {
+  if (appState.isDetailSwitching || appState.releases.length === 0) return;
+  const clamped = Math.max(0, Math.min(appState.releases.length - 1, nextIdx));
+  if (clamped === appState.activeIndex) return;
+
+  const curRel = appState.releases[appState.activeIndex];
+  const nextRel = appState.releases[clamped];
+  appState.isDetailSwitching = true;
+  stopTrackSynth();
+  appState.playingTrackNum = null;
+
+  const layer = document.getElementById("detail-vinyl-bounce-layer");
+  const discEl = document.getElementById("detail-vinyl-bounce-disc");
+  const spinEl = document.getElementById("detail-vinyl-bounce-spin");
+  const innerEl = document.getElementById("detail-inner-content");
+  const imgEl = document.getElementById("detail-bounce-img");
+  const codeEl = document.getElementById("detail-bounce-code");
+  const titleEl = document.getElementById("detail-bounce-title");
+
+  if (imgEl) imgEl.src = curRel.coverUrl;
+  if (codeEl) codeEl.textContent = curRel.catalogCode;
+  if (titleEl) titleEl.textContent = curRel.shortTitle;
+
+  layer.classList.remove("hidden");
+  layer.classList.add("flex");
+
+  const tl = gsap.timeline({
+    onComplete: () => {
+      layer.classList.add("hidden");
+      layer.classList.remove("flex");
+      appState.isDetailSwitching = false;
+      if (appState.soundEnabled) {
+        appState.playingTrackNum = "01";
+        startTrackSynth(nextRel.tracks[0], nextRel.songPreviewUrl, (p) => {
+          appState.trackProgress = p;
+          renderDetailTracklist(nextRel);
+        }, () => {
+          appState.playingTrackNum = null;
+          renderDetailTracklist(nextRel);
+        });
+      }
+    }
+  });
+
+  if (innerEl) {
+    tl.to(innerEl, { opacity: 0.18, scale: 0.95, x: direction === "next" ? -28 : 28, duration: 0.28, ease: "power2.in" }, 0);
+  }
+  tl.fromTo(discEl, { scale: 0.12, opacity: 0, y: 40 }, { scale: 1.05, opacity: 1, y: 0, duration: 0.34, ease: "back.out(1.45)" }, 0);
+  tl.fromTo(spinEl, { rotation: 0 }, { rotation: direction === "next" ? 420 : -420, duration: 0.92, ease: "power2.inOut" }, 0);
+
+  tl.to(discEl, {
+    scale: 1.24,
+    duration: 0.13,
+    ease: "power2.out",
+    onComplete: () => {
+      appState.activeIndex = clamped;
+      updateActiveDiscTexture();
+      syncStageHUD();
+      populateDetailViewDOM();
+      if (imgEl) imgEl.src = nextRel.coverUrl;
+      if (codeEl) codeEl.textContent = nextRel.catalogCode;
+      if (titleEl) titleEl.textContent = nextRel.shortTitle;
+    }
+  }, 0.34);
+  tl.to(discEl, { scale: 0.92, duration: 0.12, ease: "power2.inOut" }, 0.47);
+  tl.to(discEl, { scale: 1.04, duration: 0.1, ease: "power2.out" }, 0.59);
+  tl.to(discEl, { scale: 0.08, opacity: 0, duration: 0.28, ease: "power3.in" }, 0.69);
+
+  if (innerEl) {
+    tl.fromTo(innerEl, { opacity: 0.18, scale: 0.96, x: direction === "next" ? 36 : -36 }, { opacity: 1, scale: 1, x: 0, duration: 0.42, ease: "expo.out", clearProps: "transform" }, 0.58);
+  }
 }
 
 /* ============================================================================
@@ -1816,10 +2111,9 @@ function selectReleaseIndex(nextIndex) {
     playStepClick(appState.soundEnabled);
     updateActiveDiscTexture();
     syncStageHUD();
-    if (appState.diveState === "detail") {
-      stopTrackSynth();
-      appState.playingTrackNum = null;
-      populateDetailViewDOM();
+    if (appState.diveState === "shelf" && appState.radioActive && appState.soundEnabled) {
+      appState.radioHitIndex = clamped % POPULAR_RADIO_HITS.length;
+      playPopularRadio(appState.radioHitIndex);
     }
   }
 }
@@ -1864,9 +2158,14 @@ function syncStageHUD() {
 
   renderTimelineRuler();
 
-  if (appState.radioActive && appState.soundEnabled) {
-    document.getElementById("radio-banner-text").textContent = `OFFICIAL OST: ♪ ${rel.songTitle} — ${rel.songArtist}`;
-    startTrackSynth(rel.tracks[0], rel.songPreviewUrl);
+  // Smooth GSAP Editorial Text Reveal Animation on Title Switch
+  const lines = document.querySelectorAll("#center-caption-trigger .caption-anim-line");
+  if (lines.length && appState.diveState === "shelf") {
+    gsap.fromTo(
+      lines,
+      { y: 16, opacity: 0, filter: "blur(3px)" },
+      { y: 0, opacity: 1, filter: "blur(0px)", duration: 0.42, stagger: 0.05, ease: "expo.out", overwrite: true }
+    );
   }
 }
 
@@ -1930,14 +2229,12 @@ function setDetailMediaTab(tab) {
   });
 
   const mediaBox = document.getElementById("detail-media-box");
-  const coverCanvas = document.getElementById("detail-cover-canvas");
   const visualWrap = document.getElementById("detail-visual-wrap");
   const trailerWrap = document.getElementById("detail-trailer-wrap");
   const ytExternalBar = document.getElementById("detail-yt-external-bar");
   const ytExternalLink = document.getElementById("detail-yt-external-link");
   const ytEl = document.getElementById("detail-yt-iframe");
 
-  coverCanvas.classList.toggle("hidden", tab !== "cover");
   visualWrap.classList.toggle("hidden", tab !== "visual");
   trailerWrap.classList.toggle("hidden", tab !== "trailer");
 
@@ -2020,13 +2317,6 @@ function populateDetailViewDOM() {
   document.getElementById("detail-audit-score").textContent = `★ ${rel.rating.toFixed(1)} / 10`;
 
   document.getElementById("detail-visual-img").src = rel.coverUrl;
-
-  const coverCanvas = document.getElementById("detail-cover-canvas");
-  if (coverCanvas) {
-    const srcTex = getFrontCoverTexture(rel, null);
-    coverCanvas.getContext("2d").drawImage(srcTex.image, 0, 0, 640, 640);
-  }
-
   setDetailMediaTab("visual");
 
   const base = rel.rating;
@@ -2073,8 +2363,8 @@ function renderDetailTracklist(rel) {
       }).join("");
 
       return `
-        <div data-track-num="${tr.number}" class="py-3.5 px-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer hover:bg-[#181818]/[0.03]">
-          <div class="flex items-center gap-3.5 min-w-0">
+        <div data-track-num="${tr.number}" class="py-3.5 px-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-[#181818]/[0.03]">
+          <div data-track-play="${tr.number}" class="flex items-center gap-3.5 min-w-0 cursor-pointer">
             <button type="button" class="w-8 h-8 rounded-full border flex items-center justify-center font-mono text-xs shrink-0 ${
               isPlaying ? "border-[#E05A3A] bg-[#E05A3A] text-white" : "border-[#181818]/40 text-[#181818]"
             }">${isPlaying ? "■" : "▶"}</button>
@@ -2088,17 +2378,19 @@ function renderDetailTracklist(rel) {
             </div>
           </div>
           <div class="flex items-center gap-3 self-end sm:self-center shrink-0">
-            <div class="flex items-end gap-[2px] h-7 w-40 sm:w-48 px-1.5 py-1 bg-[#181818]/[0.04] border border-[#181818]/12">${bars}</div>
-            <span class="font-mono text-xs text-[#575752] w-11 text-right">${tr.duration}</span>
+            <div data-track-seek="${tr.number}" title="Click anywhere to seek timestamp" class="relative flex items-end gap-[2px] h-8 w-44 sm:w-56 px-1.5 py-1 bg-[#181818]/[0.045] border border-[#181818]/15 hover:border-[#E05A3A] cursor-pointer">${bars}</div>
+            <span class="font-mono text-[11px] text-[#575752] w-[76px] text-right">${
+              isPlaying ? `${formatMMSS(appState.trackProgress * 30)} / 00:30` : tr.duration
+            }</span>
           </div>
         </div>
       `;
     })
     .join("");
 
-  container.querySelectorAll("[data-track-num]").forEach((row) => {
-    row.addEventListener("click", () => {
-      const num = row.getAttribute("data-track-num");
+  container.querySelectorAll("[data-track-play]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const num = btn.getAttribute("data-track-play");
       const track = rel.tracks.find((t) => t.number === num);
       if (!track) return;
 
@@ -2122,6 +2414,49 @@ function renderDetailTracklist(rel) {
             renderDetailTracklist(rel);
           }
         );
+      }
+    });
+  });
+
+  // Click anywhere on the track waveform timeline to seek directly to that exact second!
+  container.querySelectorAll("[data-track-seek]").forEach((bar) => {
+    bar.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const num = bar.getAttribute("data-track-seek");
+      const track = rel.tracks.find((t) => t.number === num);
+      if (!track) return;
+      const rect = bar.getBoundingClientRect();
+      const ratio = Math.max(0, Math.min(0.99, (e.clientX - rect.left) / rect.width));
+
+      if (appState.playingTrackNum === num && ostAudio && ostAudio.duration > 0) {
+        ostAudio.currentTime = ratio * ostAudio.duration;
+        appState.trackProgress = ratio;
+        renderDetailTracklist(rel);
+      } else {
+        appState.playingTrackNum = num;
+        appState.trackProgress = ratio;
+        const extUrl = num === "01" ? rel.songPreviewUrl : null;
+        startTrackSynth(
+          track,
+          extUrl,
+          (prog) => {
+            appState.trackProgress = prog;
+            renderDetailTracklist(rel);
+          },
+          () => {
+            appState.playingTrackNum = null;
+            renderDetailTracklist(rel);
+          }
+        );
+        if (extUrl && ostAudio) {
+          ostAudio.addEventListener(
+            "loadedmetadata",
+            () => {
+              if (ostAudio.duration > 0) ostAudio.currentTime = ratio * ostAudio.duration;
+            },
+            { once: true }
+          );
+        }
       }
     });
   });
@@ -2290,7 +2625,13 @@ function switchCategory(cat, startIndex) {
   }
 
   buildShelfMeshes();
+  appState.waveProgress = 0;
+  gsap.to(appState, { waveProgress: 1, duration: 0.78, ease: "power3.out" });
   syncStageHUD();
+  if (appState.radioActive && appState.soundEnabled && appState.diveState === "shelf") {
+    appState.radioHitIndex = (appState.radioHitIndex + 1) % POPULAR_RADIO_HITS.length;
+    playPopularRadio(appState.radioHitIndex);
+  }
 }
 
 /* ============================================================================
@@ -2312,6 +2653,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initThreeScene();
   syncStageHUD();
   preloadOfficialAnimeArtwork();
+  playPopularRadio(appState.radioHitIndex);
 
   const canvasWrap = document.getElementById("three-canvas-container");
   let isDragging = false;
@@ -2328,6 +2670,8 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   window.addEventListener("pointermove", (e) => {
+    appState.pointerX = (e.clientX / window.innerWidth) * 2 - 1;
+    appState.pointerY = (e.clientY / window.innerHeight) * 2 - 1;
     if (appState.diveState !== "shelf") return;
     if (isDragging) {
       const dx = e.clientX - dragStartX;
@@ -2347,12 +2691,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const hits = raycaster.intersectObjects(targets, false);
     if (hits.length > 0) {
       const hitObj = hits[0].object;
-      appState.isHoveredCenter = Boolean(
-        hitObj.userData?.isFloatingDisc || hitObj.userData?.sleeveIndex === appState.activeIndex
-      );
+      appState.isHoveredDisc = Boolean(hitObj.userData?.isFloatingDisc);
+      appState.hoveredIndex =
+        typeof hitObj.userData?.sleeveIndex === "number" ? hitObj.userData.sleeveIndex : null;
       canvasWrap.style.cursor = "pointer";
     } else {
-      appState.isHoveredCenter = false;
+      appState.isHoveredDisc = false;
+      appState.hoveredIndex = null;
       canvasWrap.style.cursor = "grab";
     }
   });
@@ -2409,6 +2754,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (appState.diveState === "detail") {
       if (e.key === "Escape") triggerReverseDiveOut();
+      if (e.key === "ArrowRight") transitionDetailWithVinylBounce(appState.activeIndex + 1, "next");
+      if (e.key === "ArrowLeft") transitionDetailWithVinylBounce(appState.activeIndex - 1, "prev");
       return;
     }
     if (appState.diveState === "shelf") {
@@ -2504,31 +2851,37 @@ document.addEventListener("DOMContentLoaded", () => {
     const dot = document.getElementById("radio-status-dot");
     const banner = document.getElementById("radio-live-banner");
     if (appState.radioActive) {
-      dot.classList.replace("bg-[#6E6E6A]", "bg-[#E05A3A]");
+      dot.classList.remove("bg-[#6E6E6A]");
+      dot.classList.add("bg-[#E05A3A]", "animate-ping");
       banner.classList.remove("hidden");
       banner.classList.add("flex");
-      const rel = appState.releases[appState.activeIndex];
-      if (rel) {
-        document.getElementById("radio-banner-text").textContent = `OFFICIAL OST: ♪ ${rel.songTitle} — ${rel.songArtist}`;
-        startTrackSynth(rel.tracks[0], rel.songPreviewUrl);
-      }
+      appState.soundEnabled = true;
+      playPopularRadio(appState.radioHitIndex);
     } else {
-      dot.classList.replace("bg-[#E05A3A]", "bg-[#6E6E6A]");
+      dot.classList.remove("bg-[#E05A3A]", "animate-ping");
+      dot.classList.add("bg-[#6E6E6A]");
       banner.classList.add("hidden");
       banner.classList.remove("flex");
       stopTrackSynth();
     }
   });
 
+  document.getElementById("radio-next-btn")?.addEventListener("click", () => {
+    appState.soundEnabled = true;
+    appState.radioHitIndex = (appState.radioHitIndex + 1) % POPULAR_RADIO_HITS.length;
+    playPopularRadio(appState.radioHitIndex);
+  });
+
   document.getElementById("radio-mute-btn")?.addEventListener("click", () => {
     appState.soundEnabled = !appState.soundEnabled;
-    document.getElementById("radio-mute-btn").textContent = appState.soundEnabled ? "MUTE" : "UNMUTE";
+    document.getElementById("radio-mute-btn").textContent = appState.soundEnabled ? "MUTE" : "PLAY";
     if (!appState.soundEnabled) stopTrackSynth();
+    else playPopularRadio(appState.radioHitIndex);
   });
 
   document.getElementById("back-to-shelf-btn")?.addEventListener("click", () => triggerReverseDiveOut());
-  document.getElementById("detail-prev-btn")?.addEventListener("click", () => selectReleaseIndex(appState.activeIndex - 1));
-  document.getElementById("detail-next-btn")?.addEventListener("click", () => selectReleaseIndex(appState.activeIndex + 1));
+  document.getElementById("detail-prev-btn")?.addEventListener("click", () => transitionDetailWithVinylBounce(appState.activeIndex - 1, "prev"));
+  document.getElementById("detail-next-btn")?.addEventListener("click", () => transitionDetailWithVinylBounce(appState.activeIndex + 1, "next"));
 
   document.getElementById("detail-visual-wrap")?.addEventListener("click", () => setDetailMediaTab("trailer"));
   document.querySelectorAll("[data-detail-tab]").forEach((tabBtn) => {

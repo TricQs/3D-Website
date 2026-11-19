@@ -7,10 +7,23 @@ export interface ResolvedExternalMedia {
   songPreviewUrl?: string;
 }
 
+export interface TrackProgressPayload {
+  progress: number;
+  currentTimeSec: number;
+  durationSec: number;
+  levels: number[];
+}
+
 let sharedAudioCtx: AudioContext | null = null;
 let activeSynthInterval: ReturnType<typeof setInterval> | null = null;
 let activeProgressInterval: ReturnType<typeof setInterval> | null = null;
 let htmlAudioPlayer: HTMLAudioElement | null = null;
+let fadeFrameId: number | null = null;
+let currentSynthDurationSec = 24;
+let currentSynthElapsedSec = 0;
+let currentSynthLastTick = 0;
+let isPlayingRealAudio = false;
+let currentTargetVolume = 0.74;
 
 function getAudioContext(): AudioContext | null {
   if (typeof window === "undefined") return null;
@@ -28,30 +41,82 @@ function getAudioContext(): AudioContext | null {
   return sharedAudioCtx;
 }
 
+export function formatTimeMMSS(seconds: number): string {
+  const safe = Math.max(0, Math.floor(Number.isFinite(seconds) ? seconds : 0));
+  const m = Math.floor(safe / 60);
+  const s = safe % 60;
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
+function animateAudioVolume(
+  audio: HTMLAudioElement,
+  from: number,
+  to: number,
+  durationMs: number,
+  onDone?: () => void
+) {
+  if (fadeFrameId !== null && typeof cancelAnimationFrame !== "undefined") {
+    cancelAnimationFrame(fadeFrameId);
+    fadeFrameId = null;
+  }
+  const start = performance.now();
+  const clamp = (v: number) => Math.max(0, Math.min(1, v));
+  audio.volume = clamp(from);
+
+  const step = (now: number) => {
+    const t = Math.min(1, (now - start) / Math.max(1, durationMs));
+    const eased = t * t * (3 - 2 * t);
+    audio.volume = clamp(from + (to - from) * eased);
+    if (t < 1) {
+      fadeFrameId = requestAnimationFrame(step);
+    } else {
+      fadeFrameId = null;
+      onDone?.();
+    }
+  };
+  fadeFrameId = requestAnimationFrame(step);
+}
+
 export function playMechanicalStepSound(enabled = true) {
   if (!enabled) return;
   try {
     const ctx = getAudioContext();
     if (!ctx) return;
-
     const now = ctx.currentTime;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-
     osc.type = "triangle";
     osc.frequency.setValueAtTime(195, now);
     osc.frequency.exponentialRampToValueAtTime(52, now + 0.028);
-
-    gain.gain.setValueAtTime(0.05, now);
+    gain.gain.setValueAtTime(0.045, now);
     gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.03);
-
     osc.connect(gain);
     gain.connect(ctx.destination);
     osc.start(now);
     osc.stop(now + 0.032);
-  } catch {
-    // Ignore audio context restrictions prior to gesture
-  }
+  } catch {}
+}
+
+export function playBounceSwapSound(enabled = true) {
+  if (!enabled) return;
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(140, now);
+    osc.frequency.exponentialRampToValueAtTime(340, now + 0.14);
+    osc.frequency.exponentialRampToValueAtTime(180, now + 0.34);
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.linearRampToValueAtTime(0.055, now + 0.06);
+    gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.36);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.38);
+  } catch {}
 }
 
 export function playDiveTransitionSound(divingIn = true, enabled = true) {
@@ -59,7 +124,6 @@ export function playDiveTransitionSound(divingIn = true, enabled = true) {
   try {
     const ctx = getAudioContext();
     if (!ctx) return;
-
     const now = ctx.currentTime;
     const osc = ctx.createOscillator();
     const sub = ctx.createOscillator();
@@ -68,7 +132,6 @@ export function playDiveTransitionSound(divingIn = true, enabled = true) {
 
     osc.type = "sawtooth";
     sub.type = "sine";
-
     filter.type = "lowpass";
     filter.frequency.setValueAtTime(divingIn ? 220 : 1400, now);
     filter.frequency.exponentialRampToValueAtTime(divingIn ? 1850 : 180, now + 0.65);
@@ -79,24 +142,21 @@ export function playDiveTransitionSound(divingIn = true, enabled = true) {
     sub.frequency.exponentialRampToValueAtTime(divingIn ? 140 : 48, now + 0.65);
 
     gain.gain.setValueAtTime(0.001, now);
-    gain.gain.linearRampToValueAtTime(0.045, now + 0.14);
+    gain.gain.linearRampToValueAtTime(0.042, now + 0.14);
     gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.72);
 
     osc.connect(filter);
     sub.connect(filter);
     filter.connect(gain);
     gain.connect(ctx.destination);
-
     osc.start(now);
     sub.start(now);
     osc.stop(now + 0.74);
     sub.stop(now + 0.74);
-  } catch {
-    // Ignore
-  }
+  } catch {}
 }
 
-export function stopAllTrackPreviews() {
+export function stopAllTrackPreviews(fadeOutMs = 0) {
   if (activeSynthInterval) {
     clearInterval(activeSynthInterval);
     activeSynthInterval = null;
@@ -106,87 +166,177 @@ export function stopAllTrackPreviews() {
     activeProgressInterval = null;
   }
   if (htmlAudioPlayer) {
-    htmlAudioPlayer.pause();
-    htmlAudioPlayer.currentTime = 0;
+    const audio = htmlAudioPlayer;
+    if (fadeOutMs > 0 && !audio.paused && audio.volume > 0.01) {
+      animateAudioVolume(audio, audio.volume, 0, fadeOutMs, () => {
+        audio.pause();
+      });
+    } else {
+      if (fadeFrameId !== null && typeof cancelAnimationFrame !== "undefined") {
+        cancelAnimationFrame(fadeFrameId);
+        fadeFrameId = null;
+      }
+      audio.pause();
+      audio.currentTime = 0;
+    }
   }
+  isPlayingRealAudio = false;
 }
 
 /**
- * Plays the REAL official anime theme song (when `useRealOstUrl` is passed for Track 01)
- * OR a rich multi-voice Web Audio API polyphonic synth sequence for score tracks,
- * with synchronized real-time progress and waveform bar visualization.
+ * Seeks the currently playing Official Theme Song or Synth track directly to ratio (0..1)
+ */
+export function seekTrackPreview(ratio0to1: number): { currentTimeSec: number; durationSec: number } {
+  const clamped = Math.max(0, Math.min(0.995, ratio0to1));
+  if (isPlayingRealAudio && htmlAudioPlayer && htmlAudioPlayer.duration > 0) {
+    const target = clamped * htmlAudioPlayer.duration;
+    htmlAudioPlayer.currentTime = target;
+    return { currentTimeSec: target, durationSec: htmlAudioPlayer.duration };
+  }
+  currentSynthElapsedSec = clamped * currentSynthDurationSec;
+  currentSynthLastTick = performance.now();
+  return { currentTimeSec: currentSynthElapsedSec, durationSec: currentSynthDurationSec };
+}
+
+/**
+ * Starts Official Theme Song (with smooth fade-out of previous track & fade-in of new track!)
+ * or procedural multi-voice Web Audio synth preview with real-time timestamp & seek support.
  */
 export function startTrackSynthPreview(
   track: ArchiveTrack,
   options: {
     useRealOstUrl?: string;
-    onProgress?: (progress0to1: number, levels: number[]) => void;
+    fadeInMs?: number;
+    fadeOutPrevMs?: number;
+    startRatio?: number;
+    loop?: boolean;
+    onProgress?: (payload: TrackProgressPayload) => void;
     onEnded?: () => void;
+    onPlayBlocked?: () => void;
   } = {}
 ) {
-  stopAllTrackPreviews();
+  const fadeInMs = options.fadeInMs ?? 520;
+  const fadeOutPrevMs = options.fadeOutPrevMs ?? 240;
+  const startRatio = Math.max(0, Math.min(0.98, options.startRatio ?? 0));
 
-  const ctx = getAudioContext();
-  const startTime = performance.now();
-  const synthDurationMs = 24000;
-  let playingRealAudio = false;
-
-  if (options.useRealOstUrl && typeof window !== "undefined") {
-    try {
-      if (!htmlAudioPlayer) {
-        htmlAudioPlayer = new Audio();
-        htmlAudioPlayer.crossOrigin = "anonymous";
-      }
-      htmlAudioPlayer.src = options.useRealOstUrl;
-      htmlAudioPlayer.volume = 0.78;
-      playingRealAudio = true;
-
-      htmlAudioPlayer.onended = () => {
-        stopAllTrackPreviews();
-        options.onEnded?.();
-      };
-
-      htmlAudioPlayer.play().catch(() => {
-        playingRealAudio = false;
-        runProceduralSynthLoop(ctx, track);
-      });
-    } catch {
-      playingRealAudio = false;
-      runProceduralSynthLoop(ctx, track);
-    }
-  } else {
-    runProceduralSynthLoop(ctx, track);
+  if (activeSynthInterval) {
+    clearInterval(activeSynthInterval);
+    activeSynthInterval = null;
+  }
+  if (activeProgressInterval) {
+    clearInterval(activeProgressInterval);
+    activeProgressInterval = null;
   }
 
-  activeProgressInterval = setInterval(() => {
-    const elapsed = performance.now() - startTime;
-    let progress = Math.min(1, elapsed / synthDurationMs);
+  const ctx = getAudioContext();
+  currentSynthDurationSec = 30;
+  currentSynthElapsedSec = startRatio * currentSynthDurationSec;
+  currentSynthLastTick = performance.now();
 
-    if (playingRealAudio && htmlAudioPlayer && htmlAudioPlayer.duration > 0) {
-      progress = Math.min(1, htmlAudioPlayer.currentTime / htmlAudioPlayer.duration);
+  const launchNextAudio = () => {
+    if (options.useRealOstUrl && typeof window !== "undefined") {
+      try {
+        if (!htmlAudioPlayer) {
+          htmlAudioPlayer = new Audio();
+          htmlAudioPlayer.crossOrigin = "anonymous";
+        }
+        const audio = htmlAudioPlayer;
+        audio.loop = Boolean(options.loop);
+        audio.src = options.useRealOstUrl;
+        audio.volume = 0;
+        isPlayingRealAudio = true;
+
+        audio.onloadedmetadata = () => {
+          if (startRatio > 0 && audio.duration > 0) {
+            audio.currentTime = startRatio * audio.duration;
+          }
+        };
+
+        audio.onended = () => {
+          if (!audio.loop) {
+            stopAllTrackPreviews();
+            options.onEnded?.();
+          }
+        };
+
+        audio
+          .play()
+          .then(() => {
+            animateAudioVolume(audio, 0, currentTargetVolume, fadeInMs);
+          })
+          .catch(() => {
+            isPlayingRealAudio = false;
+            options.onPlayBlocked?.();
+          });
+      } catch {
+        isPlayingRealAudio = false;
+        runProceduralSynthLoop(ctx, track);
+      }
+    } else {
+      isPlayingRealAudio = false;
+      runProceduralSynthLoop(ctx, track);
     }
 
-    const t = elapsed * 0.0075;
-    const levels = Array.from({ length: 28 }, (_, i) => {
-      const wave =
-        Math.sin(t + i * 0.45 + track.waveformSeed) * 0.36 +
-        Math.cos(t * 1.8 - i * 0.31) * 0.28 +
-        0.46;
-      return Math.max(0.14, Math.min(1, wave));
+    activeProgressInterval = setInterval(() => {
+      const now = performance.now();
+      let currentTimeSec = currentSynthElapsedSec;
+      let durationSec = currentSynthDurationSec;
+
+      if (isPlayingRealAudio && htmlAudioPlayer && htmlAudioPlayer.duration > 0) {
+        currentTimeSec = htmlAudioPlayer.currentTime;
+        durationSec = htmlAudioPlayer.duration;
+      } else {
+        const dtSec = (now - currentSynthLastTick) / 1000;
+        currentSynthLastTick = now;
+        currentSynthElapsedSec += dtSec;
+        currentTimeSec = currentSynthElapsedSec;
+      }
+
+      const progress = Math.min(1, currentTimeSec / Math.max(1, durationSec));
+      const t = now * 0.0075;
+      const levels = Array.from({ length: 28 }, (_, i) => {
+        const wave =
+          Math.sin(t + i * 0.45 + track.waveformSeed) * 0.36 +
+          Math.cos(t * 1.8 - i * 0.31) * 0.28 +
+          0.46;
+        return Math.max(0.14, Math.min(1, wave));
+      });
+
+      options.onProgress?.({ progress, currentTimeSec, durationSec, levels });
+
+      if (!isPlayingRealAudio && progress >= 1) {
+        if (options.loop) {
+          currentSynthElapsedSec = 0;
+        } else {
+          stopAllTrackPreviews();
+          options.onEnded?.();
+        }
+      }
+    }, 60);
+  };
+
+  // Smooth fade-out of previous track before fading in the new track (DJ-style crossfade)
+  if (
+    htmlAudioPlayer &&
+    !htmlAudioPlayer.paused &&
+    htmlAudioPlayer.volume > 0.02 &&
+    fadeOutPrevMs > 0
+  ) {
+    const prevAudio = htmlAudioPlayer;
+    animateAudioVolume(prevAudio, prevAudio.volume, 0, fadeOutPrevMs, () => {
+      prevAudio.pause();
+      launchNextAudio();
     });
-
-    options.onProgress?.(progress, levels);
-
-    if (!playingRealAudio && progress >= 1) {
-      stopAllTrackPreviews();
-      options.onEnded?.();
+  } else {
+    if (htmlAudioPlayer) {
+      htmlAudioPlayer.pause();
     }
-  }, 60);
+    launchNextAudio();
+  }
 }
 
 function runProceduralSynthLoop(ctx: AudioContext | null, track: ArchiveTrack) {
   if (!ctx) return;
-
   const stepMs = Math.max(180, Math.round((60 / track.bpm) * 500));
   let step = 0;
 
@@ -204,7 +354,6 @@ function runProceduralSynthLoop(ctx: AudioContext | null, track: ArchiveTrack) {
 
       osc.type = step % 4 === 0 ? "triangle" : "sine";
       subOsc.type = "sine";
-
       osc.frequency.setValueAtTime(freq, now);
       subOsc.frequency.setValueAtTime(step % 4 === 0 ? bassFreq : freq * 0.5, now);
 
@@ -224,11 +373,8 @@ function runProceduralSynthLoop(ctx: AudioContext | null, track: ArchiveTrack) {
       subOsc.start(now);
       osc.stop(now + stepMs * 0.0015);
       subOsc.stop(now + stepMs * 0.0015);
-
       step++;
-    } catch {
-      // Ignore
-    }
+    } catch {}
   };
 
   triggerStep();
@@ -243,10 +389,6 @@ export function generateWaveformBars(seed: number, count = 48): number[] {
   });
 }
 
-/**
- * Returns the pre-verified official AniList cover/banner, YouTube trailer/OP ID,
- * and Apple Music/iTunes official vocal OP preview directly from the release dataset.
- */
 export async function resolveAnimeExternalMedia(
   release: AnimeRelease
 ): Promise<ResolvedExternalMedia> {

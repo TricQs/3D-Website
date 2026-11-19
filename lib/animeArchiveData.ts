@@ -1032,3 +1032,129 @@ export function getCorsSafeArtworkUrl(rawUrl: string): string {
   }
   return `https://wsrv.nl/?url=${encodeURIComponent(rawUrl)}&w=900&output=webp`;
 }
+
+export interface PopularRadioHit {
+  id: string;
+  title: string;
+  artist: string;
+  views: string;
+  previewUrl: string;
+}
+
+/**
+ * Curated YouTube Top-Viewed Iconic Anime & J-Pop Mega-Hits for Default-ON Radio Station
+ */
+export const POPULAR_RADIO_HITS: PopularRadioHit[] = [
+  {
+    id: "idol",
+    title: "Idol (アイドル)",
+    artist: "YOASOBI",
+    views: "580M+ views",
+    previewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f0/db/16/f0db16be-457e-f10f-98b6-f30b11de34e4/mzaf_5189430943078523093.plus.aac.p.m4a"
+  },
+  {
+    id: "lemon",
+    title: "Lemon",
+    artist: "Kenshi Yonezu",
+    views: "880M+ views",
+    previewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/27/17/9b/27179b15-2153-25e8-d035-35fdb4d059d8/mzaf_757024838235216109.plus.aac.p.m4a"
+  },
+  {
+    id: "pretender",
+    title: "Pretender",
+    artist: "Official HIGE DANdism",
+    views: "540M+ views",
+    previewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/71/93/7a/71937a82-5662-3d08-c78d-65179c560a6b/mzaf_4128339501254480840.plus.aac.p.m4a"
+  },
+  {
+    id: "kaikai",
+    title: "Kaikai Kitan (廻廻奇譚)",
+    artist: "Eve",
+    views: "380M+ views",
+    previewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/17/47/ca/1747ca2b-1ab8-a43f-35d5-e0d01d9be305/mzaf_17560760129565806208.plus.aac.p.m4a"
+  },
+  {
+    id: "bbbb",
+    title: "Bling-Bang-Bang-Born",
+    artist: "Creepy Nuts",
+    views: "320M+ views",
+    previewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/5c/54/5e/5c545e9a-c8ca-c673-f85d-a74b14c2c882/mzaf_2313943576213161760.plus.aac.p.m4a"
+  },
+  {
+    id: "zenzenzense",
+    title: "Zenzenzense (前前前世)",
+    artist: "RADWIMPS",
+    views: "320M+ views",
+    previewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f8/fd/9f/f8fd9f88-67e8-ce12-f44d-1b4fe421f1f9/mzaf_5313510550820503304.plus.aac.p.m4a"
+  },
+  {
+    id: "yoru",
+    title: "Yoru ni Kakeru (夜に駆ける)",
+    artist: "YOASOBI",
+    views: "290M+ views",
+    previewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/4e/73/ae/4e73ae7f-96d6-5100-d3d3-3c50c28a1f19/mzaf_6031201848020469124.plus.aac.p.m4a"
+  },
+  {
+    id: "zankyo",
+    title: "Zankyosanka (残響散歌)",
+    artist: "Aimer",
+    views: "250M+ views",
+    previewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/e7/65/bc/e765bc4b-7710-5c13-c35d-8cd30d7bcacd/mzaf_5473058310448658183.plus.aac.p.m4a"
+  },
+  {
+    id: "inferno",
+    title: "Inferno (インフェルノ)",
+    artist: "Mrs. GREEN APPLE",
+    views: "240M+ views",
+    previewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/70/25/37/70253773-995d-296e-19db-6a2457b9f3db/mzaf_2716666302310961916.plus.aac.p.m4a"
+  },
+  {
+    id: "silhouette",
+    title: "Silhouette (シルエット)",
+    artist: "KANA-BOON",
+    views: "230M+ views",
+    previewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/68/4b/e0/684be0b1-7d5a-b7a8-a6d9-f369de931320/mzaf_6309023904855490382.plus.aac.p.m4a"
+  },
+  {
+    id: "kickback",
+    title: "KICK BACK",
+    artist: "Kenshi Yonezu",
+    views: "210M+ views",
+    previewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/86/2d/45/862d4572-805c-3a72-49a4-905a8c327888/mzaf_14805576631717868964.plus.aac.p.m4a"
+  },
+  {
+    id: "gurenge",
+    title: "Gurenge (紅蓮華)",
+    artist: "LiSA",
+    views: "200M+ views",
+    previewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/d7/45/22/d7452274-6107-7ace-420b-1b509d55d067/mzaf_15546458713313472040.plus.aac.p.m4a"
+  },
+  {
+    id: "shinjidai",
+    title: "New Genesis (新時代)",
+    artist: "Ado",
+    views: "190M+ views",
+    previewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/6b/f3/59/6bf35909-9a90-8642-b4fc-0932fcd4f862/mzaf_9878820709909147000.plus.aac.p.m4a"
+  },
+  {
+    id: "aonosumika",
+    title: "Where Our Blue Is (青のすみか)",
+    artist: "Tatsuya Kitani",
+    views: "150M+ views",
+    previewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/92/c9/7a/92c97ab2-5fdd-d00b-34eb-b2b58cd3c610/mzaf_15460441178714099183.plus.aac.p.m4a"
+  }
+];

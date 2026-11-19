@@ -9,13 +9,16 @@ import {
   ArchiveTrack,
   CURRENTLY_WATCHING_RELEASES,
   getCorsSafeArtworkUrl,
+  POPULAR_RADIO_HITS,
   WATCHED_ANIME_RELEASES
 } from "@/lib/animeArchiveData";
-import { drawProceduralIllustration } from "@/lib/proceduralTextures";
 import {
+  formatTimeMMSS,
   generateWaveformBars,
+  playBounceSwapSound,
   playDiveTransitionSound,
   playMechanicalStepSound,
+  seekTrackPreview,
   startTrackSynthPreview,
   stopAllTrackPreviews
 } from "@/lib/webAudioEngine";
@@ -31,7 +34,7 @@ const TurntableScene = dynamic(() => import("./TurntableScene"), {
 
 type CategoryFilter = "all" | "TV Series" | "Movie" | "watching";
 type ActiveModal = "none" | "releases" | "artists";
-type DetailMediaMode = "key-visual" | "trailer" | "cover";
+type DetailMediaMode = "key-visual" | "trailer";
 
 const RULER_YEARS = [
   2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022,
@@ -45,108 +48,45 @@ function formatRulerYear(yr: number): string {
   return `'${String(yr).slice(2)}`;
 }
 
-/**
- * High-DPI 2D Swiss Minimal Sleeve Preview Canvas inside Release Detail View
- */
-function DetailProceduralCoverCanvas({ release }: { release: AnimeRelease }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const w = 640;
-    const h = 640;
-    ctx.fillStyle = release.coverBgColor;
-    ctx.fillRect(0, 0, w, h);
-
-    ctx.strokeStyle = release.coverInkColor;
-    ctx.lineWidth = 2;
-    ctx.strokeRect(22, 22, w - 44, h - 44);
-
-    ctx.fillStyle = release.coverInkColor;
-    ctx.font = "700 14px 'IBM Plex Mono', monospace";
-    ctx.fillText(`DISC ARCHIVE  —  ${release.catalogCode}`, 42, 54);
-    ctx.font = "500 12px 'IBM Plex Mono', monospace";
-    ctx.fillText(
-      `${release.releaseYear} • ${release.category.toUpperCase()} • ${release.studio.toUpperCase()}`,
-      42,
-      74
-    );
-
-    ctx.fillStyle = release.accentColor;
-    ctx.fillRect(w - 190, 38, 148, 36);
-    ctx.fillStyle = "#FFFFFF";
-    ctx.font = "700 13px 'IBM Plex Mono', monospace";
-    ctx.textAlign = "center";
-    ctx.fillText(
-      release.rating >= 10 ? "👑 10.0 / 10" : `★ ${release.rating.toFixed(1)} / 10`,
-      w - 116,
-      61
-    );
-    ctx.textAlign = "left";
-
-    drawProceduralIllustration(ctx, release, 42, 96, w - 84, 355);
-
-    ctx.fillStyle = "#E05A3A";
-    ctx.beginPath();
-    ctx.arc(50, 480, 5.5, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = release.coverInkColor;
-    ctx.font = "700 13px 'IBM Plex Mono', monospace";
-    ctx.fillText(
-      `${release.genres.join(" / ").toUpperCase()}  —  ${release.bpm} BPM  —  ${release.ageRating}`,
-      66,
-      484
-    );
-
-    ctx.font = "800 32px 'Inter', sans-serif";
-    const title = release.titleEnglish.length > 28 ? release.shortTitle : release.titleEnglish;
-    ctx.fillText(title, 42, 530);
-
-    ctx.globalAlpha = 0.75;
-    ctx.font = "500 15px 'Inter', sans-serif";
-    ctx.fillText(release.titleRomaji, 42, 558);
-
-    ctx.globalAlpha = 1;
-    ctx.fillStyle = release.accentColor;
-    ctx.font = "600 13px 'IBM Plex Mono', monospace";
-    ctx.fillText(`♪ ${release.songTitle.toUpperCase()} — ${release.songArtist.toUpperCase()}`, 42, 590);
-  }, [release]);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      width={640}
-      height={640}
-      className="w-full h-full object-cover"
-    />
-  );
-}
-
 export default function DiscArchiveShowcase() {
   const [category, setCategory] = useState<CategoryFilter>("all");
-  // Start near the chronological center (2016 Your Name.) so both left & right spine stacks frame the platter symmetrically!
+  const [categoryWaveKey, setCategoryWaveKey] = useState<number>(0);
+  // Start near chronological center (2016 Your Name.) for symmetrical spine stacks
   const [activeIndex, setActiveIndex] = useState<number>(6);
   const [diveState, setDiveState] = useState<"shelf" | "diving-in" | "detail" | "diving-out">("shelf");
   const [diveVeilOpacity, setDiveVeilOpacity] = useState<number>(0);
   const [activeModal, setActiveModal] = useState<ActiveModal>("none");
-  const [radioActive, setRadioActive] = useState<boolean>(false);
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
-  // Default to Official Anime Artwork on the 3D sleeves!
-  const [useOfficialPosters, setUseOfficialPosters] = useState<boolean>(true);
 
-  // Release Detail View & Audio Synth state
+  // Radio is ON by default on website load, playing YouTube's most popular iconic hits with fade-in/out!
+  const [radioActive, setRadioActive] = useState<boolean>(true);
+  const [radioHitIndex, setRadioHitIndex] = useState<number>(0);
+  const [radioBlockedNeedsGesture, setRadioBlockedNeedsGesture] = useState<boolean>(false);
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
+
+  // Release Detail View & Interactive Seekable Audio state
   const [playingTrackNum, setPlayingTrackNum] = useState<string | null>(null);
   const [trackProgress, setTrackProgress] = useState<number>(0);
+  const [trackCurrentSec, setTrackCurrentSec] = useState<number>(0);
+  const [trackDurationSec, setTrackDurationSec] = useState<number>(30);
   const [liveWaveLevels, setLiveWaveLevels] = useState<number[]>([]);
   const [detailMediaMode, setDetailMediaMode] = useState<DetailMediaMode>("key-visual");
+  const [hoverSeekLabel, setHoverSeekLabel] = useState<{ trackNum: string; time: string; pct: number } | null>(
+    null
+  );
 
-  // Loaded CORS-safe official anime artwork images for WebGL 3D <canvas> textures
+  // Detail View Next / Prev Spinning Vinyl Bounce Transition State (NO 20% video overlay!)
+  const [isDetailSwitching, setIsDetailSwitching] = useState<boolean>(false);
+  const [bounceDiscRelease, setBounceDiscRelease] = useState<AnimeRelease | null>(null);
+  const bounceDiscRef = useRef<HTMLDivElement>(null);
+  const bounceSpinRef = useRef<HTMLDivElement>(null);
+
+  // Global full-window timeline hold & drag state
+  const [isHoldingTimeline, setIsHoldingTimeline] = useState<boolean>(false);
+
+  // Loaded CORS-safe official anime artwork images (covers + wide banners) & OP video cache
   const [loadedPosterImages, setLoadedPosterImages] = useState<Record<string, HTMLImageElement>>({});
+  const [loadedBannerImages, setLoadedBannerImages] = useState<Record<string, HTMLImageElement>>({});
+  const [opVideoMap, setOpVideoMap] = useState<Record<string, string | null>>({});
 
   // Releases Drawer Search / Filter / Sort state
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -154,12 +94,15 @@ export default function DiscArchiveShowcase() {
   const [sortBy, setSortBy] = useState<"year-asc" | "rating-desc" | "year-desc" | "title-asc">("year-asc");
 
   const timelineRef = useRef<HTMLDivElement>(null);
+  const captionRef = useRef<HTMLDivElement>(null);
   const detailContainerRef = useRef<HTMLDivElement>(null);
   const isScrubbingTimelineRef = useRef<boolean>(false);
   const wheelCooldownRef = useRef<boolean>(false);
-  const loadingIdsRef = useRef<Set<string>>(new Set());
+  const loadingPosterIdsRef = useRef<Set<string>>(new Set());
+  const loadingBannerIdsRef = useRef<Set<string>>(new Set());
+  const fetchingOpIdsRef = useRef<Set<string>>(new Set());
 
-  // Chronologically sorted (oldest left -> newest right) filtered shelf list
+  // Strictly chronologically sorted (2006 left -> 2026 right) filtered shelf list
   const releases = useMemo(() => {
     let list: AnimeRelease[];
     if (category === "Movie") {
@@ -171,7 +114,6 @@ export default function DiscArchiveShowcase() {
     } else {
       list = WATCHED_ANIME_RELEASES;
     }
-    // Guarantee strict chronological left-to-right sorting by releaseYear
     return [...list].sort((a, b) => {
       if (a.releaseYear !== b.releaseYear) return a.releaseYear - b.releaseYear;
       return a.catalogCode.localeCompare(b.catalogCode);
@@ -180,29 +122,37 @@ export default function DiscArchiveShowcase() {
 
   const safeIndex = Math.max(0, Math.min(releases.length - 1, activeIndex));
   const activeRelease = releases[safeIndex] || releases[0];
+  const currentRadioHit = POPULAR_RADIO_HITS[radioHitIndex % POPULAR_RADIO_HITS.length];
 
-  // Preload official anime artwork images cleanly via same-origin /api/image-proxy (with wsrv.nl fallback)
-  const loadCorsSafeImage = useCallback((rel: AnimeRelease) => {
-    if (!rel.coverUrl || loadingIdsRef.current.has(rel.id)) return;
-    loadingIdsRef.current.add(rel.id);
+  // Preload CORS-safe official anime cover & wide banner images for 3D sleeves + 20% vinyl OP motion reel
+  const loadCorsSafeMediaImages = useCallback((rel: AnimeRelease) => {
+    if (rel.coverUrl && !loadingPosterIdsRef.current.has(rel.id)) {
+      loadingPosterIdsRef.current.add(rel.id);
+      const primaryUrl = getCorsSafeArtworkUrl(rel.coverUrl);
+      const fallbackUrl = `https://wsrv.nl/?url=${encodeURIComponent(rel.coverUrl)}&w=900&output=webp`;
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => setLoadedPosterImages((prev) => ({ ...prev, [rel.id]: img }));
+      img.onerror = () => {
+        if (img.src !== fallbackUrl) img.src = fallbackUrl;
+      };
+      img.src = primaryUrl;
+    }
 
-    const primaryUrl = getCorsSafeArtworkUrl(rel.coverUrl);
-    const fallbackUrl = `https://wsrv.nl/?url=${encodeURIComponent(rel.coverUrl)}&w=900&output=webp`;
-
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => {
-      setLoadedPosterImages((prev) => ({ ...prev, [rel.id]: img }));
-    };
-    img.onerror = () => {
-      if (img.src !== fallbackUrl) {
-        img.src = fallbackUrl;
-      }
-    };
-    img.src = primaryUrl;
+    if (rel.bannerUrl && !loadingBannerIdsRef.current.has(rel.id)) {
+      loadingBannerIdsRef.current.add(rel.id);
+      const primaryBanner = getCorsSafeArtworkUrl(rel.bannerUrl);
+      const fallbackBanner = `https://wsrv.nl/?url=${encodeURIComponent(rel.bannerUrl)}&w=900&output=webp`;
+      const bImg = new Image();
+      bImg.crossOrigin = "anonymous";
+      bImg.onload = () => setLoadedBannerImages((prev) => ({ ...prev, [rel.id]: bImg }));
+      bImg.onerror = () => {
+        if (bImg.src !== fallbackBanner) bImg.src = fallbackBanner;
+      };
+      bImg.src = primaryBanner;
+    }
   }, []);
 
-  // Load active & neighboring sleeves immediately, then hydrate the entire 28-anime shelf smoothly
   useEffect(() => {
     if (!releases.length) return;
     const priorityOrder: AnimeRelease[] = [];
@@ -212,13 +162,104 @@ export default function DiscArchiveShowcase() {
       if (right) priorityOrder.push(right);
       if (left) priorityOrder.push(left);
     }
-    priorityOrder.slice(0, 12).forEach(loadCorsSafeImage);
-
+    priorityOrder.slice(0, 12).forEach(loadCorsSafeMediaImages);
     const timer = setTimeout(() => {
-      ALL_ANIME_RELEASES.forEach(loadCorsSafeImage);
-    }, 350);
+      ALL_ANIME_RELEASES.forEach(loadCorsSafeMediaImages);
+    }, 300);
     return () => clearTimeout(timer);
-  }, [releases, safeIndex, loadCorsSafeImage]);
+  }, [releases, safeIndex, loadCorsSafeMediaImages]);
+
+  // Fetch direct creditless AnimeThemes .webm OP video for active disc's 20%-opacity spinning vinyl overlay
+  useEffect(() => {
+    if (!activeRelease || fetchingOpIdsRef.current.has(activeRelease.id)) return;
+    fetchingOpIdsRef.current.add(activeRelease.id);
+
+    fetch(`/api/op-video?q=${encodeURIComponent(activeRelease.jikanQuery || activeRelease.titleRomaji)}`)
+      .then((res) => (res.ok ? res.json() : { videoUrl: null }))
+      .then((json: { videoUrl?: string | null }) => {
+        setOpVideoMap((prev) => ({ ...prev, [activeRelease.id]: json?.videoUrl || null }));
+      })
+      .catch(() => {
+        setOpVideoMap((prev) => ({ ...prev, [activeRelease.id]: null }));
+      });
+  }, [activeRelease]);
+
+  // Smooth GSAP Editorial Text Reveal Animation whenever the active shelf title changes
+  useEffect(() => {
+    if (!captionRef.current || diveState !== "shelf") return;
+    const targets = captionRef.current.querySelectorAll(".caption-anim-line");
+    gsap.fromTo(
+      targets,
+      { y: 18, opacity: 0, filter: "blur(3px)" },
+      {
+        y: 0,
+        opacity: 1,
+        filter: "blur(0px)",
+        duration: 0.44,
+        stagger: 0.055,
+        ease: "expo.out",
+        overwrite: true
+      }
+    );
+  }, [activeRelease?.id, diveState]);
+
+  // Launch Popular YouTube Mega-Hit Radio track with smooth fade-out -> fade-in crossfade
+  const playPopularRadioHit = useCallback(
+    (hitIdx: number, fadeOutPrevMs = 260) => {
+      if (!soundEnabled || !radioActive) return;
+      const hit = POPULAR_RADIO_HITS[hitIdx % POPULAR_RADIO_HITS.length];
+      if (!hit) return;
+
+      const radioTrack: ArchiveTrack = {
+        number: "FM",
+        title: hit.title,
+        role: `${hit.artist} • ${hit.views}`,
+        duration: "00:30",
+        bpm: 132,
+        notes: [261.63, 329.63, 392.0, 493.88],
+        waveformSeed: hitIdx + 7,
+        isOfficialOst: true
+      };
+
+      startTrackSynthPreview(radioTrack, {
+        useRealOstUrl: hit.previewUrl,
+        fadeInMs: 620,
+        fadeOutPrevMs,
+        loop: false,
+        onEnded: () => {
+          // Auto-advance to the next popular YouTube mega-hit continuously!
+          setRadioHitIndex((prev) => (prev + 1) % POPULAR_RADIO_HITS.length);
+        },
+        onPlayBlocked: () => {
+          setRadioBlockedNeedsGesture(true);
+        }
+      });
+    },
+    [radioActive, soundEnabled]
+  );
+
+  // Trigger Radio automatically on initial load & crossfade cleanly when radioHitIndex changes on the shelf
+  useEffect(() => {
+    if (diveState !== "shelf" || !radioActive || !soundEnabled) return;
+    playPopularRadioHit(radioHitIndex, 280);
+  }, [diveState, radioActive, radioHitIndex, soundEnabled, playPopularRadioHit]);
+
+  // One-time browser autoplay unlock on first user click/scroll/keypress so Radio fades in seamlessly!
+  useEffect(() => {
+    if (!radioBlockedNeedsGesture || !radioActive || !soundEnabled || diveState !== "shelf") return;
+    const unlock = () => {
+      setRadioBlockedNeedsGesture(false);
+      playPopularRadioHit(radioHitIndex, 0);
+    };
+    window.addEventListener("pointerdown", unlock, { once: true });
+    window.addEventListener("keydown", unlock, { once: true });
+    window.addEventListener("wheel", unlock, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", unlock);
+      window.removeEventListener("keydown", unlock);
+      window.removeEventListener("wheel", unlock);
+    };
+  }, [radioBlockedNeedsGesture, radioActive, soundEnabled, diveState, radioHitIndex, playPopularRadioHit]);
 
   const selectReleaseIndex = useCallback(
     (nextIndex: number) => {
@@ -227,35 +268,147 @@ export default function DiscArchiveShowcase() {
       if (clamped !== activeIndex) {
         setActiveIndex(clamped);
         playMechanicalStepSound(soundEnabled);
-        if (diveState === "detail") {
-          stopAllTrackPreviews();
-          setPlayingTrackNum(null);
+        // When browsing discs on the shelf with Radio ON, smoothly fade-out -> fade-in to a matching popular hit!
+        if (diveState === "shelf" && radioActive && soundEnabled) {
+          setRadioHitIndex(clamped % POPULAR_RADIO_HITS.length);
         }
       }
     },
-    [activeIndex, diveState, releases.length, soundEnabled]
+    [activeIndex, diveState, radioActive, releases.length, soundEnabled]
   );
 
-  // Radio mode auto-play official OP audio when switching releases
-  useEffect(() => {
-    if (!radioActive || !activeRelease || !soundEnabled) return;
-    const firstTrack = activeRelease.tracks[0];
-    setPlayingTrackNum(firstTrack.number);
-    startTrackSynthPreview(firstTrack, {
-      useRealOstUrl: activeRelease.songPreviewUrl,
-      onProgress: (p, levels) => {
-        setTrackProgress(p);
-        setLiveWaveLevels(levels);
-      },
-      onEnded: () => {
-        setPlayingTrackNum(null);
-      }
-    });
-  }, [radioActive, activeRelease, soundEnabled]);
+  /**
+   * INSIDE RELEASE DETAIL VIEW: Spinning Black Vinyl Disc Scale-In -> Elastic Bounce Swap -> Scale-Down Exit
+   * (NO 20% video layer on this transition disc — pure crisp glossy vinyl & anime center label!)
+   */
+  const transitionDetailToIndex = useCallback(
+    (nextIdx: number, direction: "next" | "prev") => {
+      if (isDetailSwitching || releases.length === 0) return;
+      const clamped = Math.max(0, Math.min(releases.length - 1, nextIdx));
+      if (clamped === safeIndex) return;
+
+      const currentRel = releases[safeIndex];
+      const nextRel = releases[clamped];
+      if (!currentRel || !nextRel) return;
+
+      setIsDetailSwitching(true);
+      setBounceDiscRelease(currentRel);
+      stopAllTrackPreviews(200);
+      setPlayingTrackNum(null);
+      setDetailMediaMode("key-visual");
+      playBounceSwapSound(soundEnabled);
+
+      requestAnimationFrame(() => {
+        const discEl = bounceDiscRef.current;
+        const spinEl = bounceSpinRef.current;
+        const detailEl = detailContainerRef.current;
+        if (!discEl || !spinEl) {
+          setActiveIndex(clamped);
+          setIsDetailSwitching(false);
+          setBounceDiscRelease(null);
+          return;
+        }
+
+        const tl = gsap.timeline({
+          onComplete: () => {
+            setIsDetailSwitching(false);
+            setBounceDiscRelease(null);
+            // Smoothly fade in the newly selected anime's Official Theme Song!
+            if (soundEnabled) {
+              const tr = nextRel.tracks[0];
+              setPlayingTrackNum(tr.number);
+              startTrackSynthPreview(tr, {
+                useRealOstUrl: nextRel.songPreviewUrl,
+                fadeInMs: 520,
+                fadeOutPrevMs: 0,
+                onProgress: ({ progress, currentTimeSec, durationSec, levels }) => {
+                  setTrackProgress(progress);
+                  setTrackCurrentSec(currentTimeSec);
+                  setTrackDurationSec(durationSec);
+                  setLiveWaveLevels(levels);
+                },
+                onEnded: () => setPlayingTrackNum(null)
+              });
+            }
+          }
+        });
+
+        // 1. Dim & slightly push back current Detail View while Vinyl Disc scales cleanly into center screen
+        if (detailEl) {
+          tl.to(
+            detailEl,
+            {
+              opacity: 0.18,
+              scale: 0.95,
+              x: direction === "next" ? -28 : 28,
+              duration: 0.28,
+              ease: "power2.in"
+            },
+            0
+          );
+        }
+
+        tl.fromTo(
+          discEl,
+          { scale: 0.12, opacity: 0, y: 40 },
+          { scale: 1.05, opacity: 1, y: 0, duration: 0.34, ease: "back.out(1.45)" },
+          0
+        );
+        tl.fromTo(
+          spinEl,
+          { rotation: 0 },
+          { rotation: direction === "next" ? 420 : -420, duration: 0.92, ease: "power2.inOut" },
+          0
+        );
+
+        // 2. Center Peak Elastic Bounce & Swap to Next/Prev Anime Disc Label + Content!
+        tl.to(
+          discEl,
+          {
+            scale: 1.24,
+            duration: 0.13,
+            ease: "power2.out",
+            onComplete: () => {
+              setBounceDiscRelease(nextRel);
+              setActiveIndex(clamped);
+            }
+          },
+          0.34
+        );
+        tl.to(discEl, { scale: 0.92, duration: 0.12, ease: "power2.inOut" }, 0.47);
+        tl.to(discEl, { scale: 1.04, duration: 0.1, ease: "power2.out" }, 0.59);
+
+        // 3. Scale Vinyl Disc smoothly down to 0 while new anime's Detail View glides cleanly into focus!
+        tl.to(
+          discEl,
+          { scale: 0.08, opacity: 0, duration: 0.28, ease: "power3.in" },
+          0.69
+        );
+
+        if (detailEl) {
+          tl.fromTo(
+            detailEl,
+            { opacity: 0.18, scale: 0.96, x: direction === "next" ? 36 : -36 },
+            {
+              opacity: 1,
+              scale: 1,
+              x: 0,
+              duration: 0.42,
+              ease: "expo.out",
+              clearProps: "transform"
+            },
+            0.58
+          );
+        }
+      });
+    },
+    [isDetailSwitching, releases, safeIndex, soundEnabled]
+  );
 
   // Trigger Signature GSAP Spindle-Hole Camera Dive
   const handleTriggerDive = useCallback(() => {
     if (diveState !== "shelf") return;
+    stopAllTrackPreviews(260);
     playDiveTransitionSound(true, soundEnabled);
     setDetailMediaMode("key-visual");
     setDiveState("diving-in");
@@ -263,14 +416,20 @@ export default function DiscArchiveShowcase() {
 
   const handleDiveInComplete = useCallback(() => {
     setDiveState("detail");
-    // Auto-start Official Theme Song preview when entering Release Detail View if sound enabled
+    // Auto-start this specific anime's Official Theme Song with smooth fade-in!
     if (soundEnabled && activeRelease) {
       const tr = activeRelease.tracks[0];
       setPlayingTrackNum(tr.number);
+      setTrackProgress(0);
+      setTrackCurrentSec(0);
       startTrackSynthPreview(tr, {
         useRealOstUrl: activeRelease.songPreviewUrl,
-        onProgress: (p, levels) => {
-          setTrackProgress(p);
+        fadeInMs: 560,
+        fadeOutPrevMs: 180,
+        onProgress: ({ progress, currentTimeSec, durationSec, levels }) => {
+          setTrackProgress(progress);
+          setTrackCurrentSec(currentTimeSec);
+          setTrackDurationSec(durationSec);
           setLiveWaveLevels(levels);
         },
         onEnded: () => setPlayingTrackNum(null)
@@ -278,9 +437,9 @@ export default function DiscArchiveShowcase() {
     }
   }, [activeRelease, soundEnabled]);
 
-  // Choreographed GSAP entrance animation for the Release Detail View content
+  // Choreographed GSAP entrance when initially diving into Release Detail View
   useEffect(() => {
-    if (diveState === "detail" && detailContainerRef.current) {
+    if (diveState === "detail" && detailContainerRef.current && !isDetailSwitching) {
       const elements = detailContainerRef.current.querySelectorAll(".detail-stagger");
       gsap.fromTo(
         elements,
@@ -290,21 +449,19 @@ export default function DiscArchiveShowcase() {
           y: 0,
           scale: 1,
           duration: 0.55,
-          stagger: 0.06,
+          stagger: 0.055,
           ease: "expo.out",
           clearProps: "transform"
         }
       );
     }
-  }, [diveState, activeRelease?.id]);
+  }, [diveState, isDetailSwitching]);
 
   // Reverse GSAP Camera Dive back out through the spinning spindle hole
   const handleBackToShelf = useCallback(() => {
-    if (diveState !== "detail") return;
-    if (!radioActive) {
-      stopAllTrackPreviews();
-      setPlayingTrackNum(null);
-    }
+    if (diveState !== "detail" || isDetailSwitching) return;
+    stopAllTrackPreviews(240);
+    setPlayingTrackNum(null);
     playDiveTransitionSound(false, soundEnabled);
 
     if (detailContainerRef.current) {
@@ -320,13 +477,13 @@ export default function DiscArchiveShowcase() {
     } else {
       setDiveState("diving-out");
     }
-  }, [diveState, radioActive, soundEnabled]);
+  }, [diveState, isDetailSwitching, soundEnabled]);
 
   const handleDiveOutComplete = useCallback(() => {
     setDiveState("shelf");
   }, []);
 
-  // Mouse Wheel & Keyboard navigation
+  // Mouse Wheel & Keyboard navigation (including Left/Right arrow vinyl bounce inside Detail View!)
   useEffect(() => {
     const onWheel = (e: WheelEvent) => {
       if (diveState !== "shelf" || activeModal !== "none") return;
@@ -347,6 +504,8 @@ export default function DiscArchiveShowcase() {
       }
       if (diveState === "detail") {
         if (e.key === "Escape") handleBackToShelf();
+        if (e.key === "ArrowRight") transitionDetailToIndex(safeIndex + 1, "next");
+        if (e.key === "ArrowLeft") transitionDetailToIndex(safeIndex - 1, "prev");
         return;
       }
       if (diveState === "shelf") {
@@ -369,15 +528,22 @@ export default function DiscArchiveShowcase() {
       window.removeEventListener("wheel", onWheel);
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [activeModal, diveState, handleBackToShelf, handleTriggerDive, safeIndex, selectReleaseIndex]);
+  }, [
+    activeModal,
+    diveState,
+    handleBackToShelf,
+    handleTriggerDive,
+    safeIndex,
+    selectReleaseIndex,
+    transitionDetailToIndex
+  ]);
 
-  // Compute monotonic timeline position (0..100%) for every chronologically sorted release
+  // Monotonic timeline positions (0..100%) for chronologically sorted shelf
   const releaseTimelinePositions = useMemo(() => {
     const minY = RULER_YEARS[0];
     const maxY = RULER_YEARS[RULER_YEARS.length - 1];
     const span = maxY - minY;
 
-    // Group indices by year so multiple releases in 2024/2025 spread cleanly left-to-right within their year
     const countsByYear: Record<number, number> = {};
     releases.forEach((r) => {
       countsByYear[r.releaseYear] = (countsByYear[r.releaseYear] || 0) + 1;
@@ -388,7 +554,7 @@ export default function DiscArchiveShowcase() {
       const totalInYr = countsByYear[r.releaseYear] || 1;
       const posInYr = seenByYear[r.releaseYear] || 0;
       seenByYear[r.releaseYear] = posInYr + 1;
-      const subOffset = totalInYr > 1 ? ((posInYr / (totalInYr - 1)) - 0.5) * 0.65 : 0;
+      const subOffset = totalInYr > 1 ? (posInYr / (totalInYr - 1) - 0.5) * 0.65 : 0;
       const exactYear = Math.max(minY, Math.min(maxY, r.releaseYear + subOffset));
       return Math.max(1.5, Math.min(98.5, ((exactYear - minY) / span) * 100));
     });
@@ -396,7 +562,6 @@ export default function DiscArchiveShowcase() {
 
   const activeNeedlePercent = releaseTimelinePositions[safeIndex] ?? 50;
 
-  // Scrubbing the Bottom Interactive Year Waveform Timeline monotonically across all releases
   const scrubTimelineAtClientX = useCallback(
     (clientX: number) => {
       const bar = timelineRef.current;
@@ -418,7 +583,28 @@ export default function DiscArchiveShowcase() {
     [releaseTimelinePositions, releases.length, selectReleaseIndex]
   );
 
-  // Dense vertical waveform ticks for the bottom timeline ruler
+  // GLOBAL FULL-WINDOW HOLD & DRAG FOR BOTTOM YEAR TIMELINE (drag anywhere up to the top of the screen!)
+  useEffect(() => {
+    const onWinPointerMove = (e: PointerEvent) => {
+      if (!isScrubbingTimelineRef.current) return;
+      scrubTimelineAtClientX(e.clientX);
+    };
+    const onWinPointerUp = () => {
+      if (!isScrubbingTimelineRef.current) return;
+      isScrubbingTimelineRef.current = false;
+      setIsHoldingTimeline(false);
+    };
+
+    window.addEventListener("pointermove", onWinPointerMove);
+    window.addEventListener("pointerup", onWinPointerUp);
+    window.addEventListener("pointercancel", onWinPointerUp);
+    return () => {
+      window.removeEventListener("pointermove", onWinPointerMove);
+      window.removeEventListener("pointerup", onWinPointerUp);
+      window.removeEventListener("pointercancel", onWinPointerUp);
+    };
+  }, [scrubTimelineAtClientX]);
+
   const timelineWaveformTicks = useMemo(() => {
     const count = 128;
     const minY = RULER_YEARS[0];
@@ -438,18 +624,40 @@ export default function DiscArchiveShowcase() {
     });
   }, [releases]);
 
-  const handleToggleTrackPlay = (track: ArchiveTrack) => {
-    if (playingTrackNum === track.number) {
-      stopAllTrackPreviews();
+  // Play, Pause, OR Seek directly to any minute:second on a track's interactive waveform timeline!
+  const handleTrackPlayOrSeek = (track: ArchiveTrack, seekRatio?: number) => {
+    const isSameTrack = playingTrackNum === track.number;
+
+    // If user clicked directly on the waveform timeline bar of the currently playing track -> seek immediately!
+    if (isSameTrack && seekRatio !== undefined) {
+      const { currentTimeSec, durationSec } = seekTrackPreview(seekRatio);
+      setTrackProgress(seekRatio);
+      setTrackCurrentSec(currentTimeSec);
+      setTrackDurationSec(durationSec);
+      return;
+    }
+
+    // If user clicked the Play/Stop button on the currently playing track -> stop
+    if (isSameTrack && seekRatio === undefined) {
+      stopAllTrackPreviews(160);
       setPlayingTrackNum(null);
       return;
     }
+
+    // Otherwise start playing this track (optionally starting right at seekRatio!)
     setPlayingTrackNum(track.number);
-    setTrackProgress(0);
+    setTrackProgress(seekRatio ?? 0);
+    setTrackCurrentSec((seekRatio ?? 0) * 30);
+    setTrackDurationSec(30);
     startTrackSynthPreview(track, {
       useRealOstUrl: track.number === "01" ? activeRelease.songPreviewUrl : undefined,
-      onProgress: (p, levels) => {
-        setTrackProgress(p);
+      fadeInMs: 280,
+      fadeOutPrevMs: 120,
+      startRatio: seekRatio ?? 0,
+      onProgress: ({ progress, currentTimeSec, durationSec, levels }) => {
+        setTrackProgress(progress);
+        setTrackCurrentSec(currentTimeSec);
+        setTrackDurationSec(durationSec);
         setLiveWaveLevels(levels);
       },
       onEnded: () => {
@@ -501,11 +709,18 @@ export default function DiscArchiveShowcase() {
     ];
   }, [activeRelease]);
 
+  // Kinetic Category Switcher (triggers 3D shelf wave stagger unfold animation!)
   const handleCategorySwitch = (nextCat: CategoryFilter, targetIndex?: number) => {
+    if (nextCat === category && targetIndex === undefined) return;
     setCategory(nextCat);
     const defaultStart = nextCat === "all" ? 6 : 0;
-    setActiveIndex(targetIndex !== undefined ? targetIndex : defaultStart);
+    const finalIdx = targetIndex !== undefined ? targetIndex : defaultStart;
+    setActiveIndex(finalIdx);
+    setCategoryWaveKey((k) => k + 1);
     playMechanicalStepSound(soundEnabled);
+    if (radioActive && soundEnabled && diveState === "shelf") {
+      setRadioHitIndex((prev) => (prev + 1) % POPULAR_RADIO_HITS.length);
+    }
     if (diveState === "detail") {
       setDiveState("shelf");
     }
@@ -518,9 +733,9 @@ export default function DiscArchiveShowcase() {
         background: "radial-gradient(circle at 50% 35%, #EAEAE8 0%, #E3E3E0 56%, #D2D2CF 100%)"
       }}
     >
-      {/* Subtle Studio Paper Grain Overlay */}
+      {/* Subtle Studio Paper Grain */}
       <div
-        className="pointer-events-none fixed inset-0 z-10 opacity-[0.03]"
+        className="pointer-events-none fixed inset-0 z-10 opacity-[0.028]"
         style={{
           backgroundImage:
             "radial-gradient(#181818 0.75px, transparent 0.75px), radial-gradient(#181818 0.75px, #EAEAE8 0.75px)",
@@ -531,27 +746,34 @@ export default function DiscArchiveShowcase() {
 
       {/* Smooth Cinema Aperture Transition Veil during Spindle-Hole Dive */}
       <div
-        className="pointer-events-none fixed inset-0 z-35 bg-[#EAEAE8]"
+        className="pointer-events-none fixed inset-0 bg-[#EAEAE8]"
         style={{ opacity: diveVeilOpacity, zIndex: 35 }}
       />
 
+      {/* Full-Screen Subtle Vertical Scrubber Guide when Holding & Dragging Timeline Anywhere on Screen */}
+      {isHoldingTimeline && diveState === "shelf" && (
+        <div
+          className="pointer-events-none fixed top-16 bottom-16 z-25 w-[1.5px] bg-[#E05A3A]/35 transition-all duration-75"
+          style={{ left: `${activeNeedlePercent}%`, zIndex: 25 }}
+        />
+      )}
+
       {/* ====================================================================
-          1. TOP NAVIGATION BAR (MINIMALIST SWISS EDITORIAL HUD)
+          1. CLEAN SINGLE-LINE TOP NAVIGATION BAR (NO COVER TOGGLE CLUTTER!)
           ==================================================================== */}
-      <header className="fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-5 md:px-9 h-16 border-b border-[#181818]/10 bg-[#EAEAE8]/85 backdrop-blur-md">
-        <div className="flex items-center gap-4">
+      <header className="fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-5 md:px-9 h-16 border-b border-[#181818]/10 bg-[#EAEAE8]/88 backdrop-blur-md">
+        {/* Top-Left: DISC ARCHIVE + Kinetic Category Filter Tabs */}
+        <div className="flex items-center gap-4 shrink-0">
           <button
             type="button"
             onClick={() => {
               setActiveModal("none");
               if (diveState === "detail") handleBackToShelf();
             }}
-            className="font-mono text-xs md:text-[13px] font-semibold tracking-[0.18em] uppercase text-[#181818] hover:text-[#E05A3A] transition-colors flex items-center gap-2"
+            className="font-mono text-xs md:text-[13px] font-semibold tracking-[0.18em] uppercase text-[#181818] hover:text-[#E05A3A] transition-colors flex items-center gap-2 whitespace-nowrap"
           >
             <span>DISC ARCHIVE</span>
-            <span className="text-[10px] text-[#6E6E6A] font-normal hidden sm:inline">
-              / ANIME RATING
-            </span>
+            <span className="text-[10px] text-[#6E6E6A] font-normal hidden xl:inline">/ ANIME RATING</span>
           </button>
 
           <div className="hidden lg:flex items-center gap-1 pl-3 border-l border-[#181818]/15 font-mono text-[11px]">
@@ -567,10 +789,10 @@ export default function DiscArchiveShowcase() {
                 key={tab.id}
                 type="button"
                 onClick={() => handleCategorySwitch(tab.id)}
-                className={`px-2.5 py-1 uppercase tracking-wider transition-all ${
+                className={`px-2.5 py-1 uppercase tracking-wider whitespace-nowrap transition-all duration-300 ${
                   category === tab.id
-                    ? "bg-[#181818] text-[#EAEAE8] font-semibold"
-                    : "text-[#6E6E6A] hover:text-[#181818]"
+                    ? "bg-[#181818] text-[#EAEAE8] font-semibold scale-[1.03] shadow-sm"
+                    : "text-[#6E6E6A] hover:text-[#181818] hover:bg-[#181818]/5"
                 }`}
               >
                 {tab.label}
@@ -579,31 +801,20 @@ export default function DiscArchiveShowcase() {
           </div>
         </div>
 
-        {/* Top-Center: Coral dot (●) + ON THE PLATTER — CHRONOLOGICAL YEAR & ACTIVE RELEASE */}
-        <div className="hidden md:flex items-center gap-2.5 font-mono text-[11px] lg:text-xs tracking-[0.14em] uppercase">
-          <span className="inline-block w-2 h-2 rounded-full bg-[#E05A3A] animate-pulse" aria-hidden="true" />
-          <span className="text-[#6E6E6A]">ON THE PLATTER</span>
-          <span className="text-[#6E6E6A]">—</span>
-          <span className="font-semibold text-[#181818]">
+        {/* Top-Center: Coral Dot (●) + ON THE PLATTER — ACTIVE RELEASE & SCORE */}
+        <div className="hidden md:flex items-center gap-2 font-mono text-[11px] tracking-[0.14em] uppercase whitespace-nowrap min-w-0">
+          <span className="inline-block w-2 h-2 rounded-full bg-[#E05A3A] animate-pulse shrink-0" />
+          <span className="text-[#6E6E6A] hidden xl:inline">ON THE PLATTER —</span>
+          <span className="font-semibold text-[#181818] truncate max-w-[210px] lg:max-w-[280px]">
             {activeRelease?.catalogCode} {activeRelease?.shortTitle} ({activeRelease?.releaseYear})
           </span>
-          <span className="px-1.5 py-0.5 text-[10px] bg-[#181818]/10 text-[#181818] font-semibold">
+          <span className="px-1.5 py-0.5 text-[10px] bg-[#181818]/10 text-[#181818] font-bold shrink-0">
             {activeRelease?.rating >= 10 ? "👑 10.0" : `★ ${activeRelease?.rating.toFixed(1)}`}
           </span>
         </div>
 
-        {/* Top-Right: Art Toggle + Releases / Artists / Radio */}
-        <nav className="flex items-center gap-5 md:gap-7 text-xs md:text-[13px] font-medium tracking-tight">
-          <button
-            type="button"
-            onClick={() => setUseOfficialPosters((v) => !v)}
-            title="Switch between Official Anime Wallpaper Covers and Swiss Minimal Vector Covers"
-            className="hidden sm:inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider px-2.5 py-1 border border-[#181818]/20 text-[#6E6E6A] hover:text-[#181818] hover:border-[#181818] transition-colors"
-          >
-            <span>COVER:</span>
-            <strong className="text-[#181818]">{useOfficialPosters ? "ANIME ART" : "SWISS MINIMAL"}</strong>
-          </button>
-
+        {/* Top-Right: Clean Releases / Artists / Radio Navigation Links */}
+        <nav className="flex items-center gap-5 md:gap-7 text-xs md:text-[13px] font-medium tracking-tight shrink-0">
           <button
             type="button"
             onClick={() => setActiveModal(activeModal === "releases" ? "none" : "releases")}
@@ -630,8 +841,10 @@ export default function DiscArchiveShowcase() {
               const next = !radioActive;
               setRadioActive(next);
               if (!next) {
-                stopAllTrackPreviews();
+                stopAllTrackPreviews(240);
                 setPlayingTrackNum(null);
+              } else if (diveState === "shelf") {
+                setSoundEnabled(true);
               }
             }}
             className={`inline-flex items-center gap-1.5 py-1 transition-colors ${
@@ -649,7 +862,7 @@ export default function DiscArchiveShowcase() {
       </header>
 
       {/* ====================================================================
-          2. CORE 3D REACT THREE FIBER SCENE (ZERO-CLIPPING PLATTER & SHELF)
+          2. CORE 3D REACT THREE FIBER SCENE (CLEAN STUDIO PLATTER + SHELF)
           ==================================================================== */}
       <main
         className={`relative w-full h-full transition-opacity duration-300 ${
@@ -659,14 +872,16 @@ export default function DiscArchiveShowcase() {
         <TurntableScene
           releases={releases}
           activeIndex={safeIndex}
+          categoryWaveKey={categoryWaveKey}
           onSelectIndex={selectReleaseIndex}
           onTriggerDive={handleTriggerDive}
           diveState={diveState}
           onDiveInComplete={handleDiveInComplete}
           onDiveOutComplete={handleDiveOutComplete}
           onDiveVeilChange={setDiveVeilOpacity}
-          useOfficialPosters={useOfficialPosters}
           loadedPosterImages={loadedPosterImages}
+          loadedBannerImages={loadedBannerImages}
+          activeOpVideoUrl={opVideoMap[activeRelease?.id] ?? null}
         />
 
         {/* Top-Left Chronological Shelf Counter & Score Readout */}
@@ -695,51 +910,80 @@ export default function DiscArchiveShowcase() {
           )}
         </div>
 
-        {/* Radio Mode Live Status Pill */}
-        {radioActive && (
-          <div className="fixed top-20 right-5 md:right-9 z-20 flex items-center gap-3 px-3.5 py-2 bg-[#181818] text-[#EAEAE8] font-mono text-[11px] uppercase tracking-wider shadow-lg">
-            <span className="w-2 h-2 rounded-full bg-[#E05A3A] animate-pulse" />
-            <span>
-              OFFICIAL OST: ♪ {activeRelease?.songTitle} — {activeRelease?.songArtist}
-            </span>
+        {/* Top-Right Live Popular YouTube Mega-Hits Radio FM Bar (ON by Default!) */}
+        {radioActive && diveState === "shelf" && currentRadioHit && (
+          <div className="fixed top-20 right-5 md:right-9 z-20 flex items-center gap-2.5 px-3.5 py-2 bg-[#181818]/92 backdrop-blur-md text-[#EAEAE8] font-mono text-[10px] md:text-[11px] uppercase tracking-wider shadow-lg">
+            <span className="w-2 h-2 rounded-full bg-[#E05A3A] animate-pulse shrink-0" />
+            <div className="flex flex-col leading-tight max-w-[190px] sm:max-w-[260px]">
+              <span className="truncate font-semibold text-white">
+                RADIO FM: ♪ {currentRadioHit.title}
+              </span>
+              <span className="text-[9px] text-[#B8B9B4] truncate">
+                {currentRadioHit.artist} • {currentRadioHit.views}
+                {radioBlockedNeedsGesture ? " • CLICK ANYWHERE TO UNMUTE" : ""}
+              </span>
+            </div>
             <button
               type="button"
-              onClick={() => setSoundEnabled((s) => !s)}
-              className="px-2 py-0.5 bg-[#EAEAE8]/15 hover:bg-[#E05A3A] text-[10px] transition-colors"
+              onClick={() => {
+                setSoundEnabled(true);
+                setRadioBlockedNeedsGesture(false);
+                setRadioHitIndex((prev) => (prev + 1) % POPULAR_RADIO_HITS.length);
+              }}
+              title="Next Popular YouTube Hit"
+              className="px-2 py-1 bg-[#EAEAE8]/15 hover:bg-[#E05A3A] text-[10px] transition-colors shrink-0"
             >
-              {soundEnabled ? "MUTE" : "UNMUTE"}
+              NEXT ⏭
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const nextSound = !soundEnabled;
+                setSoundEnabled(nextSound);
+                if (!nextSound) {
+                  stopAllTrackPreviews(200);
+                } else {
+                  setRadioBlockedNeedsGesture(false);
+                  playPopularRadioHit(radioHitIndex, 0);
+                }
+              }}
+              className="px-2 py-1 bg-[#EAEAE8]/15 hover:bg-[#E05A3A] text-[10px] transition-colors shrink-0"
+            >
+              {soundEnabled ? "MUTE" : "PLAY"}
             </button>
           </div>
         )}
 
         {/* ====================================================================
-            3. CENTER-BOTTOM RELEASE CAPTION (HIGH-CONTRAST READABLE AT REST!)
+            3. CLEAN FLOATING EDITORIAL RELEASE CAPTION + GSAP TEXT REVEAL
+            (NO boxy card, NO chunky blocks behind — pure Swiss clarity!)
             ==================================================================== */}
         <section
           aria-label="Active Release Caption and Shelf Controls"
-          className={`pointer-events-none fixed bottom-[86px] md:bottom-[92px] left-0 right-0 z-20 flex items-center justify-center px-4 transition-all duration-300 ${
+          className={`pointer-events-none fixed bottom-[88px] md:bottom-[94px] left-0 right-0 z-20 flex items-center justify-center px-4 transition-all duration-300 ${
             diveState === "shelf" ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
           }`}
         >
-          <div className="pointer-events-auto flex items-center justify-between w-full max-w-2xl gap-3 md:gap-6">
-            {/* Left 40px Circular Button (←) */}
+          <div className="pointer-events-auto flex items-center justify-between w-full max-w-2xl gap-4 md:gap-8">
+            {/* Left 40px Circular Outlined Button (←) */}
             <button
               type="button"
               onClick={() => selectReleaseIndex(safeIndex - 1)}
               disabled={safeIndex <= 0}
               aria-label="Previous Release"
-              className="w-10 h-10 rounded-full border border-[#181818]/45 bg-[#EAEAE8]/90 backdrop-blur-sm flex items-center justify-center text-[#181818] hover:border-[#181818] hover:bg-[#181818] hover:text-[#EAEAE8] disabled:opacity-25 disabled:pointer-events-none transition-all shrink-0 shadow-sm"
+              className="w-10 h-10 rounded-full border border-[#181818]/40 flex items-center justify-center text-[#181818] hover:border-[#181818] hover:bg-[#181818] hover:text-[#EAEAE8] disabled:opacity-25 disabled:pointer-events-none transition-all shrink-0"
             >
               <span className="text-base leading-none">←</span>
             </button>
 
-            {/* High-Contrast Frosted Editorial Caption Plaque (100% Legible Without Hover!) */}
+            {/* Pure Floating Swiss Editorial Typography (Zero Box, Animated via GSAP!) */}
             <div
+              ref={captionRef}
               onClick={handleTriggerDive}
-              className="flex flex-col items-center text-center cursor-pointer group px-5 py-2.5 rounded-sm bg-[#EAEAE8]/90 backdrop-blur-md border border-[#181818]/12 shadow-[0_6px_24px_rgba(24,24,24,0.08)] hover:border-[#E05A3A]/55 transition-all max-w-xl"
-              title="Click to dive through the disc spindle hole into full anime dossier, official OST & trailer"
+              className="flex flex-col items-center text-center cursor-pointer group overflow-hidden py-1"
+              title="Click active cover or disc to dive into full dossier, trailer & official OST"
             >
-              <div className="flex items-center gap-2 font-mono text-[11px] md:text-xs tracking-[0.15em] uppercase text-[#181818] font-medium">
+              <div className="caption-anim-line flex items-center gap-2 font-mono text-[11px] md:text-xs tracking-[0.16em] uppercase text-[#2A2A27] font-semibold">
                 <span className="inline-block w-2 h-2 rounded-full bg-[#E05A3A]" />
                 <span>
                   {activeRelease?.catalogCode} — {activeRelease?.genres.slice(0, 2).join(" / ").toUpperCase()}
@@ -749,28 +993,32 @@ export default function DiscArchiveShowcase() {
                 </span>
               </div>
 
-              {/* Crisp Jet-Charcoal Title (#111111) at rest -> Coral (#E05A3A) on hover */}
-              <h1 className="mt-0.5 text-xl sm:text-2xl md:text-[30px] font-bold tracking-tight text-[#111111] group-hover:text-[#E05A3A] transition-colors line-clamp-1 leading-tight">
+              <h1
+                className="caption-anim-line mt-0.5 text-2xl sm:text-3xl md:text-[34px] font-bold tracking-tight text-[#111111] group-hover:text-[#E05A3A] transition-colors line-clamp-1 leading-tight"
+                style={{ textShadow: "0 1px 14px rgba(234, 234, 232, 0.9)" }}
+              >
                 {activeRelease?.titleEnglish}
               </h1>
 
-              {/* Crisp Dark-Slate Subtitle (#464642) */}
-              <p className="mt-0.5 text-xs sm:text-[13px] text-[#464642] font-medium line-clamp-1">
+              <p
+                className="caption-anim-line mt-0.5 text-xs sm:text-[13px] text-[#4A4A46] font-medium line-clamp-1"
+                style={{ textShadow: "0 1px 10px rgba(234, 234, 232, 0.9)" }}
+              >
                 {activeRelease?.titleRomaji} • ♪ {activeRelease?.songArtist}, {activeRelease?.releaseYear}
               </p>
 
-              <span className="mt-1 font-mono text-[10px] uppercase tracking-[0.18em] text-[#575752] group-hover:text-[#E05A3A] font-semibold transition-colors">
-                [ CLICK COVER OR DISC FOR TRAILER &amp; OFFICIAL OST ↗ ]
+              <span className="caption-anim-line mt-1 font-mono text-[10px] uppercase tracking-[0.18em] text-[#5B5B56] group-hover:text-[#E05A3A] font-semibold transition-colors">
+                [ CLICK COVER OR DISC TO DIVE IN ↗ ]
               </span>
             </div>
 
-            {/* Right 40px Circular Button (→) */}
+            {/* Right 40px Circular Outlined Button (→) */}
             <button
               type="button"
               onClick={() => selectReleaseIndex(safeIndex + 1)}
               disabled={safeIndex >= releases.length - 1}
               aria-label="Next Release"
-              className="w-10 h-10 rounded-full border border-[#181818]/45 bg-[#EAEAE8]/90 backdrop-blur-sm flex items-center justify-center text-[#181818] hover:border-[#181818] hover:bg-[#181818] hover:text-[#EAEAE8] disabled:opacity-25 disabled:pointer-events-none transition-all shrink-0 shadow-sm"
+              className="w-10 h-10 rounded-full border border-[#181818]/40 flex items-center justify-center text-[#181818] hover:border-[#181818] hover:bg-[#181818] hover:text-[#EAEAE8] disabled:opacity-25 disabled:pointer-events-none transition-all shrink-0"
             >
               <span className="text-base leading-none">→</span>
             </button>
@@ -778,7 +1026,8 @@ export default function DiscArchiveShowcase() {
         </section>
 
         {/* ====================================================================
-            4. BOTTOM INTERACTIVE CHRONOLOGICAL YEAR WAVEFORM TIMELINE SCRUBBER
+            4. BOTTOM INTERACTIVE CHRONOLOGICAL YEAR WAVEFORM TIMELINE
+            (Hold & drag anywhere all the way to the top of the website!)
             ==================================================================== */}
         <footer
           className={`fixed bottom-0 left-0 right-0 z-20 h-[78px] px-4 md:px-10 pb-2.5 pt-1.5 bg-gradient-to-t from-[#D2D2CF]/95 via-[#EAEAE8]/85 to-transparent backdrop-blur-[2px] flex flex-col justify-end transition-opacity duration-300 ${
@@ -788,28 +1037,26 @@ export default function DiscArchiveShowcase() {
           <div
             ref={timelineRef}
             onPointerDown={(e) => {
+              e.stopPropagation();
               isScrubbingTimelineRef.current = true;
+              setIsHoldingTimeline(true);
               scrubTimelineAtClientX(e.clientX);
-            }}
-            onPointerMove={(e) => {
-              if (!isScrubbingTimelineRef.current) return;
-              scrubTimelineAtClientX(e.clientX);
-            }}
-            onPointerUp={() => {
-              isScrubbingTimelineRef.current = false;
-            }}
-            onPointerLeave={() => {
-              isScrubbingTimelineRef.current = false;
             }}
             className="relative w-full h-14 cursor-ew-resize flex flex-col justify-end select-none"
           >
             {/* Coral Needle Indicator Aligned Monotonically to Active Release Year */}
             <div
-              className="pointer-events-none absolute top-0 bottom-4 z-20 transition-all duration-300 ease-out"
+              className={`pointer-events-none absolute top-0 bottom-4 z-20 ${
+                isHoldingTimeline ? "transition-none" : "transition-all duration-300 ease-out"
+              }`}
               style={{ left: `${activeNeedlePercent}%` }}
             >
               <div className="relative -translate-x-1/2 flex flex-col items-center">
-                <div className="px-1.5 py-0.5 bg-[#E05A3A] text-[#FAF9F6] font-mono text-[10px] font-bold tracking-wider shadow-sm">
+                <div
+                  className={`px-1.5 py-0.5 bg-[#E05A3A] text-[#FAF9F6] font-mono text-[10px] font-bold tracking-wider shadow-sm transition-transform ${
+                    isHoldingTimeline ? "scale-110" : "scale-100"
+                  }`}
+                >
                   {activeRelease?.releaseYear}
                 </div>
                 <div className="w-[2px] h-8 bg-[#E05A3A]" />
@@ -845,6 +1092,7 @@ export default function DiscArchiveShowcase() {
                   <button
                     key={yr}
                     type="button"
+                    onPointerDown={(e) => e.stopPropagation()}
                     onClick={(e) => {
                       e.stopPropagation();
                       const idx = releases.findIndex((r) => r.releaseYear === yr);
@@ -868,15 +1116,56 @@ export default function DiscArchiveShowcase() {
       </main>
 
       {/* ====================================================================
-          5. RELEASE DETAIL VIEW (CHOREOGRAPHED GSAP ENTRANCE AFTER SPINDLE DIVE)
+          5. RELEASE DETAIL VIEW (NO SWISS SLEEVE TAB + SEEKABLE OST + VINYL BOUNCE!)
           ==================================================================== */}
       {diveState === "detail" && activeRelease && (
         <section
           aria-label="Anime Release Detail and Soundtrack Dossier"
           className="fixed inset-0 z-40 pt-16 overflow-y-auto bg-[#EAEAE8]/97 backdrop-blur-md"
         >
+          {/* NEXT / PREV SPINNING VINYL DISC BOUNCE TRANSITION OVERLAY (PURE GLOSSY BLACK VINYL, NO 20% VIDEO!) */}
+          {bounceDiscRelease && (
+            <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center">
+              <div
+                ref={bounceDiscRef}
+                className="relative w-64 h-64 sm:w-80 sm:h-80 rounded-full shadow-[0_28px_70px_rgba(0,0,0,0.45)] flex items-center justify-center"
+              >
+                <div
+                  ref={bounceSpinRef}
+                  className="w-full h-full rounded-full relative flex items-center justify-center border-2 border-[#2A2A28]"
+                  style={{
+                    background:
+                      "conic-gradient(from 35deg, #111110 0deg, #272725 42deg, #111110 85deg, #111110 180deg, #272725 222deg, #111110 265deg, #111110 360deg)"
+                  }}
+                >
+                  {/* Concentric Vinyl Grooves */}
+                  <div className="absolute inset-4 rounded-full border border-white/10" />
+                  <div className="absolute inset-8 rounded-full border border-white/8" />
+                  <div className="absolute inset-12 rounded-full border border-white/10" />
+                  <div className="absolute inset-16 rounded-full border border-white/8" />
+
+                  {/* Center Anime Label Medallion */}
+                  <div className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-full overflow-hidden border-[3px] border-[#E05A3A] shadow-inner flex items-center justify-center bg-[#181818]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={bounceDiscRelease.coverUrl}
+                      alt={bounceDiscRelease.shortTitle}
+                      className="w-full h-full object-cover opacity-85"
+                    />
+                    <div className="absolute inset-0 bg-[#141413]/35 flex flex-col items-center justify-between py-2.5 text-center font-mono text-[9px] sm:text-[10px] font-bold text-white">
+                      <span>{bounceDiscRelease.catalogCode}</span>
+                      <span className="truncate max-w-[90%]">{bounceDiscRelease.shortTitle}</span>
+                    </div>
+                    {/* Metallic Center Spindle Hole */}
+                    <div className="absolute w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#EAEAE8] border-2 border-[#B8B9B4] shadow-inner" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div ref={detailContainerRef} className="max-w-6xl mx-auto px-5 md:px-10 py-8 md:py-10">
-            {/* Top Action Bar with "← Back to Shelf" Reverse Dive Button */}
+            {/* Top Action Bar with "← Back to Shelf" & Vinyl-Bounce PREV/NEXT Buttons */}
             <div className="detail-stagger flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-[#181818]/15">
               <button
                 type="button"
@@ -906,17 +1195,17 @@ export default function DiscArchiveShowcase() {
               <div className="flex items-center gap-2 font-mono text-xs">
                 <button
                   type="button"
-                  onClick={() => selectReleaseIndex(safeIndex - 1)}
-                  disabled={safeIndex <= 0}
-                  className="px-3 py-1.5 border border-[#181818]/25 hover:border-[#181818] disabled:opacity-30"
+                  onClick={() => transitionDetailToIndex(safeIndex - 1, "prev")}
+                  disabled={safeIndex <= 0 || isDetailSwitching}
+                  className="px-3.5 py-1.5 border border-[#181818]/30 hover:bg-[#181818] hover:text-[#EAEAE8] disabled:opacity-30 transition-colors"
                 >
                   ← PREV
                 </button>
                 <button
                   type="button"
-                  onClick={() => selectReleaseIndex(safeIndex + 1)}
-                  disabled={safeIndex >= releases.length - 1}
-                  className="px-3 py-1.5 border border-[#181818]/25 hover:border-[#181818] disabled:opacity-30"
+                  onClick={() => transitionDetailToIndex(safeIndex + 1, "next")}
+                  disabled={safeIndex >= releases.length - 1 || isDetailSwitching}
+                  className="px-3.5 py-1.5 border border-[#181818]/30 hover:bg-[#181818] hover:text-[#EAEAE8] disabled:opacity-30 transition-colors"
                 >
                   NEXT →
                 </button>
@@ -925,13 +1214,13 @@ export default function DiscArchiveShowcase() {
 
             {/* Two-Column Swiss Editorial Dossier */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12 pt-8">
-              {/* LEFT COLUMN (5 Cols): Official Anime Art / Playable Trailer-OP Video / Swiss Sleeve + Score Audit */}
+              {/* LEFT COLUMN (5 Cols): Official Key Visual + Playable Trailer/OP Video (Swiss Sleeve REMOVED!) */}
               <div className="detail-stagger lg:col-span-5 flex flex-col gap-6">
                 <div className="flex items-center border-b border-[#181818]/15 font-mono text-[11px] uppercase tracking-wider">
                   <button
                     type="button"
                     onClick={() => setDetailMediaMode("key-visual")}
-                    className={`px-3.5 py-2 border-b-2 transition-colors ${
+                    className={`px-4 py-2.5 border-b-2 transition-colors ${
                       detailMediaMode === "key-visual"
                         ? "border-[#E05A3A] text-[#181818] font-bold"
                         : "border-transparent text-[#6E6E6A] hover:text-[#181818]"
@@ -942,11 +1231,11 @@ export default function DiscArchiveShowcase() {
                   <button
                     type="button"
                     onClick={() => {
-                      stopAllTrackPreviews();
+                      stopAllTrackPreviews(160);
                       setPlayingTrackNum(null);
                       setDetailMediaMode("trailer");
                     }}
-                    className={`px-3.5 py-2 border-b-2 transition-colors flex items-center gap-1.5 ${
+                    className={`px-4 py-2.5 border-b-2 transition-colors flex items-center gap-1.5 ${
                       detailMediaMode === "trailer"
                         ? "border-[#E05A3A] text-[#E05A3A] font-bold"
                         : "border-transparent text-[#181818] hover:text-[#E05A3A]"
@@ -954,17 +1243,6 @@ export default function DiscArchiveShowcase() {
                   >
                     <span>▶</span>
                     <span>Play Trailer / OP</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDetailMediaMode("cover")}
-                    className={`px-3.5 py-2 border-b-2 transition-colors ${
-                      detailMediaMode === "cover"
-                        ? "border-[#E05A3A] text-[#181818] font-bold"
-                        : "border-transparent text-[#6E6E6A] hover:text-[#181818]"
-                    }`}
-                  >
-                    Swiss Sleeve
                   </button>
                 </div>
 
@@ -985,7 +1263,7 @@ export default function DiscArchiveShowcase() {
                       <button
                         type="button"
                         onClick={() => {
-                          stopAllTrackPreviews();
+                          stopAllTrackPreviews(160);
                           setPlayingTrackNum(null);
                           setDetailMediaMode("trailer");
                         }}
@@ -1014,10 +1292,6 @@ export default function DiscArchiveShowcase() {
                         className="w-full h-full border-0"
                       />
                     </div>
-                  )}
-
-                  {detailMediaMode === "cover" && (
-                    <DetailProceduralCoverCanvas release={activeRelease} />
                   )}
                 </div>
 
@@ -1065,10 +1339,9 @@ export default function DiscArchiveShowcase() {
                 </div>
               </div>
 
-              {/* RIGHT COLUMN (7 Cols): Official Wallpaper Strip, Title, Synopsis, Official OST & Synth Tracklist */}
+              {/* RIGHT COLUMN (7 Cols): Banner, Title, Synopsis & INTERACTIVE SEEKABLE OFFICIAL OST TRACKLIST */}
               <div className="detail-stagger lg:col-span-7 flex flex-col justify-between gap-7">
                 <div>
-                  {/* Wide Official Anime Wallpaper Header Banner */}
                   {activeRelease.bannerUrl && (
                     <div className="mb-5 w-full h-28 sm:h-36 overflow-hidden border border-[#181818]/15 relative">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -1115,14 +1388,14 @@ export default function DiscArchiveShowcase() {
                     </blockquote>
                   </div>
 
-                  {/* PLAYABLE OFFICIAL THEME SONG + WEB AUDIO SYNTH PREVIEW TRACKLIST */}
+                  {/* PLAYABLE & SEEKABLE OFFICIAL THEME SONG + SYNTH PREVIEW BARS */}
                   <div className="mt-8">
                     <div className="flex items-center justify-between pb-2.5 border-b border-[#181818]">
                       <span className="font-mono text-xs font-bold uppercase tracking-[0.16em]">
                         OFFICIAL THEME SONG &amp; SYNTH PREVIEW BARS
                       </span>
-                      <span className="font-mono text-[11px] uppercase text-[#E05A3A] font-semibold">
-                        TRACK 01 = OFFICIAL VOCAL AUDIO
+                      <span className="font-mono text-[10px] sm:text-[11px] uppercase text-[#E05A3A] font-semibold">
+                        CLICK WAVEFORM TIMELINE TO SEEK 00:00–00:30
                       </span>
                     </div>
 
@@ -1130,16 +1403,21 @@ export default function DiscArchiveShowcase() {
                       {activeRelease.tracks.map((track) => {
                         const isPlaying = playingTrackNum === track.number;
                         const bars = generateWaveformBars(track.waveformSeed, 44);
+                        const activeHover =
+                          hoverSeekLabel?.trackNum === track.number ? hoverSeekLabel : null;
 
                         return (
                           <div
                             key={track.number}
-                            onClick={() => handleToggleTrackPlay(track)}
-                            className={`py-3.5 px-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer transition-colors ${
-                              isPlaying ? "bg-[#181818]/[0.06]" : "hover:bg-[#181818]/[0.03]"
+                            className={`py-3.5 px-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors ${
+                              isPlaying ? "bg-[#181818]/[0.055]" : "hover:bg-[#181818]/[0.025]"
                             }`}
                           >
-                            <div className="flex items-center gap-3.5 min-w-0">
+                            {/* Play/Pause Button & Track Title */}
+                            <div
+                              onClick={() => handleTrackPlayOrSeek(track)}
+                              className="flex items-center gap-3.5 min-w-0 cursor-pointer"
+                            >
                               <button
                                 type="button"
                                 aria-label={isPlaying ? "Stop Track" : "Play Track"}
@@ -1171,9 +1449,35 @@ export default function DiscArchiveShowcase() {
                               </div>
                             </div>
 
-                            {/* Interactive Waveform Preview Bar */}
+                            {/* INTERACTIVE CLICK & SCRUB SEEKABLE WAVEFORM TIMELINE BAR */}
                             <div className="flex items-center gap-3 self-end sm:self-center shrink-0">
-                              <div className="flex items-end gap-[2px] h-7 w-40 sm:w-48 px-1.5 py-1 bg-[#181818]/[0.04] border border-[#181818]/12">
+                              <div
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const rect = e.currentTarget.getBoundingClientRect();
+                                  const ratio = Math.max(
+                                    0,
+                                    Math.min(1, (e.clientX - rect.left) / rect.width)
+                                  );
+                                  handleTrackPlayOrSeek(track, ratio);
+                                }}
+                                onMouseMove={(e) => {
+                                  const rect = e.currentTarget.getBoundingClientRect();
+                                  const ratio = Math.max(
+                                    0,
+                                    Math.min(1, (e.clientX - rect.left) / rect.width)
+                                  );
+                                  const estDur = isPlaying ? trackDurationSec : 30;
+                                  setHoverSeekLabel({
+                                    trackNum: track.number,
+                                    time: formatTimeMMSS(ratio * estDur),
+                                    pct: ratio * 100
+                                  });
+                                }}
+                                onMouseLeave={() => setHoverSeekLabel(null)}
+                                title="Click anywhere on waveform to jump to that timestamp"
+                                className="relative flex items-end gap-[2px] h-8 w-44 sm:w-56 px-1.5 py-1 bg-[#181818]/[0.045] border border-[#181818]/15 hover:border-[#E05A3A] cursor-pointer transition-colors"
+                              >
                                 {bars.map((barH, bIdx) => {
                                   const ratio = bIdx / bars.length;
                                   const activeBar = isPlaying && ratio <= trackProgress;
@@ -1184,20 +1488,40 @@ export default function DiscArchiveShowcase() {
                                     <span
                                       key={bIdx}
                                       style={{ height: `${Math.round(dynamicH * 100)}%` }}
-                                      className={`flex-1 transition-all duration-75 ${
+                                      className={`flex-1 pointer-events-none transition-all duration-75 ${
                                         activeBar
                                           ? "bg-[#E05A3A]"
                                           : isPlaying
-                                          ? "bg-[#181818]/50"
+                                          ? "bg-[#181818]/45"
                                           : "bg-[#6E6E6A]/45"
                                       }`}
                                     />
                                   );
                                 })}
+
+                                {/* Active Coral Playhead Line */}
+                                {isPlaying && (
+                                  <span
+                                    className="pointer-events-none absolute top-0 bottom-0 w-[2px] bg-[#E05A3A]"
+                                    style={{ left: `${trackProgress * 100}%` }}
+                                  />
+                                )}
+
+                                {/* Hover Seek Timestamp Tooltip */}
+                                {activeHover && (
+                                  <span
+                                    className="pointer-events-none absolute -top-6 -translate-x-1/2 px-1.5 py-0.5 bg-[#181818] text-white font-mono text-[9px] rounded-sm shadow"
+                                    style={{ left: `${activeHover.pct}%` }}
+                                  >
+                                    {activeHover.time}
+                                  </span>
+                                )}
                               </div>
 
-                              <span className="font-mono text-xs text-[#575752] w-11 text-right">
-                                {track.duration}
+                              <span className="font-mono text-[11px] text-[#575752] w-[76px] text-right tabular-nums">
+                                {isPlaying
+                                  ? `${formatTimeMMSS(trackCurrentSec)} / ${formatTimeMMSS(trackDurationSec)}`
+                                  : track.duration}
                               </span>
                             </div>
                           </div>
@@ -1266,7 +1590,6 @@ export default function DiscArchiveShowcase() {
               </button>
             </div>
 
-            {/* Currently Watching (On-Going Personal Progress) Section */}
             <div className="mt-6">
               <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.16em] text-[#181818] mb-3">
                 <span className="w-2 h-2 rounded-full bg-[#E05A3A] animate-pulse" />
@@ -1319,7 +1642,6 @@ export default function DiscArchiveShowcase() {
               </div>
             </div>
 
-            {/* Search, Genre Filter & Sort Controls */}
             <div className="mt-8 flex flex-wrap items-center gap-3 pb-4 border-b border-[#181818]">
               <input
                 type="text"
@@ -1353,7 +1675,6 @@ export default function DiscArchiveShowcase() {
               </select>
             </div>
 
-            {/* Complete 26 Watched Anime Archive Table with Thumbnails */}
             <div className="divide-y divide-[#181818]/12 font-mono text-xs">
               {filteredCatalogList.map((rel) => {
                 const watchedIdx = WATCHED_ANIME_RELEASES.findIndex((x) => x.id === rel.id);
@@ -1404,7 +1725,6 @@ export default function DiscArchiveShowcase() {
               })}
             </div>
 
-            {/* Personal FYI Note & Warm Closing Footer */}
             <div className="mt-10 p-6 border border-[#181818]/20 bg-[#D2D2CF]/40 space-y-2 text-sm text-[#181818]">
               <p>
                 <strong>💡 FYI / Archivist Note:</strong> Honestly, there are still so many other anime I&apos;ve
