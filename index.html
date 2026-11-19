@@ -47,6 +47,9 @@
   <!-- Subtle Tactile Gallery Studio Grain -->
   <div class="studio-grain-overlay" aria-hidden="true"></div>
 
+  <!-- Smooth Cinema Aperture Transition Veil during Spindle-Hole Dive -->
+  <div id="dive-aperture-veil" class="pointer-events-none fixed inset-0 bg-[#EAEAE8] opacity-0" style="z-index: 35;"></div>
+
   <!-- ====================================================================
        1. TOP MINIMALIST SWISS EDITORIAL HUD NAVIGATION BAR
        ==================================================================== -->
@@ -84,11 +87,11 @@
       <button
         type="button"
         id="toggle-art-mode-btn"
-        title="Switch between Procedural Swiss Illustrations and Official MyAnimeList Posters on 3D Sleeves"
+        title="Switch between Official Anime Artwork and Swiss Minimal Vector Covers"
         class="hidden sm:inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider px-2.5 py-1 border border-[#181818]/20 text-[#6E6E6A] hover:text-[#181818] hover:border-[#181818] transition-colors"
       >
-        <span>SLEEVE:</span>
-        <strong id="art-mode-label" class="text-[#181818]">SWISS CANVAS</strong>
+        <span>COVER:</span>
+        <strong id="art-mode-label" class="text-[#181818]">ANIME ART</strong>
       </button>
 
       <button type="button" id="nav-releases-btn" class="hud-nav-link py-1 transition-colors hover:text-[#E05A3A]">
@@ -144,45 +147,46 @@
          3. CENTER-BOTTOM RELEASE CAPTION & FLANKING 40PX CIRCULAR CONTROLS
          ==================================================================== -->
     <section
+      id="stage-caption-section"
       aria-label="Active Release Caption and Controls"
-      class="pointer-events-none fixed bottom-24 md:bottom-28 left-0 right-0 z-20 flex items-center justify-center px-4"
+      class="pointer-events-none fixed bottom-[86px] md:bottom-[92px] left-0 right-0 z-20 flex items-center justify-center px-4 transition-all duration-300"
     >
-      <div class="pointer-events-auto flex items-center justify-between w-full max-w-2xl gap-4 md:gap-8">
+      <div class="pointer-events-auto flex items-center justify-between w-full max-w-2xl gap-3 md:gap-6">
         <!-- Left Circular 40px Button (←) -->
         <button
           type="button"
           id="prev-sleeve-btn"
           aria-label="Previous Release"
-          class="w-10 h-10 rounded-full border border-[#181818]/35 flex items-center justify-center text-[#181818] hover:border-[#181818] hover:bg-[#181818] hover:text-[#EAEAE8] disabled:opacity-25 disabled:pointer-events-none transition-all shrink-0"
+          class="w-10 h-10 rounded-full border border-[#181818]/45 bg-[#EAEAE8]/90 backdrop-blur-sm flex items-center justify-center text-[#181818] hover:border-[#181818] hover:bg-[#181818] hover:text-[#EAEAE8] disabled:opacity-25 disabled:pointer-events-none transition-all shrink-0 shadow-sm"
         >
           <span class="text-base leading-none">←</span>
         </button>
 
-        <!-- Center Release Caption -->
+        <!-- High-Contrast Frosted Editorial Caption Plaque (100% Readable Without Hover!) -->
         <div
           id="center-caption-trigger"
-          class="flex flex-col items-center text-center cursor-pointer group"
+          class="flex flex-col items-center text-center cursor-pointer group px-5 py-2.5 rounded-sm bg-[#EAEAE8]/90 backdrop-blur-md border border-[#181818]/12 shadow-[0_6px_24px_rgba(24,24,24,0.08)] hover:border-[#E05A3A]/55 transition-all max-w-xl"
           title="Click active cover or disc to dive through the spindle hole"
         >
-          <div class="flex items-center gap-2 font-mono text-[11px] md:text-xs tracking-[0.16em] uppercase text-[#181818]">
+          <div class="flex items-center gap-2 font-mono text-[11px] md:text-xs tracking-[0.15em] uppercase text-[#181818] font-medium">
             <span class="inline-block w-2 h-2 rounded-full bg-[#E05A3A]"></span>
-            <span id="caption-catalog-genre">ANM-001 — ROMANCE / COMEDY</span>
-            <span id="caption-rating-tag" class="text-[#E05A3A] font-semibold">★ 8.0</span>
+            <span id="caption-catalog-genre">ANM-007 — ROMANCE / SUPERNATURAL</span>
+            <span id="caption-rating-tag" class="text-[#E05A3A] font-bold">★ 9.3</span>
           </div>
 
           <h1
             id="caption-main-title"
-            class="mt-1 text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-[#181818] group-hover:text-[#E05A3A] transition-colors line-clamp-1"
+            class="mt-0.5 text-xl sm:text-2xl md:text-[30px] font-bold tracking-tight text-[#111111] group-hover:text-[#E05A3A] transition-colors line-clamp-1 leading-tight"
           >
-            Yamada-kun and the Seven Witches
+            Your Name.
           </h1>
 
-          <p id="caption-subtitle" class="mt-0.5 text-xs sm:text-sm text-[#6E6E6A] font-normal">
-            Yamada-kun to 7-nin no Majo • ♪ WEAVER, 2015
+          <p id="caption-subtitle" class="mt-0.5 text-xs sm:text-[13px] text-[#464642] font-medium line-clamp-1">
+            Kimi no Na wa. • ♪ RADWIMPS, 2016
           </p>
 
-          <span class="mt-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-[#6E6E6A] group-hover:text-[#181818] transition-colors">
-            [ CLICK SLEEVE OR DISC TO DIVE IN ↗ ]
+          <span class="mt-1 font-mono text-[10px] uppercase tracking-[0.18em] text-[#575752] group-hover:text-[#E05A3A] font-semibold transition-colors">
+            [ CLICK COVER OR DISC FOR TRAILER &amp; OFFICIAL OST ↗ ]
           </span>
         </div>
 
@@ -191,7 +195,7 @@
           type="button"
           id="next-sleeve-btn"
           aria-label="Next Release"
-          class="w-10 h-10 rounded-full border border-[#181818]/35 flex items-center justify-center text-[#181818] hover:border-[#181818] hover:bg-[#181818] hover:text-[#EAEAE8] disabled:opacity-25 disabled:pointer-events-none transition-all shrink-0"
+          class="w-10 h-10 rounded-full border border-[#181818]/45 bg-[#EAEAE8]/90 backdrop-blur-sm flex items-center justify-center text-[#181818] hover:border-[#181818] hover:bg-[#181818] hover:text-[#EAEAE8] disabled:opacity-25 disabled:pointer-events-none transition-all shrink-0 shadow-sm"
         >
           <span class="text-base leading-none">→</span>
         </button>
@@ -277,36 +281,41 @@
         <!-- Left Column (5 Cols): Procedural Sleeve / Key Visual / Trailer + Rating Breakdown -->
         <div class="lg:col-span-5 flex flex-col gap-6">
           <div class="flex items-center border-b border-[#181818]/15 font-mono text-[11px] uppercase tracking-wider">
-            <button type="button" data-detail-tab="cover" class="detail-media-tab active px-3.5 py-2 border-b-2 border-[#E05A3A] text-[#181818] font-bold">
-              Swiss Sleeve
-            </button>
-            <button type="button" data-detail-tab="visual" class="detail-media-tab px-3.5 py-2 border-b-2 border-transparent text-[#6E6E6A]">
+            <button type="button" data-detail-tab="visual" class="detail-media-tab active px-3.5 py-2 border-b-2 border-[#E05A3A] text-[#181818] font-bold">
               Official Key Visual
             </button>
-            <button type="button" data-detail-tab="trailer" class="detail-media-tab px-3.5 py-2 border-b-2 border-transparent text-[#6E6E6A]">
-              OP / Trailer Video
+            <button type="button" data-detail-tab="trailer" class="detail-media-tab px-3.5 py-2 border-b-2 border-transparent text-[#181818] hover:text-[#E05A3A]">
+              ▶ Play Trailer / OP
+            </button>
+            <button type="button" data-detail-tab="cover" class="detail-media-tab px-3.5 py-2 border-b-2 border-transparent text-[#6E6E6A]">
+              Swiss Sleeve
             </button>
           </div>
 
-          <div class="relative w-full aspect-square bg-[#181818] overflow-hidden border border-[#181818]/20 shadow-lg">
-            <canvas id="detail-cover-canvas" width="640" height="640" class="w-full h-full"></canvas>
-            <div id="detail-visual-wrap" class="w-full h-full hidden relative bg-[#181818]">
-              <img id="detail-visual-img" alt="Official Anime Key Visual" class="w-full h-full object-cover" />
-            </div>
-            <div id="detail-trailer-wrap" class="w-full h-full hidden bg-[#181818] flex items-center justify-center">
-              <video id="detail-op-video" controls playsinline loop class="w-full h-full object-contain hidden"></video>
-              <iframe
-                id="detail-yt-iframe"
-                title="Anime Trailer"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowfullscreen
-                class="w-full h-full border-0 hidden"
-              ></iframe>
-              <div id="detail-trailer-fallback" class="p-6 text-center font-mono text-xs text-[#EAEAE8]/80 hidden">
-                <p class="mb-2 text-[#E05A3A] uppercase">● WEB AUDIO SYNTHESIS READY</p>
-                <p>Click any track bar on the right to audition the soundtrack.</p>
+          <div id="detail-media-box" class="relative w-full aspect-square bg-[#181818] overflow-hidden border border-[#181818]/20 shadow-lg transition-all duration-300">
+            <canvas id="detail-cover-canvas" width="640" height="640" class="w-full h-full hidden"></canvas>
+            <div id="detail-visual-wrap" class="w-full h-full relative bg-[#181818] group cursor-pointer">
+              <img id="detail-visual-img" alt="Official Anime Key Visual" class="w-full h-full object-cover object-top" />
+              <div class="absolute inset-0 bg-[#181818]/0 group-hover:bg-[#181818]/45 flex items-center justify-center transition-all">
+                <span class="opacity-0 group-hover:opacity-100 transition-opacity px-5 py-2.5 bg-[#E05A3A] text-white font-mono text-xs font-bold uppercase tracking-widest shadow-lg">
+                  ▶ PLAY OFFICIAL TRAILER / OP
+                </span>
               </div>
             </div>
+            <div id="detail-trailer-wrap" class="w-full h-full hidden bg-[#111110] flex items-center justify-center">
+              <iframe
+                id="detail-yt-iframe"
+                title="Anime Trailer / OP"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                allowfullscreen
+                class="w-full h-full border-0"
+              ></iframe>
+            </div>
+          </div>
+          <div id="detail-yt-external-bar" class="hidden items-center justify-between font-mono text-[11px] text-[#6E6E6A] -mt-3">
+            <span>OFFICIAL PV / OPENING STREAM</span>
+            <a id="detail-yt-external-link" href="#" target="_blank" rel="noopener noreferrer" class="text-[#181818] hover:text-[#E05A3A] font-semibold underline underline-offset-4">OPEN ON YOUTUBE ↗</a>
           </div>
 
           <!-- Personal Rating Breakdown Card -->

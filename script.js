@@ -1,15 +1,11 @@
 /* ============================================================================
    💿 DISC ARCHIVE — INTERACTIVE 3D ANIME RATING & SOUNDTRACK SHOWCASE
    ============================================================================
-   HOW TO EDIT YOUR ANIME RATING DATA:
-   1. Edit `CURRENTLY_WATCHING` below (STEP 1) to update the anime you are
-      watching right now and your current episode progress.
-   2. Edit `ANIME_WATCHLIST` further down (STEP 2) to add new anime or update
-      your personal ratings.
-   3. All 3D Sleeve Spines, Swiss Editorial Front Cover Illustrations, and
-      Vinyl/CD Disc Labels are generated 100% procedurally via high-DPI HTML5
-      <canvas> textures (zero broken external image dependencies), with optional
-      live MyAnimeList (Jikan v4), AnimeThemes HD OP, and iTunes 30s OST enrichment.
+   - Chronologically sorted Left (2006) -> Right (2026) along the 3D shelf
+   - Zero-clipping 3D Accordion Spine-to-Cover Shelf + Floating Vinyl Disc
+   - Full-bleed Official Anime Key Visuals via CORS-safe proxy + Swiss Minimal fallback
+   - Verified Official Theme Song Vocal Previews + Embeddable YouTube Trailers/OPs
+   - Multi-Stage GSAP Spindle-Hole Camera Dive-In & Reverse Dive-Out Choreography
    ============================================================================ */
 
 /* ============================================================================
@@ -18,15 +14,14 @@
 const RAW_CURRENTLY_WATCHING = [
   {
     id: "cw-1",
-    catalogCode: "ONG-001",
     shortTitle: "BLUE BOX",
     titleRomaji: "Ao no Hako",
     titleEnglish: "Blue Box",
     category: "TV Series",
     releaseYear: 2024,
     ageRating: "PG-13",
-    currentEpisode: 8,   // 👈 EDIT THIS: Episode you are currently watching
-    totalEpisodes: 25,   // 👈 EDIT THIS: Total episodes in the season
+    currentEpisode: 8,
+    totalEpisodes: 25,
     isOngoing: true,
     rating: 8.8,
     genres: ["Romance", "Sports", "School"],
@@ -36,24 +31,26 @@ const RAW_CURRENTLY_WATCHING = [
     quote2: "WATCHING EPISODE 8 OF 25 — ON-GOING PERSONAL PROGRESS",
     songTitle: "Same Blue",
     songArtist: "Official HIGE DANdism",
-    songSearchQuery: "Same Blue Official HIGE DANdism",
-    jikanQuery: "Ao no Hako",
     studio: "Telecom Animation Film",
     bpm: 134,
     keySignature: "E Major",
+    coverUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx170942-KKcLfQzV57nG.jpg",
+    bannerUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/banner/170942-v2GO5YNO0Q5I.jpg",
+    youtubeId: "uvvYMBLY-w4",
+    songPreviewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/0e/5d/92/0e5d92f5-17b1-0b46-af7d-f72ad7e78614/mzaf_17020336874762690964.plus.aac.p.m4a",
     illustrationType: "school-desk"
   },
   {
     id: "cw-2",
-    catalogCode: "ONG-002",
     shortTitle: "ROSHIDERE",
-    titleRomaji: "Tokidoki Bosotto Russia-go de Dereru Tonari no Alya-san",
+    titleRomaji: "Tokidoki Bosotto Roshia-go de Dereru Tonari no Alya-san",
     titleEnglish: "Alya Sometimes Hides Her Feelings in Russian",
     category: "TV Series",
     releaseYear: 2024,
     ageRating: "PG-13",
-    currentEpisode: 5,   // 👈 EDIT THIS: Episode you are currently watching
-    totalEpisodes: 12,   // 👈 EDIT THIS: Total episodes in the season
+    currentEpisode: 5,
+    totalEpisodes: 12,
     isOngoing: true,
     rating: 8.5,
     genres: ["Romance", "Comedy", "School"],
@@ -61,240 +58,26 @@ const RAW_CURRENTLY_WATCHING = [
       "Silver-haired honor student Alya constantly teases her lazy desk neighbor Masachika Kuze with sweet flirtations whispered in Russian, completely unaware that he understands every single word.",
     quote1: "HILARIOUS ROM-COM BANTER AND SECRET RUSSIAN WHISPERS",
     quote2: "WATCHING EPISODE 5 OF 12 — ON-GOING PERSONAL PROGRESS",
-    songTitle: "Ichiban Kagayaku Hoshi",
-    songArtist: "Sumire Uesaka",
-    songSearchQuery: "Ichiban Kagayaku Hoshi Sumire Uesaka",
-    jikanQuery: "Tokidoki Bosotto Russia-go de Dereru Tonari no Alya-san",
+    songTitle: "1-ban Kagayaku Hoshi",
+    songArtist: "Alya (CV: Sumire Uesaka)",
     studio: "Doga Kobo",
     bpm: 128,
     keySignature: "G Major",
+    coverUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx162804-TBeptcAfvqTd.jpg",
+    bannerUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/banner/162804-NwvD3Lya8IZp.jpg",
+    youtubeId: "pBX6TtOlYow",
+    songPreviewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/1a/eb/03/1aeb034d-9826-8aa4-142b-bda5dad45c36/mzaf_7693415494682986218.plus.aac.p.m4a",
     illustrationType: "vending-machine"
   }
 ];
 
 /* ============================================================================
-   ⭐ STEP 2: COMPLETE 26 WATCHED ANIME ARCHIVE (22 TV SERIES + 4 MOVIES)
+   ⭐ STEP 2: COMPLETE 26 WATCHED ANIME ARCHIVE (CHRONOLOGICALLY SORTED 2006 -> 2026)
    ============================================================================ */
 const RAW_WATCHED_ANIME = [
   {
-    id: "1",
-    catalogCode: "ANM-001",
-    shortTitle: "YAMADA-KUN",
-    titleRomaji: "Yamada-kun to 7-nin no Majo",
-    titleEnglish: "Yamada-kun and the Seven Witches",
-    rating: 8.0,
-    releaseYear: 2015,
-    category: "TV Series",
-    ageRating: "PG-13",
-    genres: ["Romance", "Comedy", "Supernatural"],
-    synopsis:
-      "High school delinquent Ryu Yamada accidentally discovers he can swap bodies with a kiss, leading him and honor student Urara Shiraishi on a chaotic hunt to uncover the school's seven witches.",
-    quote1: "BODY-SWAPPING CHAOS AND SUPERNATURAL HIGH SCHOOL ROMANCE",
-    quote2: "INFECTIOUS COMEDIC TIMING WITH AN ICONIC OPENING THEME",
-    songTitle: "Kuchizuke Diamond",
-    songArtist: "WEAVER",
-    songSearchQuery: "Kuchizuke Diamond WEAVER",
-    jikanQuery: "Yamada-kun to 7-nin no Majo",
-    studio: "LIDENFILMS",
-    bpm: 138,
-    keySignature: "F Major",
-    illustrationType: "vending-machine"
-  },
-  {
-    id: "2",
-    catalogCode: "ANM-002",
-    shortTitle: "KURAKON",
-    titleRomaji: "Class no Daikirai na Joshi to Kekkon suru Koto ni Natta.",
-    titleEnglish: "I'm Getting Married to a Girl I Hate in My Class",
-    rating: 8.4,
-    releaseYear: 2025,
-    category: "TV Series",
-    ageRating: "PG-13",
-    genres: ["Romance", "Comedy", "School"],
-    synopsis:
-      "Forced into an arranged marriage by their grandparents, bitter classroom rivals Saito Hojo and Akane Sakuramori must navigate secret newlywed life under the same roof while slowly falling for each other.",
-    quote1: "FROM BITTER CLASSROOM RIVALS TO SECRET NEWLYWEDS",
-    quote2: "A DELIGHTFULLY TSUNDERE COHABITATION ROMANTIC COMEDY",
-    songTitle: "Koikaze",
-    songArtist: "Hinaki Yano",
-    songSearchQuery: "Class no Daikirai na Joshi to Kekkon",
-    jikanQuery: "Class no Daikirai na Joshi to Kekkon suru Koto ni Natta",
-    studio: "Studio Gokumi × AXsiZ",
-    bpm: 132,
-    keySignature: "D Major",
-    illustrationType: "school-desk"
-  },
-  {
-    id: "3",
-    catalogCode: "ANM-003",
-    shortTitle: "RAELIANA",
-    titleRomaji: "Kanojo ga Koushaku-tei ni Itta Riyuu",
-    titleEnglish: "Why Raeliana Ended Up at the Duke's Mansion",
-    rating: 8.1,
-    releaseYear: 2023,
-    category: "TV Series",
-    ageRating: "PG-13",
-    genres: ["Romance", "Fantasy", "Mystery"],
-    synopsis:
-      "Reincarnated as a minor novel character destined to be poisoned by her fiancé, Raeliana strikes a high-stakes six-month fake engagement with the calculating Duke Noah Wynknight to rewrite her fate.",
-    quote1: "SHARP WIT AND ARISTOCRATIC INTRIGUE IN A DEADLY ROMANCE",
-    quote2: "A CLEVER REINCARNATION MYSTERY THAT KEEPS YOU GUESSING",
-    songTitle: "SURVIVE",
-    songArtist: "MindaRyn",
-    songSearchQuery: "SURVIVE MindaRyn",
-    jikanQuery: "Kanojo ga Koushaku-tei ni Itta Riyuu",
-    studio: "Typhoon Graphics",
-    bpm: 142,
-    keySignature: "C# Minor",
-    illustrationType: "magic-circle"
-  },
-  {
-    id: "4",
-    catalogCode: "ANM-004",
-    shortTitle: "TENSHI-TSUKI",
-    titleRomaji: "One Room, Hiatari Futsuu, Tenshi-tsuki.",
-    titleEnglish: "Studio Apartment, Good Lighting, Angel Included",
-    rating: 8.2,
-    releaseYear: 2024,
-    category: "TV Series",
-    ageRating: "PG-13",
-    genres: ["Romance", "Comedy", "Supernatural"],
-    synopsis:
-      "Kindhearted high schooler Shintaro Tokumitsu wakes up one morning to find Towa, a pure and literal angel sent from heaven to study humans, living on his studio apartment balcony.",
-    quote1: "PURE HEALING WARMTH UNDER ONE TINY STUDIO ROOF",
-    quote2: "SOOTHING SLICE-OF-LIFE SWEETNESS WITH HEAVENLY CHARM",
-    songTitle: "Kimi Iro no Kiseki",
-    songArtist: "Yui Ogura",
-    songSearchQuery: "Kimi Iro no Kiseki Yui Ogura",
-    jikanQuery: "One Room Hiatari Futsuu Tenshi-tsuki",
-    studio: "Okuruto Noboru",
-    bpm: 126,
-    keySignature: "A Major",
-    illustrationType: "vending-machine"
-  },
-  {
-    id: "5",
-    catalogCode: "ANM-005",
-    shortTitle: "IMOUTO SAE",
-    titleRomaji: "Imouto sae Ireba Ii.",
-    titleEnglish: "A Sister's All You Need",
-    rating: 7.2,
-    releaseYear: 2017,
-    category: "TV Series",
-    ageRating: "17+",
-    genres: ["Comedy", "Romance", "Slice of Life"],
-    synopsis:
-      "Light novelist Itsuki Hashima—obsessed with writing about the ultimate little sister—navigates publishing deadlines, tabletop games, and heartfelt romance alongside his eccentric circle of fellow creators.",
-    quote1: "BEHIND ITS OUTRAGEOUS OPENING LIES A GENUINE WRITER DRAMA",
-    quote2: "AN ODE TO CREATIVE PASSION, FRIENDSHIP, AND UNREQUITED LOVE",
-    songTitle: "Ashita no Kimi sae Ireba Ii.",
-    songArtist: "ChouCho",
-    songSearchQuery: "Ashita no Kimi sae Ireba Ii ChouCho",
-    jikanQuery: "Imouto sae Ireba Ii",
-    studio: "SILVER LINK.",
-    bpm: 136,
-    keySignature: "Bb Major",
-    illustrationType: "cassette-synth"
-  },
-  {
-    id: "6",
-    catalogCode: "ANM-006",
-    shortTitle: "ORESUKI",
-    titleRomaji: "Ore wo Suki nano wa Omae dake ka yo",
-    titleEnglish: "Are You the Only One Who Loves Me?",
-    rating: 8.3,
-    releaseYear: 2019,
-    category: "TV Series",
-    ageRating: "PG-13",
-    genres: ["Comedy", "Romance", "School"],
-    synopsis:
-      "Expecting love confessions from two gorgeous girls on the infamous park bench, scheming nice-guy Joro instead gets asked to play wingman—while gloomy library girl Pansy sets her sights on him.",
-    quote1: "SUBVERTS EVERY ROM-COM TROPE WITH SAVAGE SELF-AWARENESS",
-    quote2: "BEWARE THE PARK BENCH IN THIS HILARIOUS TWISTED COMEDY",
-    songTitle: "Papapa",
-    songArtist: "Shuka Saito",
-    songSearchQuery: "Papapa Shuka Saito",
-    jikanQuery: "Ore wo Suki nano wa Omae dake ka yo",
-    studio: "CONNECT",
-    bpm: 144,
-    keySignature: "G Major",
-    illustrationType: "school-desk"
-  },
-  {
-    id: "7",
-    catalogCode: "ANM-007",
-    shortTitle: "CRUSH AT WORK",
-    titleRomaji: "Kono Kaisha ni Suki na Hito ga Imasu",
-    titleEnglish: "I Have a Crush at Work",
-    rating: 8.7,
-    releaseYear: 2025,
-    category: "TV Series",
-    ageRating: "PG-13",
-    genres: ["Romance", "Comedy", "Slice of Life"],
-    synopsis:
-      "Coworkers Masugu Tateishi and Yui Mitsuya seem like constant office rivals by day, but behind closed doors they are madly in love and trying their hardest to keep their sweet workplace romance a secret.",
-    quote1: "ADULT WORKPLACE ROMANCE DONE WITH REFRESHING MATURITY",
-    quote2: "SECRET OFFICE GLANCES AND HEART-MELTING AFTER-HOURS SWEETNESS",
-    songTitle: "Ano ne,",
-    songArtist: "Polkadot Stingray",
-    songSearchQuery: "Ano ne Polkadot Stingray",
-    jikanQuery: "Kono Kaisha ni Suki na Hito ga Imasu",
-    studio: "Blade",
-    bpm: 124,
-    keySignature: "E Minor",
-    illustrationType: "vending-machine"
-  },
-  {
-    id: "8",
-    catalogCode: "ANM-008",
-    shortTitle: "HAGANAI",
-    titleRomaji: "Boku wa Tomodachi ga Sukunai",
-    titleEnglish: "Haganai: I Don't Have Many Friends",
-    rating: 8.1,
-    releaseYear: 2011,
-    category: "TV Series",
-    ageRating: "17+",
-    genres: ["Comedy", "Romance", "School"],
-    synopsis:
-      "Misunderstood transfer student Kodaka Hasegawa and sharp-tongued loner Yozora Mikazuki form the Neighbors' Club, recruiting fellow social outcasts to practice the art of making friends.",
-    quote1: "A CLASSIC HIGH SCHOOL CLUB COMEDY OF LOVABLE MISFITS",
-    quote2: "CHAOTIC FRIENDSHIP SIMULATIONS AND ICONIC BANTER",
-    songTitle: "Zannenkei Rinjinbu",
-    songArtist: "Tomodachi Tsukuritai",
-    songSearchQuery: "Boku wa Tomodachi ga Sukunai",
-    jikanQuery: "Boku wa Tomodachi ga Sukunai",
-    studio: "AIC Build",
-    bpm: 148,
-    keySignature: "C Major",
-    illustrationType: "arcade-cabinet"
-  },
-  {
-    id: "9",
-    catalogCode: "ANM-009",
-    shortTitle: "JULIET",
-    titleRomaji: "Kishuku Gakkou no Juliet",
-    titleEnglish: "Boarding School Juliet",
-    rating: 8.9,
-    releaseYear: 2018,
-    category: "TV Series",
-    ageRating: "PG-13",
-    genres: ["Romance", "Comedy", "Action"],
-    synopsis:
-      "At the elite Dahlia Academy where two rival dorms war constantly, leaders Romio Inuzuka and Juliet Persia secretly start dating and must hide their forbidden romance while striving to change their world.",
-    quote1: "FORBIDDEN DEVOTION COMBINED WITH UNSTOPPABLE COMEDIC ENERGY",
-    quote2: "ONE OF THE MOST EARNEST AND REWARDING COUPLES IN ANIME",
-    songTitle: "Love with You",
-    songArtist: "fripSide",
-    songSearchQuery: "Love with You fripSide",
-    jikanQuery: "Kishuku Gakkou no Juliet",
-    studio: "LIDENFILMS",
-    bpm: 146,
-    keySignature: "F# Minor",
-    illustrationType: "polar-wave"
-  },
-  {
     id: "10",
-    catalogCode: "ANM-010",
     shortTitle: "ZERO NO TSUKAIMA",
     titleRomaji: "Zero no Tsukaima",
     titleEnglish: "The Familiar of Zero",
@@ -309,376 +92,18 @@ const RAW_WATCHED_ANIME = [
     quote2: "UNFORGETTABLE NOSTALGIA PACKED WITH MAGIC AND DEVOTION",
     songTitle: "First kiss",
     songArtist: "ICHIKO",
-    songSearchQuery: "First kiss ICHIKO",
-    jikanQuery: "Zero no Tsukaima",
     studio: "J.C.Staff",
     bpm: 135,
     keySignature: "Ab Major",
+    coverUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx1195-odpKgDQ7A1fV.png",
+    bannerUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/banner/1195-IgKkWPVvWHmf.jpg",
+    youtubeId: "j-UofYKswhI",
+    songPreviewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/8f/e5/b7/8fe5b7a9-91bd-a87e-b4f8-d63ed9d657ee/mzaf_2488651955026471644.plus.aac.p.m4a",
     illustrationType: "magic-circle"
-  },
-  {
-    id: "11",
-    catalogCode: "ANM-011",
-    shortTitle: "DANJO YUUJOU",
-    titleRomaji: "Danjo no Yuujou wa Seiritsu suru?",
-    titleEnglish: "Can a Boy-Girl Friendship Survive?",
-    rating: 7.0,
-    releaseYear: 2025,
-    category: "TV Series",
-    ageRating: "PG-13",
-    genres: ["Romance", "Comedy", "School"],
-    synopsis:
-      "Middle school best friends Himari Inuzuka and Yuu Natsume swore an eternal pact of platonic friendship while crafting floral accessories, until Yuu's first crush threatens to turn their bond upside down.",
-    quote1: "TESTS THE FRAGILE LINE BETWEEN PLATONIC BOND AND FIRST LOVE",
-    quote2: "COLORFUL YOUTH BANTER WITH FLORAL ARTISTRY",
-    songTitle: "Shitsumon, Koitte Nandeshoka?",
-    songArtist: "HoneyWorks",
-    songSearchQuery: "HoneyWorks Danjo no Yuujou",
-    jikanQuery: "Danjo no Yuujou wa Seiritsu suru",
-    studio: "J.C.Staff",
-    bpm: 130,
-    keySignature: "D Major",
-    illustrationType: "sakura-crossing"
-  },
-  {
-    id: "12",
-    catalogCode: "ANM-012",
-    shortTitle: "AMAGAMI-SAN",
-    titleRomaji: "Amagami-san Chi no Enmusubi",
-    titleEnglish: "Tying the Knot with an Amagami Sister",
-    rating: 8.0,
-    releaseYear: 2024,
-    category: "TV Series",
-    ageRating: "PG-13",
-    genres: ["Romance", "Comedy", "Supernatural"],
-    synopsis:
-      "Orphaned student Uryu Kamihate moves into Kyoto's historic Amagami Shrine expecting quiet study time for medical school, only to learn he must marry one of the three shrine maiden sisters.",
-    quote1: "KYOTO SHRINE MYSTICISM MEETS HEARTFELT FAMILY BONDS",
-    quote2: "GORGEOUS AUTUMN COLORS AND SUPERNATURAL DESTINY",
-    songTitle: "Yawaku Koishite",
-    songArtist: "Momoiro Clover Z",
-    songSearchQuery: "Yawaku Koishite Momoiro Clover Z",
-    jikanQuery: "Amagami-san Chi no Enmusubi",
-    studio: "Drive",
-    bpm: 136,
-    keySignature: "A Minor",
-    illustrationType: "torii-shrine"
-  },
-  {
-    id: "13",
-    catalogCode: "ANM-013",
-    shortTitle: "SUMMER POCKETS",
-    titleRomaji: "Summer Pockets",
-    titleEnglish: "Summer Pockets",
-    rating: 7.6,
-    releaseYear: 2025,
-    category: "TV Series",
-    ageRating: "PG-13",
-    genres: ["Drama", "Romance", "Supernatural"],
-    synopsis:
-      "Visiting the tranquil island of Torishirojima to sort through his late grandmother's belongings, Hairi Takahara experiences an unforgettable, nostalgic summer filled with sea breezes and mystery.",
-    quote1: "SUNLIT ISLAND NOSTALGIA INFUSED WITH KEY'S SIGNATURE EMOTION",
-    quote2: "A WISTFUL SUMMER MEMORY OF CICADAS AND SEA BREEZES",
-    songTitle: "Alka Tale",
-    songArtist: "Konomi Suzuki",
-    songSearchQuery: "Alka Tale Konomi Suzuki",
-    jikanQuery: "Summer Pockets",
-    studio: "feel.",
-    bpm: 122,
-    keySignature: "Eb Major",
-    illustrationType: "ocean-tiger"
-  },
-  {
-    id: "14",
-    catalogCode: "ANM-014",
-    shortTitle: "GAME CENTER",
-    titleRomaji: "Game Center Shoujo to Ibunka Kouryuu",
-    titleEnglish: "Cultural Exchange with a Game Center Girl",
-    rating: 7.8,
-    releaseYear: 2025,
-    category: "TV Series",
-    ageRating: "PG-13",
-    genres: ["Romance", "Comedy", "Slice of Life"],
-    synopsis:
-      "Working part-time at a local arcade, Renji Kusakabe helps energetic British girl Lily Baker win a crane game plushie on Valentine's Day, kicking off an adorable cross-cultural friendship.",
-    quote1: "ADORABLE ARCADE CRANE GAMES AND CROSS-CULTURAL SPARKS",
-    quote2: "PURE SUGAR-RUSH WHOLESOMENESS IN EVERY EPISODE",
-    songTitle: "Arcade Heartbeat",
-    songArtist: "Lily & Renji",
-    songSearchQuery: "Game Center Shoujo",
-    jikanQuery: "Game Center Shoujo to Ibunka Kouryuu",
-    studio: "Nomad",
-    bpm: 140,
-    keySignature: "C Major",
-    illustrationType: "arcade-cabinet"
-  },
-  {
-    id: "15",
-    catalogCode: "ANM-015",
-    shortTitle: "SIGN OF AFFECTION",
-    titleRomaji: "Yubisaki to Renren",
-    titleEnglish: "A Sign of Affection",
-    rating: 8.7,
-    releaseYear: 2024,
-    category: "TV Series",
-    ageRating: "PG-13",
-    genres: ["Romance", "Slice of Life"],
-    synopsis:
-      "Yuki Itose, a deaf university student living in a quiet world of her own, has her horizons tenderly expanded when she meets Itsuomi Nagi, a warm multilingual traveler who eagerly learns sign language.",
-    quote1: "TENDER, BREATHTAKINGLY INTIMATE AND VISUALLY POETIC",
-    quote2: "A MASTERCLASS IN GENTLE COMMUNICATION AND EMPATHY",
-    songTitle: "Yuki no Ne",
-    songArtist: "Novelbright",
-    songSearchQuery: "Yuki no Ne Novelbright",
-    jikanQuery: "Yubisaki to Renren",
-    studio: "Ajia-do",
-    bpm: 112,
-    keySignature: "B Major",
-    illustrationType: "cassette-synth"
-  },
-  {
-    id: "16",
-    catalogCode: "ANM-016",
-    shortTitle: "APPRAISER",
-    titleRomaji: 'Fuguushoku "Kanteishi" ga Jitsu wa Saikyou Datta',
-    titleEnglish: 'Even Given the Worthless "Appraiser" Class, I\'m Actually the Strongest',
-    rating: 7.8,
-    releaseYear: 2025,
-    category: "TV Series",
-    ageRating: "PG-13",
-    genres: ["Action", "Fantasy", "Adventure"],
-    synopsis:
-      "Betrayed and abandoned in a deadly dungeon abyss for having only the 'Appraiser' skill, Ein is rescued by the World Tree's spirit Yuri and awakens godlike ocular powers that make him unstoppable.",
-    quote1: "FROM ABANDONED UNDERDOG TO GOD-TIER WORLD TREE CHAMPION",
-    quote2: "SATISFYING POWER PROGRESSION AND CATHARTIC REDEMPTION",
-    songTitle: "Crescendo",
-    songArtist: "ASTERISM",
-    songSearchQuery: "Crescendo ASTERISM",
-    jikanQuery: "Fuguushoku Kanteishi ga Jitsu wa Saikyou Datta",
-    studio: "Okuruto Noboru",
-    bpm: 156,
-    keySignature: "D Minor",
-    illustrationType: "magic-circle"
-  },
-  {
-    id: "17",
-    catalogCode: "ANM-017",
-    shortTitle: "LONER LIFE",
-    titleRomaji: "Hitoribocchi no Isekai Kouryaku",
-    titleEnglish: "Loner Life in Another World",
-    rating: 7.5,
-    releaseYear: 2024,
-    category: "TV Series",
-    ageRating: "PG-13",
-    genres: ["Fantasy", "Comedy", "Isekai"],
-    synopsis:
-      "Summoned to another world after all the good cheat skills are already taken by his classmates, dedicated loner Haruka combines leftover oddball skills to live freely—until he has to rescue his class anyway.",
-    quote1: "TURNS LEFTOVER JUNK SKILLS INTO UNCONVENTIONAL GENIUS",
-    quote2: "LAID-BACK ISEKAI HUMOR WITH AN ANTI-HERO FLAIR",
-    songTitle: "ODD NUMBER",
-    songArtist: "Yoshino",
-    songSearchQuery: "ODD NUMBER Yoshino",
-    jikanQuery: "Hitoribocchi no Isekai Kouryaku",
-    studio: "Hayabusa Film × Passione",
-    bpm: 138,
-    keySignature: "G Minor",
-    illustrationType: "arcade-cabinet"
-  },
-  {
-    id: "18",
-    catalogCode: "ANM-018",
-    shortTitle: "RELIFE",
-    titleRomaji: "ReLIFE",
-    titleEnglish: "ReLIFE",
-    rating: 8.5,
-    releaseYear: 2016,
-    category: "TV Series",
-    ageRating: "PG-13",
-    genres: ["Drama", "Romance", "School"],
-    synopsis:
-      "Unemployed 27-year-old Arata Kaizaki takes a mysterious pill that restores his 17-year-old appearance for a one-year social rehabilitation experiment, rediscovering youth, purpose, and love.",
-    quote1: "A DEEPLY MOVING SECOND CHANCE AT YOUTH AND SELF-FORGIVENESS",
-    quote2: "BITTERSWEET, FUNNY, AND UNFORGETTABLY HUMAN",
-    songTitle: "Button",
-    songArtist: "PENGUIN RESEARCH",
-    songSearchQuery: "Button PENGUIN RESEARCH",
-    jikanQuery: "ReLIFE",
-    studio: "TMS Entertainment",
-    bpm: 134,
-    keySignature: "A Major",
-    illustrationType: "vending-machine"
-  },
-  {
-    id: "19",
-    catalogCode: "ANM-019",
-    shortTitle: "KAORU HANA",
-    titleRomaji: "Kaoru Hana wa Rin to Saku",
-    titleEnglish: "The Fragrant Flower Blooms with Dignity (Waguri)",
-    rating: 8.2,
-    releaseYear: 2025,
-    category: "TV Series",
-    ageRating: "PG-13",
-    genres: ["Romance", "Drama", "School"],
-    synopsis:
-      "Despite the bitter rivalry between his rough delinquent boys' school and the prestigious girls' academy next door, intimidating-looking Rintaro Tsumugi forms a pure bond with cake-loving Kaoruko Waguri.",
-    quote1: "DISARMING KINDNESS THAT MELTS AWAY PREJUDICE AND FEAR",
-    quote2: "PURE HEARTFELT SINCERITY ANCHORED BY WAGURI'S RADIANT SMILE",
-    songTitle: "Manazashi wa Hikari",
-    songArtist: "Tatsuya Kitani",
-    songSearchQuery: "Tatsuya Kitani",
-    jikanQuery: "Kaoru Hana wa Rin to Saku",
-    studio: "CloverWorks",
-    bpm: 128,
-    keySignature: "F Major",
-    illustrationType: "sakura-crossing"
-  },
-  {
-    id: "20",
-    catalogCode: "ANM-020",
-    shortTitle: "NISEKOI",
-    titleRomaji: "Nisekoi",
-    titleEnglish: "Nisekoi: False Love",
-    rating: 8.0,
-    releaseYear: 2014,
-    category: "TV Series",
-    ageRating: "PG-13",
-    genres: ["Romance", "Comedy", "School"],
-    synopsis:
-      "To prevent an all-out turf war between their rival families, yakuza heir Raku Ichijo and gangster's daughter Chitoge Kirisaki must pretend to be a lovey-dovey couple while searching for a childhood promise key.",
-    quote1: "STUDIO SHAFT'S KALEIDOSCOPIC VISUAL FLAIR MEETS ROM-COM GOLD",
-    quote2: "THE ULTIMATE PROMISE LOCK MYSTERY AND TSUNDERE SPARKS",
-    songTitle: "CLICK",
-    songArtist: "ClariS",
-    songSearchQuery: "CLICK ClariS",
-    jikanQuery: "Nisekoi",
-    studio: "Shaft",
-    bpm: 135,
-    keySignature: "Eb Major",
-    illustrationType: "cassette-synth"
-  },
-  {
-    id: "21",
-    catalogCode: "ANM-021",
-    shortTitle: "POLAR OPPOSITES",
-    titleRomaji: "Seihantai na Kimi to Boku (S1 & S2)",
-    titleEnglish: "You and I Are Polar Opposites",
-    rating: 10.0,
-    releaseYear: 2026,
-    category: "TV Series",
-    ageRating: "PG-13",
-    genres: ["Romance", "Comedy", "School"],
-    synopsis:
-      "Bubbly, trend-conscious Miyu Suzuki and quiet, brutally honest Yusuke Tani couldn't be more different, yet their refreshingly genuine communication and hilarious friend group create an absolute 10/10 masterpiece.",
-    quote1: "CROWNED 10 / 10 — THE GOLD STANDARD OF MODERN ROMANTIC COMEDY",
-    quote2: "REFRESHINGLY HONEST COMMUNICATION AND FLAWLESS ENSEMBLE CHEMISTRY",
-    songTitle: "Polar Opposites Theme",
-    songArtist: "Seihantai Ensemble",
-    songSearchQuery: "Seihantai na Kimi to Boku",
-    jikanQuery: "Seihantai na Kimi to Boku",
-    studio: "Lapin Track",
-    bpm: 130,
-    keySignature: "C Major",
-    illustrationType: "polar-wave"
-  },
-  {
-    id: "22",
-    catalogCode: "ANM-022",
-    shortTitle: "RAMPARTS OF ICE",
-    titleRomaji: "Koori no Jouheki",
-    titleEnglish: "The Ramparts of Ice",
-    rating: 8.9,
-    releaseYear: 2026,
-    category: "TV Series",
-    ageRating: "PG-13",
-    genres: ["Romance", "Drama", "School"],
-    synopsis:
-      "Guarded behind an icy emotional wall, Koyuki Hikawa keeps everyone at arm's length until outgoing Minato Amamiya persistently steps into her world, sparking a nuanced story of four teens untangling love.",
-    quote1: "INTRICATE PSYCHOLOGICAL DEPTH AND DELICATE EMOTIONAL THAWING",
-    quote2: "AN ACHINGLY REAL PORTRAIT OF TEENAGE BOUNDARIES AND TRUST",
-    songTitle: "Koori no Jouheki Theme",
-    songArtist: "Original Soundtrack",
-    songSearchQuery: "Koori no Jouheki",
-    jikanQuery: "Koori no Jouheki",
-    studio: "Studio KAI",
-    bpm: 118,
-    keySignature: "F Minor",
-    illustrationType: "polar-wave"
-  },
-  {
-    id: "23",
-    catalogCode: "ANM-023",
-    shortTitle: "YOUR NAME.",
-    titleRomaji: "Kimi no Na wa.",
-    titleEnglish: "Your Name.",
-    rating: 9.3,
-    releaseYear: 2016,
-    category: "Movie",
-    ageRating: "PG-13",
-    genres: ["Romance", "Supernatural", "Drama"],
-    synopsis:
-      "Countryside shrine maiden Mitsuha and Tokyo schoolboy Taki mysteriously begin swapping bodies across time and space, racing against a falling comet to find each other before their memories fade.",
-    quote1: "A TRANSCENDENT CINEMATIC PHENOMENON OF TIME AND RED STRING FATE",
-    quote2: "SHINKAI'S LUMINOUS SKYSCAPES POWERED BY RADWIMPS' ICONIC SCORE",
-    songTitle: "Zenzenzense",
-    songArtist: "RADWIMPS",
-    songSearchQuery: "Zenzenzense RADWIMPS",
-    jikanQuery: "Kimi no Na wa.",
-    studio: "CoMix Wave Films",
-    bpm: 190,
-    keySignature: "B Major",
-    illustrationType: "comet-sky"
-  },
-  {
-    id: "24",
-    catalogCode: "ANM-024",
-    shortTitle: "A SILENT VOICE",
-    titleRomaji: "Koe no Katachi",
-    titleEnglish: "A Silent Voice",
-    rating: 9.4,
-    releaseYear: 2016,
-    category: "Movie",
-    ageRating: "PG-13",
-    genres: ["Drama", "Romance", "Slice of Life"],
-    synopsis:
-      "Haunted by guilt for bullying his deaf classmate Shoko Nishimiya in elementary school, isolated teen Shoya Ishida seeks her out years later on a deeply emotional journey of forgiveness, healing, and connection.",
-    quote1: "DEVASTATINGLY RAW, EMPATHETIC, AND CATHARTICALLY BEAUTIFUL",
-    quote2: "KYOTO ANIMATION'S FINEST TRIUMPH ON REDEMPTION AND SELF-WORTH",
-    songTitle: "Koi wo Shita no wa",
-    songArtist: "aiko",
-    songSearchQuery: "Koi wo Shita no wa aiko",
-    jikanQuery: "Koe no Katachi",
-    studio: "Kyoto Animation",
-    bpm: 108,
-    keySignature: "G Major",
-    illustrationType: "sakura-crossing"
-  },
-  {
-    id: "25",
-    catalogCode: "ANM-025",
-    shortTitle: "JOSEE",
-    titleRomaji: "Josee to Tora to Sakana-tachi",
-    titleEnglish: "Josee, the Tiger and the Fish",
-    rating: 8.7,
-    releaseYear: 2020,
-    category: "Movie",
-    ageRating: "PG-13",
-    genres: ["Drama", "Romance", "Slice of Life"],
-    synopsis:
-      "University student and avid diver Tsuneo takes a caretaker job for Josee, a fiercely imaginative wheelchair-bound artist, inspiring each other to chase their dreams into the wide, scary ocean of life.",
-    quote1: "SOARS WITH ARTISTIC COURAGE AND OCEANIC WONDER",
-    quote2: "AN UPLIFTING ODE TO CHASING DREAMS AGAINST ALL ODDS",
-    songTitle: "Ao no Waltz",
-    songArtist: "Eve",
-    songSearchQuery: "Ao no Waltz Eve",
-    jikanQuery: "Josee to Tora to Sakana-tachi",
-    studio: "Bones",
-    bpm: 120,
-    keySignature: "Db Major",
-    illustrationType: "ocean-tiger"
   },
   {
     id: "26",
-    catalogCode: "ANM-026",
     shortTitle: "5 CENTIMETERS",
     titleRomaji: "Byousoku 5 Centimeter",
     titleEnglish: "5 Centimeters per Second",
@@ -693,36 +118,663 @@ const RAW_WATCHED_ANIME = [
     quote2: "CAPTURES THE QUIET ACHE OF DISTANCE AND GROWING UP",
     songTitle: "One More Time, One More Chance",
     songArtist: "Masayoshi Yamazaki",
-    songSearchQuery: "One More Time One More Chance Masayoshi Yamazaki",
-    jikanQuery: "Byousoku 5 Centimeter",
     studio: "CoMix Wave",
     bpm: 92,
     keySignature: "Ab Major",
+    coverUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx1689-rJKhjLEjQHSy.jpg",
+    bannerUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/banner/1689.jpg",
+    youtubeId: "iPsu_sk-e7Q",
+    songPreviewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/98/09/4c/98094c33-072b-36a5-3c8d-21a9d7d45c36/mzaf_11500047042945065618.plus.aac.p.m4a",
     illustrationType: "sakura-crossing"
+  },
+  {
+    id: "8",
+    shortTitle: "HAGANAI",
+    titleRomaji: "Boku wa Tomodachi ga Sukunai",
+    titleEnglish: "Haganai: I Don't Have Many Friends",
+    rating: 8.1,
+    releaseYear: 2011,
+    category: "TV Series",
+    ageRating: "17+",
+    genres: ["Comedy", "Romance", "School"],
+    synopsis:
+      "Misunderstood transfer student Kodaka Hasegawa and sharp-tongued loner Yozora Mikazuki form the Neighbors' Club, recruiting fellow social outcasts to practice the art of making friends.",
+    quote1: "A CLASSIC HIGH SCHOOL CLUB COMEDY OF LOVABLE MISFITS",
+    quote2: "CHAOTIC FRIENDSHIP SIMULATIONS AND ICONIC BANTER",
+    songTitle: "Zannenkei Rinjinbu",
+    songArtist: "Tomodachi Tsukuritai",
+    studio: "AIC Build",
+    bpm: 148,
+    keySignature: "C Major",
+    coverUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx10719-aNf9gOOw62Fs.png",
+    bannerUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/banner/10719-d6DYjUtuSmdg.jpg",
+    youtubeId: "-W3fXMTBsuI",
+    songPreviewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/Music/v4/ff/4e/aa/ff4eaa4c-2beb-89d2-721f-bce0589c2a98/mzaf_3103245856644361038.plus.aac.p.m4a",
+    illustrationType: "arcade-cabinet"
+  },
+  {
+    id: "20",
+    shortTitle: "NISEKOI",
+    titleRomaji: "Nisekoi",
+    titleEnglish: "Nisekoi: False Love",
+    rating: 8.0,
+    releaseYear: 2014,
+    category: "TV Series",
+    ageRating: "PG-13",
+    genres: ["Romance", "Comedy", "School"],
+    synopsis:
+      "To prevent an all-out turf war between their rival families, yakuza heir Raku Ichijo and gangster's daughter Chitoge Kirisaki must pretend to be a lovey-dovey couple while searching for a childhood promise key.",
+    quote1: "STUDIO SHAFT'S KALEIDOSCOPIC VISUAL FLAIR MEETS ROM-COM GOLD",
+    quote2: "THE ULTIMATE PROMISE LOCK MYSTERY AND TSUNDERE SPARKS",
+    songTitle: "CLICK",
+    songArtist: "ClariS",
+    studio: "Shaft",
+    bpm: 135,
+    keySignature: "Eb Major",
+    coverUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx18897-G2Fx2ZACsXBU.jpg",
+    bannerUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/banner/18897-h3TRFmkGYLkd.jpg",
+    youtubeId: "PuB1VpKbWtE",
+    songPreviewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/9c/42/ff/9c42ffce-7cac-aa67-2c93-563daeed8940/mzaf_13028682713551074548.plus.aac.p.m4a",
+    illustrationType: "cassette-synth"
+  },
+  {
+    id: "1",
+    shortTitle: "YAMADA-KUN",
+    titleRomaji: "Yamada-kun to 7-nin no Majo",
+    titleEnglish: "Yamada-kun and the Seven Witches",
+    rating: 8.0,
+    releaseYear: 2015,
+    category: "TV Series",
+    ageRating: "PG-13",
+    genres: ["Romance", "Comedy", "Supernatural"],
+    synopsis:
+      "High school delinquent Ryu Yamada accidentally discovers he can swap bodies with a kiss, leading him and honor student Urara Shiraishi on a chaotic hunt to uncover the school's seven witches.",
+    quote1: "BODY-SWAPPING CHAOS AND SUPERNATURAL HIGH SCHOOL ROMANCE",
+    quote2: "INFECTIOUS COMEDIC TIMING WITH AN ICONIC OPENING THEME",
+    songTitle: "Kuchizuke Diamond",
+    songArtist: "WEAVER",
+    studio: "LIDENFILMS",
+    bpm: 138,
+    keySignature: "F Major",
+    coverUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx20966-HboUtUzEKWl6.jpg",
+    bannerUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/banner/20966-0KwHGdCF9Ie1.jpg",
+    youtubeId: "vDOknfJIUu4",
+    songPreviewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/80/c4/90/80c4904b-7485-686d-bf5d-c279dd24188d/mzaf_10698822257358362061.plus.aac.p.m4a",
+    illustrationType: "vending-machine"
+  },
+  {
+    id: "18",
+    shortTitle: "RELIFE",
+    titleRomaji: "ReLIFE",
+    titleEnglish: "ReLIFE",
+    rating: 8.5,
+    releaseYear: 2016,
+    category: "TV Series",
+    ageRating: "PG-13",
+    genres: ["Drama", "Romance", "School"],
+    synopsis:
+      "Unemployed 27-year-old Arata Kaizaki takes a mysterious pill that restores his 17-year-old appearance for a one-year social rehabilitation experiment, rediscovering youth, purpose, and love.",
+    quote1: "A DEEPLY MOVING SECOND CHANCE AT YOUTH AND SELF-FORGIVENESS",
+    quote2: "BITTERSWEET, FUNNY, AND UNFORGETTABLY HUMAN",
+    songTitle: "Button",
+    songArtist: "PENGUIN RESEARCH",
+    studio: "TMS Entertainment",
+    bpm: 134,
+    keySignature: "A Major",
+    coverUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx21049-4AHSLeiDE9eg.png",
+    bannerUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/banner/21049-PeKXMMYru3Xl.png",
+    youtubeId: "fZCgXuxMAZY",
+    songPreviewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/60/e1/25/60e12584-cf56-0bb0-ec57-92b7b34d8836/mzaf_15489300278049320019.plus.aac.p.m4a",
+    illustrationType: "vending-machine"
+  },
+  {
+    id: "23",
+    shortTitle: "YOUR NAME.",
+    titleRomaji: "Kimi no Na wa.",
+    titleEnglish: "Your Name.",
+    rating: 9.3,
+    releaseYear: 2016,
+    category: "Movie",
+    ageRating: "PG-13",
+    genres: ["Romance", "Supernatural", "Drama"],
+    synopsis:
+      "Countryside shrine maiden Mitsuha and Tokyo schoolboy Taki mysteriously begin swapping bodies across time and space, racing against a falling comet to find each other before their memories fade.",
+    quote1: "A TRANSCENDENT CINEMATIC PHENOMENON OF TIME AND RED STRING FATE",
+    quote2: "SHINKAI'S LUMINOUS SKYSCAPES POWERED BY RADWIMPS' ICONIC SCORE",
+    songTitle: "Zenzenzense (Movie Ver.)",
+    songArtist: "RADWIMPS",
+    studio: "CoMix Wave Films",
+    bpm: 190,
+    keySignature: "B Major",
+    coverUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx21519-SUo3ZQuCbYhJ.png",
+    bannerUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/banner/21519-1ayMXgNlmByb.jpg",
+    youtubeId: "k4xGqY5IDBE",
+    songPreviewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f8/fd/9f/f8fd9f88-67e8-ce12-f44d-1b4fe421f1f9/mzaf_5313510550820503304.plus.aac.p.m4a",
+    illustrationType: "comet-sky"
+  },
+  {
+    id: "24",
+    shortTitle: "A SILENT VOICE",
+    titleRomaji: "Koe no Katachi",
+    titleEnglish: "A Silent Voice",
+    rating: 9.4,
+    releaseYear: 2016,
+    category: "Movie",
+    ageRating: "PG-13",
+    genres: ["Drama", "Romance", "Slice of Life"],
+    synopsis:
+      "Haunted by guilt for bullying his deaf classmate Shoko Nishimiya in elementary school, isolated teen Shoya Ishida seeks her out years later on a deeply emotional journey of forgiveness, healing, and connection.",
+    quote1: "DEVASTATINGLY RAW, EMPATHETIC, AND CATHARTICALLY BEAUTIFUL",
+    quote2: "KYOTO ANIMATION'S FINEST TRIUMPH ON REDEMPTION AND SELF-WORTH",
+    songTitle: "Koi wo Shita no wa",
+    songArtist: "aiko",
+    studio: "Kyoto Animation",
+    bpm: 108,
+    keySignature: "G Major",
+    coverUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx20954-sYRfE5jQRtSB.jpg",
+    bannerUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/banner/20954-f30bHMXa5Qoe.jpg",
+    youtubeId: "Sy4bPCuzfiQ",
+    songPreviewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/06/d6/eb/06d6eb1c-9c6b-84bc-4da3-1462074798ff/mzaf_3233254386248855645.plus.aac.p.m4a",
+    illustrationType: "sakura-crossing"
+  },
+  {
+    id: "5",
+    shortTitle: "IMOUTO SAE",
+    titleRomaji: "Imouto sae Ireba Ii.",
+    titleEnglish: "A Sister's All You Need",
+    rating: 7.2,
+    releaseYear: 2017,
+    category: "TV Series",
+    ageRating: "17+",
+    genres: ["Comedy", "Romance", "Slice of Life"],
+    synopsis:
+      "Light novelist Itsuki Hashima—obsessed with writing about the ultimate little sister—navigates publishing deadlines, tabletop games, and heartfelt romance alongside his eccentric circle of fellow creators.",
+    quote1: "BEHIND ITS OUTRAGEOUS OPENING LIES A GENUINE WRITER DRAMA",
+    quote2: "AN ODE TO CREATIVE PASSION, FRIENDSHIP, AND UNREQUITED LOVE",
+    songTitle: "Ashita no Kimi sae Ireba Ii.",
+    songArtist: "ChouCho",
+    studio: "SILVER LINK.",
+    bpm: 136,
+    keySignature: "Bb Major",
+    coverUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx98596-E2aZouOyuQ8G.jpg",
+    bannerUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/banner/98596-w7gpbUP7QESX.jpg",
+    youtubeId: "sPsIk-Weqoc",
+    songPreviewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/59/b6/d2/59b6d20e-c85a-f5b2-9f79-9acc8dbcdb59/mzaf_4446349734059029313.plus.aac.p.m4a",
+    illustrationType: "cassette-synth"
+  },
+  {
+    id: "9",
+    shortTitle: "JULIET",
+    titleRomaji: "Kishuku Gakkou no Juliet",
+    titleEnglish: "Boarding School Juliet",
+    rating: 8.9,
+    releaseYear: 2018,
+    category: "TV Series",
+    ageRating: "PG-13",
+    genres: ["Romance", "Comedy", "Action"],
+    synopsis:
+      "At the elite Dahlia Academy where two rival dorms war constantly, leaders Romio Inuzuka and Juliet Persia secretly start dating and must hide their forbidden romance while striving to change their world.",
+    quote1: "FORBIDDEN DEVOTION COMBINED WITH UNSTOPPABLE COMEDIC ENERGY",
+    quote2: "ONE OF THE MOST EARNEST AND REWARDING COUPLES IN ANIME",
+    songTitle: "Love with You",
+    songArtist: "fripSide",
+    studio: "LIDENFILMS",
+    bpm: 146,
+    keySignature: "F# Minor",
+    coverUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/nx101310-w1PLPsyg0XHr.jpg",
+    bannerUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/banner/101310-ybQFtNXjTyhp.jpg",
+    youtubeId: "Z9qlvLoZH8k",
+    songPreviewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/b3/51/99/b35199fb-33fc-fd85-6fd1-a020a2d8be93/mzaf_9717050700522262997.plus.aac.p.m4a",
+    illustrationType: "polar-wave"
+  },
+  {
+    id: "6",
+    shortTitle: "ORESUKI",
+    titleRomaji: "Ore wo Suki nano wa Omae dake ka yo",
+    titleEnglish: "Are You the Only One Who Loves Me?",
+    rating: 8.3,
+    releaseYear: 2019,
+    category: "TV Series",
+    ageRating: "PG-13",
+    genres: ["Comedy", "Romance", "School"],
+    synopsis:
+      "Expecting love confessions from two gorgeous girls on the infamous park bench, scheming nice-guy Joro instead gets asked to play wingman—while gloomy library girl Pansy sets her sights on him.",
+    quote1: "SUBVERTS EVERY ROM-COM TROPE WITH SAVAGE SELF-AWARENESS",
+    quote2: "BEWARE THE PARK BENCH IN THIS HILARIOUS TWISTED COMEDY",
+    songTitle: "Papapa",
+    songArtist: "Shuka Saito",
+    studio: "CONNECT",
+    bpm: 144,
+    keySignature: "G Major",
+    coverUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx104464-UdOCt3uyA2K9.png",
+    bannerUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/banner/104464-XbfWyamahIAu.jpg",
+    youtubeId: "Pt3MqwiSyKY",
+    songPreviewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/3d/45/bd/3d45bd3a-51bb-9060-6f21-01d649fd0a0c/mzaf_2231614658992872241.plus.aac.p.m4a",
+    illustrationType: "school-desk"
+  },
+  {
+    id: "25",
+    shortTitle: "JOSEE",
+    titleRomaji: "Josee to Tora to Sakana-tachi",
+    titleEnglish: "Josee, the Tiger and the Fish",
+    rating: 8.7,
+    releaseYear: 2020,
+    category: "Movie",
+    ageRating: "PG-13",
+    genres: ["Drama", "Romance", "Slice of Life"],
+    synopsis:
+      "University student and avid diver Tsuneo takes a caretaker job for Josee, a fiercely imaginative wheelchair-bound artist, inspiring each other to chase their dreams into the wide, scary ocean of life.",
+    quote1: "SOARS WITH ARTISTIC COURAGE AND OCEANIC WONDER",
+    quote2: "AN UPLIFTING ODE TO CHASING DREAMS AGAINST ALL ODDS",
+    songTitle: "Ao no Waltz",
+    songArtist: "Eve",
+    studio: "Bones",
+    bpm: 120,
+    keySignature: "Db Major",
+    coverUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx113596-LKA0bYJGjLnB.jpg",
+    bannerUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/banner/113596-8r3fCSFgQHIY.jpg",
+    youtubeId: "QvgpMxoyDds",
+    songPreviewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/a1/17/b4/a117b473-ffb1-6c7e-771f-b50804b4004f/mzaf_3218237334022403632.plus.aac.p.m4a",
+    illustrationType: "ocean-tiger"
+  },
+  {
+    id: "3",
+    shortTitle: "RAELIANA",
+    titleRomaji: "Kanojo ga Koushaku-tei ni Itta Riyuu",
+    titleEnglish: "Why Raeliana Ended Up at the Duke's Mansion",
+    rating: 8.1,
+    releaseYear: 2023,
+    category: "TV Series",
+    ageRating: "PG-13",
+    genres: ["Romance", "Fantasy", "Mystery"],
+    synopsis:
+      "Reincarnated as a minor novel character destined to be poisoned by her fiancé, Raeliana strikes a high-stakes six-month fake engagement with the calculating Duke Noah Wynknight to rewrite her fate.",
+    quote1: "SHARP WIT AND ARISTOCRATIC INTRIGUE IN A DEADLY ROMANCE",
+    quote2: "A CLEVER REINCARNATION MYSTERY THAT KEEPS YOU GUESSING",
+    songTitle: "SURVIVE",
+    songArtist: "MindaRyn",
+    studio: "Typhoon Graphics",
+    bpm: 142,
+    keySignature: "C# Minor",
+    coverUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx151847-OnTYbvb4y4mp.jpg",
+    bannerUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/banner/151847-S1pTlfRY2DqB.jpg",
+    youtubeId: "PlLli6OaU8U",
+    songPreviewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/9f/61/ff/9f61ffe6-e59d-59bf-e2a5-a5740bd7e1ac/mzaf_8165454170293598556.plus.aac.p.m4a",
+    illustrationType: "magic-circle"
+  },
+  {
+    id: "15",
+    shortTitle: "SIGN OF AFFECTION",
+    titleRomaji: "Yubisaki to Renren",
+    titleEnglish: "A Sign of Affection",
+    rating: 8.7,
+    releaseYear: 2024,
+    category: "TV Series",
+    ageRating: "PG-13",
+    genres: ["Romance", "Slice of Life"],
+    synopsis:
+      "Yuki Itose, a deaf university student living in a quiet world of her own, has her horizons tenderly expanded when she meets Itsuomi Nagi, a warm multilingual traveler who eagerly learns sign language.",
+    quote1: "TENDER, BREATHTAKINGLY INTIMATE AND VISUALLY POETIC",
+    quote2: "A MASTERCLASS IN GENTLE COMMUNICATION AND EMPATHY",
+    songTitle: "Yuki no Ne",
+    songArtist: "Novelbright",
+    studio: "Ajia-do",
+    bpm: 112,
+    keySignature: "B Major",
+    coverUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx166794-1MAXFMgND6qS.jpg",
+    bannerUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/banner/166794-11TpGckiG12q.jpg",
+    youtubeId: "hJd9FxYWzL0",
+    songPreviewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/37/0f/cc/370fcc96-1434-1aa1-397e-97d03b2e953c/mzaf_4543420244149963104.plus.aac.p.m4a",
+    illustrationType: "cassette-synth"
+  },
+  {
+    id: "4",
+    shortTitle: "TENSHI-TSUKI",
+    titleRomaji: "One Room, Hiatari Futsuu, Tenshi-tsuki.",
+    titleEnglish: "Studio Apartment, Good Lighting, Angel Included",
+    rating: 8.2,
+    releaseYear: 2024,
+    category: "TV Series",
+    ageRating: "PG-13",
+    genres: ["Romance", "Comedy", "Supernatural"],
+    synopsis:
+      "Kindhearted high schooler Shintaro Tokumitsu wakes up one morning to find Towa, a pure and literal angel sent from heaven to study humans, living on his studio apartment balcony.",
+    quote1: "PURE HEALING WARMTH UNDER ONE TINY STUDIO ROOF",
+    quote2: "SOOTHING SLICE-OF-LIFE SWEETNESS WITH HEAVENLY CHARM",
+    songTitle: "Kimi Iro no Kiseki",
+    songArtist: "Yui Ogura",
+    studio: "Okuruto Noboru",
+    bpm: 126,
+    keySignature: "A Major",
+    coverUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx169927-3FwBuKn4x5LL.jpg",
+    bannerUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/banner/169927-Z42R2hk0LvjJ.jpg",
+    youtubeId: "O06j982UG58",
+    songPreviewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/01/49/b2/0149b2eb-0f2d-626b-c38d-08b033cd8804/mzaf_11792931977983511243.plus.aac.p.m4a",
+    illustrationType: "vending-machine"
+  },
+  {
+    id: "12",
+    shortTitle: "AMAGAMI-SAN",
+    titleRomaji: "Amagami-san Chi no Enmusubi",
+    titleEnglish: "Tying the Knot with an Amagami Sister",
+    rating: 8.0,
+    releaseYear: 2024,
+    category: "TV Series",
+    ageRating: "PG-13",
+    genres: ["Romance", "Comedy", "Supernatural"],
+    synopsis:
+      "Orphaned student Uryu Kamihate moves into Kyoto's historic Amagami Shrine expecting quiet study time for medical school, only to learn he must marry one of the three shrine maiden sisters.",
+    quote1: "KYOTO SHRINE MYSTICISM MEETS HEARTFELT FAMILY BONDS",
+    quote2: "GORGEOUS AUTUMN COLORS AND SUPERNATURAL DESTINY",
+    songTitle: "Yawaku Koishite",
+    songArtist: "Momoiro Clover Z",
+    studio: "Drive",
+    bpm: 136,
+    keySignature: "A Minor",
+    coverUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx164172-GY2aqItIuqtR.jpg",
+    bannerUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/banner/164172-ceuofxXerReI.jpg",
+    youtubeId: "pwb10_z0zvw",
+    songPreviewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/7d/c8/9c/7dc89c4e-469b-0d47-58d9-591ad9d0b114/mzaf_1962518942424014895.plus.aac.p.m4a",
+    illustrationType: "torii-shrine"
+  },
+  {
+    id: "17",
+    shortTitle: "LONER LIFE",
+    titleRomaji: "Hitoribocchi no Isekai Kouryaku",
+    titleEnglish: "Loner Life in Another World",
+    rating: 7.5,
+    releaseYear: 2024,
+    category: "TV Series",
+    ageRating: "PG-13",
+    genres: ["Fantasy", "Comedy", "Isekai"],
+    synopsis:
+      "Summoned to another world after all the good cheat skills are already taken by his classmates, dedicated loner Haruka combines leftover oddball skills to live freely—until he has to rescue his class anyway.",
+    quote1: "TURNS LEFTOVER JUNK SKILLS INTO UNCONVENTIONAL GENIUS",
+    quote2: "LAID-BACK ISEKAI HUMOR WITH AN ANTI-HERO FLAIR",
+    songTitle: "ODD NUMBER",
+    songArtist: "Yoshino",
+    studio: "Hayabusa Film × Passione",
+    bpm: 138,
+    keySignature: "G Minor",
+    coverUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx173693-tRLdDE1BieXe.png",
+    bannerUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/banner/173693-TirKwvMQTEqr.jpg",
+    youtubeId: "eWzTg1d3W1o",
+    songPreviewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/98/32/9f/98329f59-06bd-bd13-ac13-e36daecb95f0/mzaf_1364021365327521390.plus.aac.p.m4a",
+    illustrationType: "arcade-cabinet"
+  },
+  {
+    id: "2",
+    shortTitle: "KURAKON",
+    titleRomaji: "Class no Daikirai na Joshi to Kekkon suru Koto ni Natta.",
+    titleEnglish: "I'm Getting Married to a Girl I Hate in My Class",
+    rating: 8.4,
+    releaseYear: 2025,
+    category: "TV Series",
+    ageRating: "PG-13",
+    genres: ["Romance", "Comedy", "School"],
+    synopsis:
+      "Forced into an arranged marriage by their grandparents, bitter classroom rivals Saito Hojo and Akane Sakuramori must navigate secret newlywed life under the same roof while slowly falling for each other.",
+    quote1: "FROM BITTER CLASSROOM RIVALS TO SECRET NEWLYWEDS",
+    quote2: "A DELIGHTFULLY TSUNDERE COHABITATION ROMANTIC COMEDY",
+    songTitle: "Koibito Ijou, Suki Miman",
+    songArtist: "=LOVE",
+    studio: "Studio Gokumi × AXsiZ",
+    bpm: 132,
+    keySignature: "D Major",
+    coverUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx178462-YW6BgSGGP4az.jpg",
+    bannerUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/banner/178462-Ez3ZwJx9szLY.jpg",
+    youtubeId: "ss7htgZZw8Y",
+    songPreviewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/44/67/cb/4467cb87-4231-b75a-b4f9-4bfd729c7a41/mzaf_13539162494623898650.plus.aac.p.m4a",
+    illustrationType: "school-desk"
+  },
+  {
+    id: "7",
+    shortTitle: "CRUSH AT WORK",
+    titleRomaji: "Kono Kaisha ni Suki na Hito ga Imasu",
+    titleEnglish: "I Have a Crush at Work",
+    rating: 8.7,
+    releaseYear: 2025,
+    category: "TV Series",
+    ageRating: "PG-13",
+    genres: ["Romance", "Comedy", "Slice of Life"],
+    synopsis:
+      "Coworkers Masugu Tateishi and Yui Mitsuya seem like constant office rivals by day, but behind closed doors they are madly in love and trying their hardest to keep their sweet workplace romance a secret.",
+    quote1: "ADULT WORKPLACE ROMANCE DONE WITH REFRESHING MATURITY",
+    quote2: "SECRET OFFICE GLANCES AND HEART-MELTING AFTER-HOURS SWEETNESS",
+    songTitle: "Ano ne,",
+    songArtist: "Polkadot Stingray",
+    studio: "Blade",
+    bpm: 124,
+    keySignature: "E Minor",
+    coverUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx179696-1MAqXYVXT7IT.jpg",
+    bannerUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/banner/179696-F96hLlVTFe3B.jpg",
+    youtubeId: "OWEzSDduLps",
+    songPreviewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/eb/e9/f2/ebe9f23b-d68f-e971-3684-301c5f4ac1ac/mzaf_12586668274530331524.plus.aac.p.m4a",
+    illustrationType: "vending-machine"
+  },
+  {
+    id: "16",
+    shortTitle: "APPRAISER",
+    titleRomaji: 'Fuguushoku "Kanteishi" ga Jitsu wa Saikyou Datta',
+    titleEnglish: 'Even Given the Worthless "Appraiser" Class, I\'m Actually the Strongest',
+    rating: 7.8,
+    releaseYear: 2025,
+    category: "TV Series",
+    ageRating: "PG-13",
+    genres: ["Action", "Fantasy", "Adventure"],
+    synopsis:
+      "Betrayed and abandoned in a deadly dungeon abyss for having only the 'Appraiser' skill, Ein is rescued by the World Tree's spirit Yuri and awakens godlike ocular powers that make him unstoppable.",
+    quote1: "FROM ABANDONED UNDERDOG TO GOD-TIER WORLD TREE CHAMPION",
+    quote2: "SATISFYING POWER PROGRESSION AND CATHARTIC REDEMPTION",
+    songTitle: "Crescendo",
+    songArtist: "ASTERISM",
+    studio: "Okuruto Noboru",
+    bpm: 156,
+    keySignature: "D Minor",
+    coverUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx178548-4QkzBuJAx8w7.jpg",
+    bannerUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/banner/178548-dKtmhvOKdr6t.jpg",
+    youtubeId: "3ZDbVRlCI4o",
+    songPreviewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/e9/26/fd/e926fd09-49cf-dd11-92d3-5cc2217c5537/mzaf_1705471967308512988.plus.aac.p.m4a",
+    illustrationType: "magic-circle"
+  },
+  {
+    id: "11",
+    shortTitle: "DANJO YUUJOU",
+    titleRomaji: "Danjo no Yuujou wa Seiritsu suru?",
+    titleEnglish: "Can a Boy-Girl Friendship Survive?",
+    rating: 7.0,
+    releaseYear: 2025,
+    category: "TV Series",
+    ageRating: "PG-13",
+    genres: ["Romance", "Comedy", "School"],
+    synopsis:
+      "Middle school best friends Himari Inuzuka and Yuu Natsume swore an eternal pact of platonic friendship while crafting floral accessories, until Yuu's first crush threatens to turn their bond upside down.",
+    quote1: "TESTS THE FRAGILE LINE BETWEEN PLATONIC BOND AND FIRST LOVE",
+    quote2: "COLORFUL YOUTH BANTER WITH FLORAL ARTISTRY",
+    songTitle: "Shitsumon, Koitte Nandeshoka?",
+    songArtist: "HoneyWorks feat. Hakoniwalily",
+    studio: "J.C.Staff",
+    bpm: 130,
+    keySignature: "D Major",
+    coverUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx153554-hHYe9aV6Gvlv.jpg",
+    bannerUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/banner/153554-tB8pqiRhaKsy.jpg",
+    youtubeId: "fZH5jDK5qV8",
+    songPreviewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/0f/85/c9/0f85c911-2932-31e0-893b-13cb49b77067/mzaf_6950154421065402166.plus.aac.p.m4a",
+    illustrationType: "sakura-crossing"
+  },
+  {
+    id: "13",
+    shortTitle: "SUMMER POCKETS",
+    titleRomaji: "Summer Pockets",
+    titleEnglish: "Summer Pockets",
+    rating: 7.6,
+    releaseYear: 2025,
+    category: "TV Series",
+    ageRating: "PG-13",
+    genres: ["Drama", "Romance", "Supernatural"],
+    synopsis:
+      "Visiting the tranquil island of Torishirojima to sort through his late grandmother's belongings, Hairi Takahara experiences an unforgettable, nostalgic summer filled with sea breezes and mystery.",
+    quote1: "SUNLIT ISLAND NOSTALGIA INFUSED WITH KEY'S SIGNATURE EMOTION",
+    quote2: "A WISTFUL SUMMER MEMORY OF CICADAS AND SEA BREEZES",
+    songTitle: "Alka Tale",
+    songArtist: "Konomi Suzuki",
+    studio: "feel.",
+    bpm: 122,
+    keySignature: "Eb Major",
+    coverUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx143200-42OaDCS6VEy3.png",
+    bannerUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/banner/143200-R0qpwS1C6b8i.jpg",
+    youtubeId: "x3_Pcru8SS8",
+    songPreviewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/c1/c5/9a/c1c59aab-dba7-50e7-35e9-45ec17b8e408/mzaf_10499504250048985447.plus.aac.p.m4a",
+    illustrationType: "ocean-tiger"
+  },
+  {
+    id: "14",
+    shortTitle: "GAME CENTER",
+    titleRomaji: "Game Center Shoujo to Ibunka Kouryuu",
+    titleEnglish: "Cultural Exchange with a Game Center Girl",
+    rating: 7.8,
+    releaseYear: 2025,
+    category: "TV Series",
+    ageRating: "PG-13",
+    genres: ["Romance", "Comedy", "Slice of Life"],
+    synopsis:
+      "Working part-time at a local arcade, Renji Kusakabe helps energetic British girl Lily Baker win a crane game plushie on Valentine's Day, kicking off an adorable cross-cultural friendship.",
+    quote1: "ADORABLE ARCADE CRANE GAMES AND CROSS-CULTURAL SPARKS",
+    quote2: "PURE SUGAR-RUSH WHOLESOMENESS IN EVERY EPISODE",
+    songTitle: "Futari no Start Button",
+    songArtist: "Lily Baker (CV: Sally Amaki) & Aoi",
+    studio: "Nomad",
+    bpm: 140,
+    keySignature: "C Major",
+    coverUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx180794-rQGxkguEc2ov.png",
+    bannerUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/banner/180794-15AlhRdZMhv7.jpg",
+    youtubeId: "QOVabX4iYYY",
+    songPreviewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/3b/60/c0/3b60c018-71fe-4795-51d0-1b249b9fcc32/mzaf_14180398115083916745.plus.aac.p.m4a",
+    illustrationType: "arcade-cabinet"
+  },
+  {
+    id: "19",
+    shortTitle: "KAORU HANA",
+    titleRomaji: "Kaoru Hana wa Rin to Saku",
+    titleEnglish: "The Fragrant Flower Blooms with Dignity (Waguri)",
+    rating: 8.2,
+    releaseYear: 2025,
+    category: "TV Series",
+    ageRating: "PG-13",
+    genres: ["Romance", "Drama", "School"],
+    synopsis:
+      "Despite the bitter rivalry between his rough delinquent boys' school and the prestigious girls' academy next door, intimidating-looking Rintaro Tsumugi forms a pure bond with cake-loving Kaoruko Waguri.",
+    quote1: "DISARMING KINDNESS THAT MELTS AWAY PREJUDICE AND FEAR",
+    quote2: "PURE HEARTFELT SINCERITY ANCHORED BY WAGURI'S RADIANT SMILE",
+    songTitle: "Manazashi wa Hikari",
+    songArtist: "Tatsuya Kitani",
+    studio: "CloverWorks",
+    bpm: 128,
+    keySignature: "F Major",
+    coverUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx181444-Ut9DDUZdfHwg.jpg",
+    bannerUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/banner/181444-SBhwJNPxjHrr.jpg",
+    youtubeId: "wMDwbC-cAQg",
+    songPreviewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/1d/eb/bd/1debbd79-705c-79c3-7b57-689628483627/mzaf_234292626159871160.plus.aac.p.m4a",
+    illustrationType: "sakura-crossing"
+  },
+  {
+    id: "22",
+    shortTitle: "RAMPARTS OF ICE",
+    titleRomaji: "Koori no Jouheki",
+    titleEnglish: "The Ramparts of Ice",
+    rating: 8.9,
+    releaseYear: 2026,
+    category: "TV Series",
+    ageRating: "PG-13",
+    genres: ["Romance", "Drama", "School"],
+    synopsis:
+      "Guarded behind an icy emotional wall, Koyuki Hikawa keeps everyone at arm's length until outgoing Minato Amamiya persistently steps into her world, sparking a nuanced story of four teens untangling love.",
+    quote1: "INTRICATE PSYCHOLOGICAL DEPTH AND DELICATE EMOTIONAL THAWING",
+    quote2: "AN ACHINGLY REAL PORTRAIT OF TEENAGE BOUNDARIES AND TRUST",
+    songTitle: "Toumei",
+    songArtist: "Novelbright",
+    studio: "Studio KAI",
+    bpm: 118,
+    keySignature: "F Minor",
+    coverUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx186497-uwPrNPphXvjP.jpg",
+    bannerUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/banner/186497-naXtQFMHJaR1.jpg",
+    youtubeId: "a7ah5by0Ffw",
+    songPreviewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/15/06/e9/1506e916-1197-f827-2f15-81c3b01cf3ff/mzaf_1656077387332112316.plus.aac.p.m4a",
+    illustrationType: "polar-wave"
+  },
+  {
+    id: "21",
+    shortTitle: "POLAR OPPOSITES",
+    titleRomaji: "Seihantai na Kimi to Boku (S1 & S2)",
+    titleEnglish: "You and I Are Polar Opposites",
+    rating: 10.0,
+    releaseYear: 2026,
+    category: "TV Series",
+    ageRating: "PG-13",
+    genres: ["Romance", "Comedy", "School"],
+    synopsis:
+      "Bubbly, trend-conscious Miyu Suzuki and quiet, brutally honest Yusuke Tani couldn't be more different, yet their refreshingly genuine communication and hilarious friend group create an absolute 10/10 masterpiece.",
+    quote1: "CROWNED 10 / 10 — THE GOLD STANDARD OF MODERN ROMANTIC COMEDY",
+    quote2: "REFRESHINGLY HONEST COMMUNICATION AND FLAWLESS ENSEMBLE CHEMISTRY",
+    songTitle: "Megane wo Hazushite",
+    songArtist: "Noa (乃紫)",
+    studio: "Lapin Track",
+    bpm: 130,
+    keySignature: "C Major",
+    coverUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx184951-s8Lg2muPBhdX.jpg",
+    bannerUrl: "https://s4.anilist.co/file/anilistcdn/media/anime/banner/184951-Rx1mZZfKa9IU.jpg",
+    youtubeId: "b5vpRUDkhT0",
+    songPreviewUrl:
+      "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/bd/ac/08/bdac08c1-c66a-29bf-32f7-488d95a2c4e9/mzaf_95014382894924247.plus.aac.p.m4a",
+    illustrationType: "polar-wave"
   }
 ];
 
 /* ============================================================================
-   🎨 17 ARCHIVAL SLEEVE PALETTES & PROCEDURAL TRACKLIST HYDRATION
+   🎨 17 ARCHIVAL PALETTES & STRICT CHRONOLOGICAL HYDRATION (2006 -> 2026)
    ============================================================================ */
 const ARCHIVAL_PALETTES = [
-  { spineColor: "#E8C5C0", spineTextColor: "#181818", coverBgColor: "#F2DAD6", coverInkColor: "#181818", accentColor: "#E05A3A" }, // Pastel Pink
-  { spineColor: "#1C2838", spineTextColor: "#F2F1EC", coverBgColor: "#212F42", coverInkColor: "#F4F3EF", accentColor: "#E05A3A" }, // Navy
-  { spineColor: "#C8522A", spineTextColor: "#FAF7F2", coverBgColor: "#EDE6DA", coverInkColor: "#181818", accentColor: "#C8522A" }, // Burnt Orange
-  { spineColor: "#EBE7DD", spineTextColor: "#181818", coverBgColor: "#F4F1E8", coverInkColor: "#181818", accentColor: "#204A87" }, // Cream
-  { spineColor: "#1E448E", spineTextColor: "#F5F5F2", coverBgColor: "#234C9E", coverInkColor: "#F6F5F0", accentColor: "#F2C14E" }, // Cobalt Blue
-  { spineColor: "#5C1E28", spineTextColor: "#F4EFEA", coverBgColor: "#EFE9E2", coverInkColor: "#3D1219", accentColor: "#8C2939" }, // Burgundy
-  { spineColor: "#748773", spineTextColor: "#141A14", coverBgColor: "#DCE3DA", coverInkColor: "#181E18", accentColor: "#3F5740" }, // Sage Green
-  { spineColor: "#1B1B1A", spineTextColor: "#EAEAE8", coverBgColor: "#1E1E1D", coverInkColor: "#F0EFEA", accentColor: "#E05A3A" }, // Matte Black
-  { spineColor: "#1C5359", spineTextColor: "#F2F5F4", coverBgColor: "#E6ECEB", coverInkColor: "#143538", accentColor: "#1C5359" }, // Teal
-  { spineColor: "#D49E2A", spineTextColor: "#181818", coverBgColor: "#F3EAD2", coverInkColor: "#181818", accentColor: "#B85D19" }, // Mustard Yellow
-  { spineColor: "#2C2956", spineTextColor: "#F2F0F7", coverBgColor: "#25224A", coverInkColor: "#F4F2FA", accentColor: "#E05A3A" }, // Indigo
-  { spineColor: "#F5F4EE", spineTextColor: "#181818", coverBgColor: "#F8F7F2", coverInkColor: "#181818", accentColor: "#E05A3A" }, // Off-White
-  { spineColor: "#B56922", spineTextColor: "#FAF6F0", coverBgColor: "#EFE5D8", coverInkColor: "#261709", accentColor: "#B56922" }, // Amber
-  { spineColor: "#6B7CA6", spineTextColor: "#141720", coverBgColor: "#E3E7F2", coverInkColor: "#1B2234", accentColor: "#3D5285" }, // Periwinkle
-  { spineColor: "#263F32", spineTextColor: "#EFECE6", coverBgColor: "#E7ECE8", coverInkColor: "#182820", accentColor: "#C85A32" }, // Forest Moss
-  { spineColor: "#3D4C57", spineTextColor: "#F3F4F5", coverBgColor: "#E4E8EB", coverInkColor: "#182026", accentColor: "#E05A3A" }, // Slate Petrol
-  { spineColor: "#9E4638", spineTextColor: "#F6F2EC", coverBgColor: "#F2E7E4", coverInkColor: "#291410", accentColor: "#9E4638" }  // Terracotta
+  { spineColor: "#1C2838", spineTextColor: "#F2F1EC", coverBgColor: "#212F42", coverInkColor: "#F4F3EF", accentColor: "#E05A3A" },
+  { spineColor: "#E8C5C0", spineTextColor: "#181818", coverBgColor: "#F2DAD6", coverInkColor: "#181818", accentColor: "#D6492A" },
+  { spineColor: "#C8522A", spineTextColor: "#FAF7F2", coverBgColor: "#EDE6DA", coverInkColor: "#181818", accentColor: "#C8522A" },
+  { spineColor: "#EBE7DD", spineTextColor: "#181818", coverBgColor: "#F4F1E8", coverInkColor: "#181818", accentColor: "#204A87" },
+  { spineColor: "#1E448E", spineTextColor: "#F5F5F2", coverBgColor: "#234C9E", coverInkColor: "#F6F5F0", accentColor: "#F2C14E" },
+  { spineColor: "#5C1E28", spineTextColor: "#F4EFEA", coverBgColor: "#EFE9E2", coverInkColor: "#3D1219", accentColor: "#8C2939" },
+  { spineColor: "#748773", spineTextColor: "#141A14", coverBgColor: "#DCE3DA", coverInkColor: "#181E18", accentColor: "#3F5740" },
+  { spineColor: "#1B1B1A", spineTextColor: "#EAEAE8", coverBgColor: "#1E1E1D", coverInkColor: "#F0EFEA", accentColor: "#E05A3A" },
+  { spineColor: "#1C5359", spineTextColor: "#F2F5F4", coverBgColor: "#E6ECEB", coverInkColor: "#143538", accentColor: "#1C5359" },
+  { spineColor: "#D49E2A", spineTextColor: "#181818", coverBgColor: "#F3EAD2", coverInkColor: "#181818", accentColor: "#B85D19" },
+  { spineColor: "#2C2956", spineTextColor: "#F2F0F7", coverBgColor: "#25224A", coverInkColor: "#F4F2FA", accentColor: "#E05A3A" },
+  { spineColor: "#F5F4EE", spineTextColor: "#181818", coverBgColor: "#F8F7F2", coverInkColor: "#181818", accentColor: "#E05A3A" },
+  { spineColor: "#B56922", spineTextColor: "#FAF6F0", coverBgColor: "#EFE5D8", coverInkColor: "#261709", accentColor: "#B56922" },
+  { spineColor: "#6B7CA6", spineTextColor: "#141720", coverBgColor: "#E3E7F2", coverInkColor: "#1B2234", accentColor: "#3D5285" },
+  { spineColor: "#263F32", spineTextColor: "#EFECE6", coverBgColor: "#E7ECE8", coverInkColor: "#182820", accentColor: "#C85A32" },
+  { spineColor: "#3D4C57", spineTextColor: "#F3F4F5", coverBgColor: "#E4E8EB", coverInkColor: "#182026", accentColor: "#E05A3A" },
+  { spineColor: "#9E4638", spineTextColor: "#F6F2EC", coverBgColor: "#F2E7E4", coverInkColor: "#291410", accentColor: "#9E4638" }
 ];
 
 const CHORD_BANK = [
@@ -735,24 +787,31 @@ const CHORD_BANK = [
   [277.18, 329.63, 415.3, 493.88, 622.25]
 ];
 
-function hydrateList(rawList, offset) {
-  return rawList.map((entry, idx) => {
+function hydrateChronologically(rawList, prefix, offset) {
+  const sorted = [...rawList].sort((a, b) => {
+    if (a.releaseYear !== b.releaseYear) return a.releaseYear - b.releaseYear;
+    return a.titleEnglish.localeCompare(b.titleEnglish);
+  });
+
+  return sorted.map((entry, idx) => {
     const pal = ARCHIVAL_PALETTES[(idx + offset) % ARCHIVAL_PALETTES.length];
     const i = idx + offset;
+    const catalogCode = `${prefix}-${String(idx + 1).padStart(3, "0")}`;
     const tracks = [
       {
         number: "01",
-        title: `${entry.songTitle} (Opening Theme)`,
-        role: `OP • ${entry.songArtist}`,
-        duration: "01:30",
+        title: `${entry.songTitle} (Official Theme)`,
+        role: `OFFICIAL OP / OST • ${entry.songArtist}`,
+        duration: "00:30",
         bpm: entry.bpm,
         notes: CHORD_BANK[i % CHORD_BANK.length],
-        waveformSeed: i * 13 + 1
+        waveformSeed: i * 13 + 1,
+        isOfficialOst: true
       },
       {
         number: "02",
         title: `${entry.shortTitle} — Main Overture`,
-        role: `OST Suite • ${entry.studio}`,
+        role: `Synth Suite • ${entry.studio}`,
         duration: "03:18",
         bpm: Math.max(84, entry.bpm - 18),
         notes: CHORD_BANK[(i + 2) % CHORD_BANK.length],
@@ -786,12 +845,12 @@ function hydrateList(rawList, offset) {
         waveformSeed: i * 13 + 5
       }
     ];
-    return { ...entry, ...pal, tracks };
+    return { ...entry, catalogCode, ...pal, tracks };
   });
 }
 
-const WATCHED_RELEASES = hydrateList(RAW_WATCHED_ANIME, 0);
-const ONGOING_RELEASES = hydrateList(RAW_CURRENTLY_WATCHING, 3);
+const WATCHED_RELEASES = hydrateChronologically(RAW_WATCHED_ANIME, "ANM", 0);
+const ONGOING_RELEASES = hydrateChronologically(RAW_CURRENTLY_WATCHING, "ONG", 4);
 const ALL_RELEASES = [...WATCHED_RELEASES, ...ONGOING_RELEASES];
 const RULER_YEARS = [
   2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022,
@@ -799,12 +858,25 @@ const RULER_YEARS = [
 ];
 
 /* ============================================================================
-   🖼️ PROCEDURAL HIGH-DPI HTML5 <CANVAS> TEXTURE GENERATOR
+   🖼️ HIGH-DPI HTML5 <CANVAS> TEXTURES (OFFICIAL ANIME ART + SWISS FALLBACK)
    ============================================================================ */
 const spineTexCache = new Map();
 const frontTexCache = new Map();
 const backTexCache = new Map();
 const discTexCache = new Map();
+const loadedPosterImages = {};
+
+function drawCoverImage(ctx, img, dx, dy, dw, dh, focusY = 0.25) {
+  const iw = img.naturalWidth || img.width;
+  const ih = img.naturalHeight || img.height;
+  if (!iw || !ih) return;
+  const scale = Math.max(dw / iw, dh / ih);
+  const sw = dw / scale;
+  const sh = dh / scale;
+  const sx = (iw - sw) / 2;
+  const sy = Math.max(0, Math.min(ih - sh, (ih - sh) * focusY));
+  ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+}
 
 function drawPaperGrain(ctx, w, h, alpha = 0.03) {
   ctx.save();
@@ -824,11 +896,9 @@ function drawProceduralIllustration(ctx, release, x, y, w, h) {
   const ink = release.coverInkColor;
   const accent = release.accentColor;
   const bg = release.coverBgColor;
-
   ctx.fillStyle = bg;
   ctx.fillRect(x, y, w, h);
 
-  // Swiss background grid
   ctx.strokeStyle = ink;
   ctx.globalAlpha = 0.1;
   ctx.lineWidth = 1;
@@ -848,254 +918,10 @@ function drawProceduralIllustration(ctx, release, x, y, w, h) {
 
   const cx = x + w / 2;
   const cy = y + h / 2;
-
-  switch (release.illustrationType) {
-    case "vending-machine": {
-      ctx.fillStyle = accent;
-      ctx.globalAlpha = 0.16;
-      ctx.beginPath();
-      ctx.arc(cx + 28, cy - 8, 190, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.globalAlpha = 1;
-
-      const vmW = w * 0.32;
-      const vmH = h * 0.72;
-      const vmX = cx - vmW / 2;
-      const vmY = cy - vmH / 2 + 6;
-
-      // Isometric depth
-      ctx.fillStyle = ink;
-      ctx.beginPath();
-      ctx.moveTo(vmX + vmW, vmY);
-      ctx.lineTo(vmX + vmW + 24, vmY - 16);
-      ctx.lineTo(vmX + vmW + 24, vmY + vmH - 16);
-      ctx.lineTo(vmX + vmW, vmY + vmH);
-      ctx.closePath();
-      ctx.fill();
-
-      ctx.fillStyle = accent;
-      ctx.beginPath();
-      ctx.moveTo(vmX, vmY);
-      ctx.lineTo(vmX + 24, vmY - 16);
-      ctx.lineTo(vmX + vmW + 24, vmY - 16);
-      ctx.lineTo(vmX + vmW, vmY);
-      ctx.closePath();
-      ctx.fill();
-
-      ctx.fillStyle = "#FAF8F5";
-      ctx.strokeStyle = ink;
-      ctx.lineWidth = 3;
-      ctx.fillRect(vmX, vmY, vmW, vmH);
-      ctx.strokeRect(vmX, vmY, vmW, vmH);
-
-      // Display window & beverage cans
-      const winH = vmH * 0.48;
-      ctx.fillStyle = bg;
-      ctx.fillRect(vmX + 16, vmY + 18, vmW - 32, winH);
-      ctx.strokeRect(vmX + 16, vmY + 18, vmW - 32, winH);
-
-      for (let r = 0; r < 3; r++) {
-        const sy = vmY + 18 + ((r + 1) * winH) / 3;
-        ctx.beginPath();
-        ctx.moveTo(vmX + 18, sy);
-        ctx.lineTo(vmX + vmW - 18, sy);
-        ctx.stroke();
-        for (let c = 0; c < 5; c++) {
-          const canW = (vmW - 64) / 5;
-          const canX = vmX + 24 + c * (canW + 4);
-          const canY = sy - winH / 3 + 8;
-          ctx.fillStyle = (r + c) % 2 === 0 ? accent : ink;
-          ctx.fillRect(canX, canY, canW - 2, winH / 3 - 10);
-        }
-      }
-
-      ctx.fillStyle = accent;
-      ctx.fillRect(vmX + 16, vmY + winH + 28, vmW - 32, 26);
-      ctx.fillStyle = ink;
-      ctx.fillRect(vmX + 16, vmY + vmH - 56, vmW - 72, 38);
-      break;
-    }
-
-    case "torii-shrine": {
-      ctx.fillStyle = accent;
-      ctx.beginPath();
-      ctx.arc(cx, cy - 12, Math.min(w, h) * 0.3, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = ink;
-      ctx.fillRect(cx - 140, cy - 95, 280, 18);
-      ctx.fillRect(cx - 115, cy - 58, 230, 13);
-      ctx.fillRect(cx - 84, cy - 80, 20, 195);
-      ctx.fillRect(cx + 64, cy - 80, 20, 195);
-      break;
-    }
-
-    case "comet-sky": {
-      ctx.strokeStyle = ink;
-      for (let r = 35; r <= 185; r += 30) {
-        ctx.lineWidth = r === 125 ? 2.4 : 1.1;
-        ctx.beginPath();
-        ctx.arc(cx, cy, r, 0, Math.PI * 2);
-        ctx.stroke();
-      }
-      ctx.strokeStyle = accent;
-      ctx.lineWidth = 4.5;
-      ctx.beginPath();
-      ctx.moveTo(x + 45, y + h - 50);
-      ctx.quadraticCurveTo(cx - 35, cy - 100, x + w - 50, y + 55);
-      ctx.stroke();
-
-      ctx.fillStyle = accent;
-      ctx.beginPath();
-      ctx.arc(cx + 45, cy - 42, 13, 0, Math.PI * 2);
-      ctx.fill();
-      break;
-    }
-
-    case "arcade-cabinet": {
-      const bw = Math.min(w, h) * 0.58;
-      const bx = cx - bw / 2;
-      const by = cy - bw / 2;
-      ctx.strokeStyle = ink;
-      ctx.lineWidth = 3.5;
-      ctx.strokeRect(bx, by, bw, bw);
-      ctx.fillStyle = accent;
-      ctx.fillRect(bx, by, bw, 30);
-      ctx.beginPath();
-      ctx.moveTo(cx, by + 30);
-      ctx.lineTo(cx, cy - 15);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(cx, cy + 12, 34, Math.PI * 0.85, Math.PI * 0.15, true);
-      ctx.stroke();
-      ctx.fillStyle = accent;
-      ctx.beginPath();
-      ctx.arc(cx, cy + 68, 28, 0, Math.PI * 2);
-      ctx.fill();
-      break;
-    }
-
-    case "magic-circle": {
-      const rOuter = Math.min(w, h) * 0.36;
-      ctx.strokeStyle = ink;
-      ctx.lineWidth = 2.8;
-      ctx.beginPath();
-      ctx.arc(cx, cy, rOuter, 0, Math.PI * 2);
-      ctx.stroke();
-
-      for (let t = 0; t < 2; t++) {
-        ctx.strokeStyle = t === 0 ? ink : accent;
-        ctx.beginPath();
-        for (let i = 0; i < 3; i++) {
-          const a = ((i * 120 + t * 60 - 90) * Math.PI) / 180;
-          const px = cx + Math.cos(a) * rOuter * 0.78;
-          const py = cy + Math.sin(a) * rOuter * 0.78;
-          if (i === 0) ctx.moveTo(px, py);
-          else ctx.lineTo(px, py);
-        }
-        ctx.closePath();
-        ctx.stroke();
-      }
-      ctx.fillStyle = accent;
-      ctx.beginPath();
-      ctx.arc(cx, cy, 20, 0, Math.PI * 2);
-      ctx.fill();
-      break;
-    }
-
-    case "sakura-crossing": {
-      ctx.strokeStyle = ink;
-      ctx.lineWidth = 5;
-      ctx.beginPath();
-      ctx.moveTo(cx - 70, y + 40);
-      ctx.lineTo(cx - 70, y + h - 30);
-      ctx.stroke();
-
-      ctx.strokeStyle = accent;
-      ctx.lineWidth = 8;
-      ctx.beginPath();
-      ctx.moveTo(cx - 105, cy + 35);
-      ctx.lineTo(cx + 155, cy - 68);
-      ctx.stroke();
-
-      ctx.fillStyle = accent;
-      [[cx + 35, cy - 85, 14], [cx + 95, cy - 20, 18], [cx + 15, cy + 40, 15], [cx + 115, cy + 75, 12]].forEach(
-        ([px, py, pr]) => {
-          ctx.beginPath();
-          ctx.ellipse(px, py, pr, pr * 0.6, Math.PI / 5, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      );
-      break;
-    }
-
-    case "cassette-synth": {
-      const dw = w * 0.54;
-      const dh = h * 0.5;
-      ctx.fillStyle = ink;
-      ctx.fillRect(cx - dw / 2, cy - dh / 2, dw, dh);
-      ctx.fillStyle = accent;
-      ctx.fillRect(cx - dw / 2 + 20, cy - dh / 2 + 20, dw - 40, 52);
-      [-dw * 0.24, dw * 0.24].forEach((off) => {
-        ctx.fillStyle = bg;
-        ctx.beginPath();
-        ctx.arc(cx + off, cy + 24, 44, 0, Math.PI * 2);
-        ctx.fill();
-      });
-      break;
-    }
-
-    case "ocean-tiger": {
-      ctx.fillStyle = accent;
-      ctx.beginPath();
-      ctx.arc(cx, cy - 24, Math.min(w, h) * 0.24, 0, Math.PI * 2);
-      ctx.fill();
-      for (let r = 0; r < 5; r++) {
-        ctx.fillStyle = r % 2 === 0 ? ink : bg;
-        ctx.fillRect(x + 48, cy + 12 + r * 26, w - 96, 14);
-      }
-      break;
-    }
-
-    case "school-desk": {
-      ctx.fillStyle = accent;
-      ctx.globalAlpha = 0.22;
-      ctx.beginPath();
-      ctx.moveTo(cx - 120, cy - 120);
-      ctx.lineTo(cx + 75, cy - 120);
-      ctx.lineTo(cx + 165, cy + 135);
-      ctx.lineTo(cx - 25, cy + 135);
-      ctx.closePath();
-      ctx.fill();
-      ctx.globalAlpha = 1;
-      ctx.strokeStyle = ink;
-      ctx.lineWidth = 3.5;
-      ctx.strokeRect(cx - 120, cy - 120, 195, 195);
-      ctx.fillStyle = accent;
-      ctx.beginPath();
-      ctx.moveTo(cx + 120, cy - 50);
-      ctx.lineTo(cx - 12, cy - 8);
-      ctx.lineTo(cx + 28, cy + 24);
-      ctx.closePath();
-      ctx.fill();
-      break;
-    }
-
-    case "polar-wave":
-    default: {
-      const r = Math.min(w, h) * 0.24;
-      ctx.fillStyle = ink;
-      ctx.beginPath();
-      ctx.arc(cx - r * 0.52, cy, r, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = accent;
-      ctx.beginPath();
-      ctx.arc(cx + r * 0.52, cy, r, 0, Math.PI * 2);
-      ctx.fill();
-      break;
-    }
-  }
-
+  ctx.fillStyle = accent;
+  ctx.beginPath();
+  ctx.arc(cx, cy, Math.min(w, h) * 0.28, 0, Math.PI * 2);
+  ctx.fill();
   ctx.strokeStyle = ink;
   ctx.lineWidth = 2.2;
   ctx.strokeRect(x, y, w, h);
@@ -1131,22 +957,27 @@ function getSpineTexture(release) {
   ctx.textBaseline = "middle";
   ctx.fillText(release.catalogCode, 128, 64);
 
+  ctx.font = "700 20px 'IBM Plex Mono', monospace";
+  ctx.globalAlpha = 0.85;
+  ctx.fillText(String(release.releaseYear), 128, 122);
+  ctx.globalAlpha = 1;
+
   if (release.rating >= 9.0 || release.isOngoing) {
     ctx.fillStyle = "#E05A3A";
     ctx.beginPath();
-    ctx.arc(128, 122, 10, 0, Math.PI * 2);
+    ctx.arc(128, 160, 9, 0, Math.PI * 2);
     ctx.fill();
   }
 
   ctx.save();
-  ctx.translate(128, 515);
+  ctx.translate(128, 535);
   ctx.rotate(Math.PI / 2);
   ctx.fillStyle = release.spineTextColor;
   ctx.font = "700 34px 'Inter', sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "bottom";
   ctx.fillText(release.shortTitle.toUpperCase(), 0, -4);
-  ctx.globalAlpha = 0.75;
+  ctx.globalAlpha = 0.78;
   ctx.font = "500 20px 'IBM Plex Mono', monospace";
   ctx.textBaseline = "top";
   ctx.fillText(`${release.songArtist.toUpperCase()}  •  ${release.releaseYear}`, 0, 8);
@@ -1155,7 +986,7 @@ function getSpineTexture(release) {
   ctx.fillStyle = release.spineTextColor;
   ctx.font = "700 26px 'IBM Plex Mono', monospace";
   ctx.textAlign = "center";
-  ctx.fillText(`★ ${release.rating.toFixed(1)}`, 128, 945);
+  ctx.fillText(release.rating >= 10 ? "★ 10.0" : `★ ${release.rating.toFixed(1)}`, 128, 945);
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.anisotropy = 8;
@@ -1164,7 +995,7 @@ function getSpineTexture(release) {
 }
 
 function getFrontCoverTexture(release, externalImg = null) {
-  const key = `${release.id}_${externalImg ? "img" : "proc"}`;
+  const key = `${release.id}_${externalImg ? "art_v2" : "swiss_v2"}`;
   if (frontTexCache.has(key)) return frontTexCache.get(key);
 
   const canvas = document.createElement("canvas");
@@ -1172,88 +1003,98 @@ function getFrontCoverTexture(release, externalImg = null) {
   canvas.height = 1024;
   const ctx = canvas.getContext("2d");
 
-  const bg = release.coverBgColor;
-  const ink = release.coverInkColor;
-  const accent = release.accentColor;
-
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, 1024, 1024);
-  drawPaperGrain(ctx, 1024, 1024, 0.035);
-
-  ctx.strokeStyle = ink;
-  ctx.lineWidth = 3;
-  ctx.strokeRect(36, 36, 952, 952);
-
-  ctx.fillStyle = ink;
-  ctx.font = "700 22px 'IBM Plex Mono', monospace";
-  ctx.textAlign = "left";
-  ctx.fillText(`DISC ARCHIVE  —  ${release.catalogCode}`, 68, 86);
-  ctx.font = "500 19px 'IBM Plex Mono', monospace";
-  ctx.globalAlpha = 0.72;
-  ctx.fillText(`${release.category.toUpperCase()}  •  ${release.studio.toUpperCase()}  •  ${release.releaseYear}`, 68, 118);
-  ctx.globalAlpha = 1;
-
-  const scoreText = release.isOngoing
-    ? `EP ${release.currentEpisode}/${release.totalEpisodes} • ★ ${release.rating.toFixed(1)}`
-    : release.rating >= 10
-    ? "👑 10.0 / 10"
-    : `SCORE ★ ${release.rating.toFixed(1)} / 10`;
-
-  ctx.fillStyle = accent;
-  ctx.fillRect(670, 62, 286, 56);
-  ctx.fillStyle = "#FFFFFF";
-  ctx.font = "700 22px 'IBM Plex Mono', monospace";
-  ctx.textAlign = "center";
-  ctx.fillText(scoreText, 813, 97);
-
-  ctx.fillStyle = ink;
-  ctx.fillRect(68, 144, 888, 2.5);
-
-  drawProceduralIllustration(ctx, release, 68, 170, 888, 535);
   if (externalImg) {
-    ctx.save();
+    ctx.fillStyle = "#161615";
+    ctx.fillRect(0, 0, 1024, 1024);
+    drawCoverImage(ctx, externalImg, 0, 0, 1024, 1024, 0.24);
+
+    const topGrad = ctx.createLinearGradient(0, 0, 0, 200);
+    topGrad.addColorStop(0, "rgba(18, 18, 17, 0.82)");
+    topGrad.addColorStop(1, "rgba(18, 18, 17, 0)");
+    ctx.fillStyle = topGrad;
+    ctx.fillRect(0, 0, 1024, 200);
+
+    const botGrad = ctx.createLinearGradient(0, 620, 0, 1024);
+    botGrad.addColorStop(0, "rgba(16, 16, 15, 0)");
+    botGrad.addColorStop(0.45, "rgba(16, 16, 15, 0.78)");
+    botGrad.addColorStop(1, "rgba(16, 16, 15, 0.96)");
+    ctx.fillStyle = botGrad;
+    ctx.fillRect(0, 620, 1024, 404);
+
+    ctx.strokeStyle = "rgba(255,255,255,0.32)";
+    ctx.lineWidth = 2.5;
+    ctx.strokeRect(28, 28, 968, 968);
+
+    ctx.fillStyle = "#FAF9F6";
+    ctx.font = "700 22px 'IBM Plex Mono', monospace";
+    ctx.textAlign = "left";
+    ctx.fillText(`DISC ARCHIVE  —  ${release.catalogCode}`, 56, 76);
+    ctx.fillStyle = "rgba(250,249,246,0.78)";
+    ctx.font = "500 18px 'IBM Plex Mono', monospace";
+    ctx.fillText(`${release.releaseYear}  •  ${release.category.toUpperCase()}  •  ${release.studio.toUpperCase()}`, 56, 108);
+
+    const scoreText = release.isOngoing
+      ? `EP ${release.currentEpisode}/${release.totalEpisodes} • ★ ${release.rating.toFixed(1)}`
+      : release.rating >= 10
+      ? "👑 10.0 / 10"
+      : `★ ${release.rating.toFixed(1)} / 10`;
+
+    ctx.fillStyle = "#E05A3A";
+    ctx.fillRect(712, 48, 256, 54);
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = "700 23px 'IBM Plex Mono', monospace";
+    ctx.textAlign = "center";
+    ctx.fillText(scoreText, 840, 83);
+    ctx.textAlign = "left";
+
+    ctx.fillStyle = "#E05A3A";
     ctx.beginPath();
-    ctx.rect(520, 194, 412, 487);
-    ctx.clip();
-    const sc = Math.max(412 / externalImg.width, 487 / externalImg.height);
-    const dw = externalImg.width * sc;
-    const dh = externalImg.height * sc;
-    ctx.drawImage(externalImg, 520 + (412 - dw) / 2, 194 + (487 - dh) / 2, dw, dh);
+    ctx.arc(66, 804, 8, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "rgba(250,249,246,0.9)";
+    ctx.font = "600 19px 'IBM Plex Mono', monospace";
+    ctx.fillText(`${release.genres.join(" / ").toUpperCase()}  •  ${release.bpm} BPM  •  ${release.ageRating}`, 88, 811);
+
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = "800 54px 'Inter', sans-serif";
+    const disp = release.titleEnglish.length > 26 ? release.shortTitle : release.titleEnglish;
+    ctx.fillText(disp, 56, 882);
+
+    ctx.fillStyle = "rgba(234,234,232,0.82)";
+    ctx.font = "500 22px 'Inter', sans-serif";
+    ctx.fillText(release.titleRomaji, 56, 922);
+
+    ctx.fillStyle = "#F5A894";
+    ctx.font = "600 20px 'IBM Plex Mono', monospace";
+    ctx.fillText(`♪ ${release.songTitle.toUpperCase()} — ${release.songArtist.toUpperCase()}`, 56, 966);
+  } else {
+    const bg = release.coverBgColor;
+    const ink = release.coverInkColor;
+    const accent = release.accentColor;
+
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, 1024, 1024);
+    drawPaperGrain(ctx, 1024, 1024, 0.035);
     ctx.strokeStyle = ink;
-    ctx.lineWidth = 4;
-    ctx.strokeRect(520, 194, 412, 487);
-    ctx.restore();
+    ctx.lineWidth = 3;
+    ctx.strokeRect(36, 36, 952, 952);
+
+    ctx.fillStyle = ink;
+    ctx.font = "700 22px 'IBM Plex Mono', monospace";
+    ctx.textAlign = "left";
+    ctx.fillText(`DISC ARCHIVE  —  ${release.catalogCode}`, 68, 86);
+
+    drawProceduralIllustration(ctx, release, 68, 170, 888, 535);
+
+    ctx.fillStyle = ink;
+    ctx.font = "800 54px 'Inter', sans-serif";
+    const disp = release.titleEnglish.length > 26 ? release.shortTitle : release.titleEnglish;
+    ctx.fillText(disp, 68, 848);
+    ctx.fillStyle = accent;
+    ctx.font = "600 21px 'IBM Plex Mono', monospace";
+    ctx.fillText(`♪ ${release.songTitle.toUpperCase()} — ${release.songArtist.toUpperCase()}`, 68, 942);
   }
-
-  ctx.fillStyle = ink;
-  ctx.fillRect(68, 732, 888, 2.5);
-
-  ctx.fillStyle = "#E05A3A";
-  ctx.beginPath();
-  ctx.arc(80, 768, 9, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = ink;
-  ctx.font = "700 20px 'IBM Plex Mono', monospace";
-  ctx.textAlign = "left";
-  ctx.fillText(
-    `${release.genres.join(" / ").toUpperCase()}   —   ${release.bpm} BPM   —   ${release.ageRating}`,
-    102,
-    775
-  );
-
-  ctx.font = "800 56px 'Inter', sans-serif";
-  const disp = release.titleEnglish.length > 26 ? release.shortTitle : release.titleEnglish;
-  ctx.fillText(disp, 68, 848);
-
-  ctx.globalAlpha = 0.78;
-  ctx.font = "500 24px 'Inter', sans-serif";
-  ctx.fillText(release.titleRomaji, 68, 892);
-
-  ctx.globalAlpha = 1;
-  ctx.font = "600 21px 'IBM Plex Mono', monospace";
-  ctx.fillStyle = accent;
-  ctx.fillText(`♪ ${release.songTitle.toUpperCase()} — ${release.songArtist.toUpperCase()}`, 68, 942);
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.anisotropy = 8;
@@ -1277,15 +1118,16 @@ function getBackCoverTexture(release) {
 
   ctx.fillStyle = release.coverInkColor;
   ctx.font = "700 28px 'IBM Plex Mono', monospace";
-  ctx.fillText(`${release.catalogCode}  //  ARCHIVE DOSSIER & TRACKLIST`, 84, 118);
+  ctx.fillText(`${release.catalogCode}  //  ${release.releaseYear} TRACKLIST`, 84, 118);
 
   const tex = new THREE.CanvasTexture(canvas);
   backTexCache.set(release.id, tex);
   return tex;
 }
 
-function getVinylDiscTexture(release) {
-  if (discTexCache.has(release.id)) return discTexCache.get(release.id);
+function getVinylDiscTexture(release, externalImg = null) {
+  const key = `${release.id}_${externalImg ? "img" : "proc"}`;
+  if (discTexCache.has(key)) return discTexCache.get(key);
 
   const canvas = document.createElement("canvas");
   canvas.width = 1024;
@@ -1294,59 +1136,60 @@ function getVinylDiscTexture(release) {
   const cx = 512;
   const cy = 512;
 
-  ctx.fillStyle = "#141413";
+  ctx.fillStyle = "#131312";
   ctx.beginPath();
-  ctx.arc(cx, cy, 504, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 508, 0, Math.PI * 2);
   ctx.fill();
 
-  for (let r = 205; r < 490; r += 4) {
-    ctx.strokeStyle = r % 36 < 4 ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.045)";
+  for (let r = 212; r < 494; r += 3.8) {
+    ctx.strokeStyle = r % 36 < 4 ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.045)";
     ctx.lineWidth = 1.2;
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.stroke();
   }
 
-  ctx.fillStyle = release.coverBgColor;
-  ctx.beginPath();
-  ctx.arc(cx, cy, 192, 0, Math.PI * 2);
-  ctx.fill();
-
   ctx.save();
   ctx.beginPath();
-  ctx.arc(cx, cy, 192, Math.PI, Math.PI * 2);
-  ctx.closePath();
-  ctx.fillStyle = release.accentColor;
-  ctx.fill();
+  ctx.arc(cx, cy, 198, 0, Math.PI * 2);
+  ctx.clip();
+  if (externalImg) {
+    drawCoverImage(ctx, externalImg, cx - 198, cy - 198, 396, 396, 0.25);
+    ctx.fillStyle = "rgba(18,18,17,0.42)";
+    ctx.fillRect(cx - 198, cy - 198, 396, 396);
+  } else {
+    ctx.fillStyle = release.coverBgColor;
+    ctx.fillRect(cx - 198, cy - 198, 396, 396);
+    ctx.fillStyle = release.accentColor;
+    ctx.fillRect(cx - 198, cy - 198, 396, 198);
+  }
   ctx.restore();
 
-  ctx.strokeStyle = release.coverInkColor;
-  ctx.lineWidth = 4;
+  ctx.strokeStyle = "#E05A3A";
+  ctx.lineWidth = 5;
   ctx.beginPath();
-  ctx.arc(cx, cy, 184, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 194, 0, Math.PI * 2);
   ctx.stroke();
 
   ctx.fillStyle = "#FFFFFF";
   ctx.font = "700 24px 'IBM Plex Mono', monospace";
   ctx.textAlign = "center";
-  ctx.fillText(release.catalogCode, cx, cy - 112);
+  ctx.fillText(release.catalogCode, cx, cy - 114);
   ctx.font = "700 19px 'IBM Plex Mono', monospace";
-  ctx.fillText(`★ ${release.rating.toFixed(1)} / 10`, cx, cy - 82);
-
-  ctx.fillStyle = release.coverInkColor;
+  ctx.fillText(`★ ${release.rating.toFixed(1)} / 10`, cx, cy - 84);
   ctx.font = "800 22px 'Inter', sans-serif";
-  ctx.fillText(release.shortTitle.slice(0, 14), cx, cy + 102);
+  ctx.fillText(release.shortTitle.slice(0, 15), cx, cy + 108);
   ctx.font = "600 16px 'IBM Plex Mono', monospace";
-  ctx.fillText(`${release.releaseYear} • ${release.bpm} BPM`, cx, cy + 132);
+  ctx.fillText(`${release.releaseYear} • ${release.bpm} BPM`, cx, cy + 138);
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.anisotropy = 8;
-  discTexCache.set(release.id, tex);
+  discTexCache.set(key, tex);
   return tex;
 }
 
 /* ============================================================================
-   🔊 WEB AUDIO API POLYPHONIC SYNTH & MECHANICAL TURNTABLE SOUND ENGINE
+   🔊 WEB AUDIO API POLYPHONIC SYNTH + OFFICIAL VOCAL OST AUDIO PLAYER
    ============================================================================ */
 let audioCtx = null;
 let synthTimer = null;
@@ -1375,7 +1218,7 @@ function playStepClick(enabled = true) {
     osc.type = "triangle";
     osc.frequency.setValueAtTime(195, now);
     osc.frequency.exponentialRampToValueAtTime(52, now + 0.028);
-    gain.gain.setValueAtTime(0.055, now);
+    gain.gain.setValueAtTime(0.05, now);
     gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.03);
     osc.connect(gain);
     gain.connect(ctx.destination);
@@ -1395,18 +1238,18 @@ function playDiveWhoosh(divingIn = true, enabled = true) {
     const gain = ctx.createGain();
     osc.type = "sawtooth";
     filter.type = "lowpass";
-    filter.frequency.setValueAtTime(divingIn ? 240 : 1100, now);
-    filter.frequency.exponentialRampToValueAtTime(divingIn ? 1400 : 180, now + 0.55);
-    osc.frequency.setValueAtTime(divingIn ? 95 : 260, now);
-    osc.frequency.exponentialRampToValueAtTime(divingIn ? 290 : 88, now + 0.55);
+    filter.frequency.setValueAtTime(divingIn ? 220 : 1400, now);
+    filter.frequency.exponentialRampToValueAtTime(divingIn ? 1850 : 180, now + 0.65);
+    osc.frequency.setValueAtTime(divingIn ? 88 : 280, now);
+    osc.frequency.exponentialRampToValueAtTime(divingIn ? 280 : 82, now + 0.65);
     gain.gain.setValueAtTime(0.001, now);
-    gain.gain.linearRampToValueAtTime(0.045, now + 0.12);
-    gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.58);
+    gain.gain.linearRampToValueAtTime(0.045, now + 0.14);
+    gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.72);
     osc.connect(filter);
     filter.connect(gain);
     gain.connect(ctx.destination);
     osc.start(now);
-    osc.stop(now + 0.6);
+    osc.stop(now + 0.74);
   } catch {}
 }
 
@@ -1429,6 +1272,7 @@ function startTrackSynth(track, realOstUrl, onTick, onDone) {
   stopTrackSynth();
   const ctx = ensureAudioCtx();
   const start = performance.now();
+  let playingReal = false;
 
   const runLoop = () => {
     if (!ctx) return;
@@ -1473,9 +1317,18 @@ function startTrackSynth(track, realOstUrl, onTick, onDone) {
         ostAudio.crossOrigin = "anonymous";
       }
       ostAudio.src = realOstUrl;
-      ostAudio.volume = 0.72;
-      ostAudio.play().catch(runLoop);
+      ostAudio.volume = 0.78;
+      playingReal = true;
+      ostAudio.onended = () => {
+        stopTrackSynth();
+        onDone && onDone();
+      };
+      ostAudio.play().catch(() => {
+        playingReal = false;
+        runLoop();
+      });
     } catch {
+      playingReal = false;
       runLoop();
     }
   } else {
@@ -1483,10 +1336,12 @@ function startTrackSynth(track, realOstUrl, onTick, onDone) {
   }
 
   progressTimer = setInterval(() => {
-    const elapsed = performance.now() - start;
-    const prog = Math.min(1, elapsed / 24000);
+    let prog = Math.min(1, (performance.now() - start) / 24000);
+    if (playingReal && ostAudio && ostAudio.duration > 0) {
+      prog = Math.min(1, ostAudio.currentTime / ostAudio.duration);
+    }
     onTick && onTick(prog);
-    if (prog >= 1) {
+    if (!playingReal && prog >= 1) {
       stopTrackSynth();
       onDone && onDone();
     }
@@ -1494,96 +1349,22 @@ function startTrackSynth(track, realOstUrl, onTick, onDone) {
 }
 
 /* ============================================================================
-   🌐 EXTERNAL MEDIA ENRICHMENT (JIKAN MAL, ITUNES OST, ANIMETHEMES OP)
-   ============================================================================ */
-const MEDIA_STORAGE_KEY = "disc_archive_anime_media_v1";
-const loadedPosterImages = {};
-
-function getStoredMedia() {
-  try {
-    return JSON.parse(localStorage.getItem(MEDIA_STORAGE_KEY) || "{}");
-  } catch {
-    return {};
-  }
-}
-
-function saveStoredMedia(key, patch) {
-  try {
-    const all = getStoredMedia();
-    all[key] = { ...(all[key] || {}), ...patch };
-    localStorage.setItem(MEDIA_STORAGE_KEY, JSON.stringify(all));
-  } catch {}
-}
-
-async function resolveExternalMedia(release) {
-  const key = release.jikanQuery || release.titleRomaji;
-  const cached = getStoredMedia()[key] || {};
-
-  if (!cached.posterUrl || !cached.youtubeId) {
-    try {
-      const res = await fetch(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(key)}&limit=1`);
-      if (res.ok) {
-        const json = await res.json();
-        const found = json?.data?.[0];
-        if (found) {
-          cached.posterUrl = found.images?.jpg?.large_image_url || found.images?.jpg?.image_url;
-          cached.youtubeId = found.trailer?.youtube_id;
-          saveStoredMedia(key, cached);
-        }
-      }
-    } catch {}
-  }
-
-  if (!cached.songPreviewUrl) {
-    try {
-      const term = release.songSearchQuery || `${release.songTitle} ${release.songArtist}`;
-      const res = await fetch(
-        `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=music&entity=song&limit=1`
-      );
-      if (res.ok) {
-        const json = await res.json();
-        const prev = json?.results?.[0]?.previewUrl;
-        if (prev) {
-          cached.songPreviewUrl = prev;
-          saveStoredMedia(key, cached);
-        }
-      }
-    } catch {}
-  }
-
-  if (cached.posterUrl && !loadedPosterImages[release.id]) {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => {
-      loadedPosterImages[release.id] = img;
-      if (appState.useOfficialPosters) {
-        rebuildSleeveMaterials();
-      }
-    };
-    img.src = cached.posterUrl;
-  }
-
-  return cached;
-}
-
-/* ============================================================================
-   🎛️ APPLICATION STATE & 3D THREE.JS TURNTABLE SCENE
+   🎛️ APPLICATION STATE & ZERO-CLIPPING 3D THREE.JS TURNTABLE SCENE
    ============================================================================ */
 const appState = {
   category: "all",
   releases: [...WATCHED_RELEASES],
-  activeIndex: 0,
-  scrollCurrent: 0,
+  activeIndex: 6, // Start near chronological center (2016 Your Name.) for symmetrical spine stacks!
+  scrollCurrent: 6,
   scrollVelocity: 0,
-  diveState: "shelf", // "shelf" | "diving-in" | "detail" | "diving-out"
+  diveState: "shelf",
   isHoveredCenter: false,
   radioActive: false,
   soundEnabled: true,
-  useOfficialPosters: false,
+  useOfficialPosters: true,
   playingTrackNum: null,
   trackProgress: 0,
-  detailMediaTab: "cover",
-  externalMedia: {}
+  spinBoost: 0
 };
 
 let scene, camera, renderer, platterGroup, sleevesGroup, discGroup, discSpinMesh;
@@ -1595,10 +1376,10 @@ function computeAccordionTransform(d) {
   const absD = Math.abs(d);
   const centerWeight = Math.exp(-(d * d) / 0.14);
 
-  const spinePitch = 0.285;
+  const spinePitch = 0.255;
   const leftAnchor = -1.72;
-  const rightAnchor = 1.92;
-  const centerAnchor = -0.16;
+  const rightAnchor = 2.14;
+  const centerAnchor = -0.34;
 
   let x = 0;
   if (d <= -1) {
@@ -1615,12 +1396,12 @@ function computeAccordionTransform(d) {
     x = centerAnchor + (rightAnchor - centerAnchor) * s;
   }
 
-  const rotY = (1 - centerWeight) * (Math.PI / 2 - d * 0.026);
-  const z = -0.048 * (x * x) + 0.42 * centerWeight;
-  const y = 0.42 + 0.05 * centerWeight;
-  const scale = absD > 8.6 ? Math.max(0.001, 1 - (absD - 8.6) * 1.4) : 1;
+  const rotY = (1 - centerWeight) * (Math.PI / 2 - d * 0.022);
+  const z = -0.042 * (x * x) + 0.5 * centerWeight - 0.14 * (1 - centerWeight);
+  const y = 0.69 + 0.05 * centerWeight;
+  const scale = absD > 8.5 ? Math.max(0.001, 1 - (absD - 8.5) * 1.4) : 1;
 
-  return { x, y, z, rotY, centerWeight, scale, isVisible: absD < 9.3 };
+  return { x, y, z, rotY, centerWeight, scale, isVisible: absD < 9.2 };
 }
 
 function createHollowDiscGeometry(innerR, outerR, segs = 96) {
@@ -1638,9 +1419,23 @@ function createHollowDiscGeometry(innerR, outerR, segs = 96) {
 
 function getBaseCameraZ() {
   const w = window.innerWidth;
-  if (w < 640) return 8.2;
-  if (w < 1024) return 7.1;
-  return 6.35;
+  if (w < 640) return 9.1;
+  if (w < 1024) return 7.75;
+  return 6.85;
+}
+
+function preloadOfficialAnimeArtwork() {
+  ALL_RELEASES.forEach((rel) => {
+    if (!rel.coverUrl || loadedPosterImages[rel.id]) return;
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      loadedPosterImages[rel.id] = img;
+      rebuildSleeveMaterials();
+      updateActiveDiscTexture();
+    };
+    img.src = `https://wsrv.nl/?url=${encodeURIComponent(rel.coverUrl)}&w=900&output=webp`;
+  });
 }
 
 function initThreeScene() {
@@ -1648,9 +1443,9 @@ function initThreeScene() {
   if (!container) return;
 
   scene = new THREE.Scene();
-  camera = new THREE.PerspectiveCamera(34, window.innerWidth / window.innerHeight, 0.04, 45);
-  camera.position.set(0, 0.58, getBaseCameraZ());
-  camera.lookAt(0, 0.36, 0);
+  camera = new THREE.PerspectiveCamera(33, window.innerWidth / window.innerHeight, 0.04, 48);
+  camera.position.set(0, 0.72, getBaseCameraZ());
+  camera.lookAt(0, 0.24, 0);
 
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -1660,90 +1455,96 @@ function initThreeScene() {
   container.innerHTML = "";
   container.appendChild(renderer.domElement);
 
-  // Soft Gallery Studio Lighting
-  const ambient = new THREE.AmbientLight("#FAF9F5", 1.35);
-  scene.add(ambient);
+  scene.add(new THREE.AmbientLight("#FAF9F5", 1.4));
 
-  const dirLight = new THREE.DirectionalLight("#FFFDF9", 1.45);
-  dirLight.position.set(4.5, 8.5, 6.5);
+  const dirLight = new THREE.DirectionalLight("#FFFDF9", 1.38);
+  dirLight.position.set(4.5, 9.5, 7.5);
   dirLight.castShadow = true;
   dirLight.shadow.mapSize.width = 2048;
   dirLight.shadow.mapSize.height = 2048;
   scene.add(dirLight);
 
-  const fillLight = new THREE.DirectionalLight("#E6E7E2", 0.55);
-  fillLight.position.set(-6, 4, 3);
+  const fillLight = new THREE.DirectionalLight("#EAEAE6", 0.58);
+  fillLight.position.set(-6, 4.5, 4);
   scene.add(fillLight);
 
-  // 1. Curved Perforated Brushed-Metal Turntable Platter Rim
+  // 1. Curved Perforated Brushed-Silver Turntable Platter Rim (Bright Studio Contrast!)
   const platterRoot = new THREE.Group();
-  platterRoot.position.set(0, -0.96, -8.35);
+  platterRoot.position.set(0, -0.49, -9.85);
   scene.add(platterRoot);
 
   platterGroup = new THREE.Group();
   platterRoot.add(platterGroup);
 
   const rimMesh = new THREE.Mesh(
-    new THREE.CylinderGeometry(10.42, 11.02, 0.46, 128),
-    new THREE.MeshStandardMaterial({ color: "#B8B9B4", metalness: 0.62, roughness: 0.34 })
+    new THREE.CylinderGeometry(11.12, 11.66, 0.42, 128),
+    new THREE.MeshStandardMaterial({ color: "#B8B9B4", metalness: 0.58, roughness: 0.32 })
   );
-  rimMesh.position.y = -0.06;
+  rimMesh.position.y = -0.04;
   rimMesh.receiveShadow = true;
   platterGroup.add(rimMesh);
 
   const lowerLip = new THREE.Mesh(
-    new THREE.CylinderGeometry(11.02, 10.88, 0.14, 128),
-    new THREE.MeshStandardMaterial({ color: "#9E9F9A", metalness: 0.7, roughness: 0.28 })
+    new THREE.CylinderGeometry(11.66, 11.48, 0.1, 128),
+    new THREE.MeshStandardMaterial({ color: "#979892", metalness: 0.65, roughness: 0.28 })
   );
-  lowerLip.position.y = -0.34;
+  lowerLip.position.y = -0.29;
   platterGroup.add(lowerLip);
 
-  // 136 Repeating Rectangular Perforated Strobe Slots along Front Bevel
-  const slotGeom = new THREE.BoxGeometry(0.25, 0.21, 0.07);
-  const slotMat = new THREE.MeshStandardMaterial({ color: "#181818", metalness: 0.2, roughness: 0.85 });
-  const slotCount = 136;
+  const slotGeom = new THREE.BoxGeometry(0.23, 0.18, 0.06);
+  const slotMat = new THREE.MeshStandardMaterial({ color: "#181818", metalness: 0.18, roughness: 0.85 });
+  const slotCount = 148;
   for (let i = 0; i < slotCount; i++) {
     const angle = (i / slotCount) * Math.PI * 2;
     const holder = new THREE.Group();
-    holder.position.set(Math.sin(angle) * 10.74, -0.02, Math.cos(angle) * 10.74);
+    holder.position.set(Math.sin(angle) * 11.42, -0.03, Math.cos(angle) * 11.42);
     holder.rotation.y = angle;
     const slotMesh = new THREE.Mesh(slotGeom, slotMat);
-    slotMesh.rotation.x = -0.52;
+    slotMesh.rotation.x = -0.56;
     holder.add(slotMesh);
     platterGroup.add(holder);
   }
 
-  // Dark Charcoal Platter Mat
+  // Warm Matte Light-Silver Platter Mat Surface
   const matMesh = new THREE.Mesh(
-    new THREE.CylinderGeometry(10.22, 10.28, 0.05, 128),
-    new THREE.MeshStandardMaterial({ color: "#232321", metalness: 0.08, roughness: 0.88 })
+    new THREE.CylinderGeometry(10.92, 11.0, 0.04, 128),
+    new THREE.MeshStandardMaterial({ color: "#CECFCA", metalness: 0.22, roughness: 0.72 })
   );
   matMesh.position.y = 0.21;
   matMesh.receiveShadow = true;
   platterGroup.add(matMesh);
 
-  // 2. Accordion Spine-to-Cover 3D Shelf Group
+  // 2. Accordion Spine-to-Cover 3D Shelf
   sleevesGroup = new THREE.Group();
   scene.add(sleevesGroup);
 
-  // 3. Floating Mini Vinyl / CD Disc with Hollow Center Spindle Hole
+  // 3. Non-Clipping Floating Mini Vinyl / CD Disc with Hollow Spindle Hole
   discGroup = new THREE.Group();
-  discGroup.position.set(0.98, 0.45, 0.34);
+  discGroup.position.set(0.88, 0.72, 0.76);
   scene.add(discGroup);
 
-  const discGeom = createHollowDiscGeometry(0.088, 0.96, 96);
+  const discGeom = createHollowDiscGeometry(0.095, 0.72, 96);
   const discMat = new THREE.MeshStandardMaterial({
-    roughness: 0.24,
-    metalness: 0.35,
+    roughness: 0.22,
+    metalness: 0.38,
+    transparent: true,
+    opacity: 1,
     side: THREE.DoubleSide
   });
   discSpinMesh = new THREE.Mesh(discGeom, discMat);
   discSpinMesh.userData = { isFloatingDisc: true };
   discGroup.add(discSpinMesh);
 
+  const outerRim = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.72, 0.72, 0.022, 96, 1, true),
+    new THREE.MeshStandardMaterial({ color: "#1B1B1A", metalness: 0.5, roughness: 0.35, side: THREE.DoubleSide })
+  );
+  outerRim.rotation.x = Math.PI / 2;
+  discGroup.add(outerRim);
+
   const spindleCollar = new THREE.Mesh(
-    new THREE.RingGeometry(0.086, 0.106, 64),
-    new THREE.MeshStandardMaterial({ color: "#D2D2CF", metalness: 0.85, roughness: 0.2, side: THREE.DoubleSide })
+    new THREE.RingGeometry(0.093, 0.117, 64),
+    new THREE.MeshStandardMaterial({ color: "#D8D8D4", metalness: 0.88, roughness: 0.18, side: THREE.DoubleSide })
   );
   discGroup.add(spindleCollar);
 
@@ -1767,7 +1568,7 @@ function buildSleeveMaterialsForRelease(release) {
   const backTex = getBackCoverTexture(release);
 
   const spineMat = new THREE.MeshStandardMaterial({ map: spineTex, roughness: 0.42, metalness: 0.04 });
-  const frontMat = new THREE.MeshStandardMaterial({ map: frontTex, roughness: 0.36, metalness: 0.05 });
+  const frontMat = new THREE.MeshStandardMaterial({ map: frontTex, roughness: 0.34, metalness: 0.05 });
   const backMat = new THREE.MeshStandardMaterial({ map: backTex, roughness: 0.44, metalness: 0.04 });
   const edgeMat = new THREE.MeshStandardMaterial({ color: release.spineColor, roughness: 0.55, metalness: 0.04 });
 
@@ -1781,12 +1582,11 @@ function buildShelfMeshes() {
   }
   sleeveEntries = [];
 
-  const boxGeom = new THREE.BoxGeometry(2.32, 2.32, 0.235);
+  const boxGeom = new THREE.BoxGeometry(1.9, 1.9, 0.2);
 
   appState.releases.forEach((rel, idx) => {
     const group = new THREE.Group();
-    const materials = buildSleeveMaterialsForRelease(rel);
-    const mesh = new THREE.Mesh(boxGeom, materials);
+    const mesh = new THREE.Mesh(boxGeom, buildSleeveMaterialsForRelease(rel));
     mesh.castShadow = true;
     mesh.receiveShadow = true;
     mesh.userData = { sleeveIndex: idx };
@@ -1812,7 +1612,8 @@ function rebuildSleeveMaterials() {
 function updateActiveDiscTexture() {
   const activeRel = appState.releases[appState.activeIndex];
   if (!activeRel || !discSpinMesh) return;
-  discSpinMesh.material.map = getVinylDiscTexture(activeRel);
+  const extImg = appState.useOfficialPosters ? loadedPosterImages[activeRel.id] : null;
+  discSpinMesh.material.map = getVinylDiscTexture(activeRel, extImg);
   discSpinMesh.material.needsUpdate = true;
 }
 
@@ -1824,20 +1625,17 @@ function startRenderLoop() {
     const delta = Math.min(0.05, (now - lastTime) / 1000);
     lastTime = now;
 
-    // Spring physics toward activeIndex
-    const stiffness = 115;
-    const damping = 18;
+    const stiffness = 120;
+    const damping = 18.5;
     const disp = appState.activeIndex - appState.scrollCurrent;
     const force = disp * stiffness - appState.scrollVelocity * damping;
     appState.scrollVelocity += force * delta;
     appState.scrollCurrent += appState.scrollVelocity * delta;
 
-    // Platter rotation
     if (platterGroup) {
-      platterGroup.rotation.y = -appState.scrollCurrent * 0.045 + now * 0.000035;
+      platterGroup.rotation.y = -appState.scrollCurrent * 0.038 + now * 0.00003;
     }
 
-    // Update each digipak sleeve in the accordion shelf
     const damp = Math.min(1, delta * 14);
     sleeveEntries.forEach((entry) => {
       const d = entry.index - appState.scrollCurrent;
@@ -1846,9 +1644,9 @@ function startRenderLoop() {
       if (!t.isVisible) return;
 
       const isCenter = entry.index === appState.activeIndex;
-      const tiltX = isCenter && appState.isHoveredCenter ? -0.055 : 0;
-      const tiltY = t.rotY + (isCenter && appState.isHoveredCenter ? -0.08 : 0);
-      const liftY = t.y + (isCenter && appState.isHoveredCenter ? 0.045 : 0);
+      const tiltX = isCenter && appState.isHoveredCenter ? -0.05 : 0;
+      const tiltY = t.rotY + (isCenter && appState.isHoveredCenter ? -0.07 : 0);
+      const liftY = t.y + (isCenter && appState.isHoveredCenter ? 0.04 : 0);
 
       entry.group.position.x = THREE.MathUtils.lerp(entry.group.position.x, t.x, damp);
       entry.group.position.y = THREE.MathUtils.lerp(entry.group.position.y, liftY, damp);
@@ -1860,27 +1658,31 @@ function startRenderLoop() {
       );
     });
 
-    // Spin & position the floating mini vinyl/CD disc
     if (discSpinMesh) {
-      const speed = appState.isHoveredCenter ? 3.2 : 1.15;
+      const speed = (appState.isHoveredCenter ? 3.2 : 1.15) + appState.spinBoost;
       discSpinMesh.rotation.z -= delta * speed;
     }
 
     if (discGroup && appState.diveState === "shelf") {
       const settleDiff = Math.abs(appState.activeIndex - appState.scrollCurrent);
-      const visFactor = Math.max(0, 1 - settleDiff * 1.35);
-      const targetX = appState.isHoveredCenter ? 1.16 : 0.98;
-      const targetY = 0.45 + Math.sin(now * 0.0024) * 0.025;
-      const targetZ = 0.34;
-      const targetRotY = appState.isHoveredCenter ? -0.14 : -0.06;
+      const visFactor = Math.max(0, 1 - settleDiff * 2.2);
+      const targetX = appState.isHoveredCenter ? 1.04 : 0.88;
+      const targetY = 0.72 + Math.sin(now * 0.0024) * 0.022;
+      const targetZ = appState.isHoveredCenter ? 0.82 : 0.76;
+      const targetRotY = appState.isHoveredCenter ? -0.14 : -0.05;
 
       discGroup.position.x = THREE.MathUtils.lerp(discGroup.position.x, targetX, damp);
       discGroup.position.y = THREE.MathUtils.lerp(discGroup.position.y, targetY, damp);
       discGroup.position.z = THREE.MathUtils.lerp(discGroup.position.z, targetZ, damp);
       discGroup.rotation.y = THREE.MathUtils.lerp(discGroup.rotation.y, targetRotY, damp);
       discGroup.scale.setScalar(
-        THREE.MathUtils.lerp(discGroup.scale.x, 0.88 * (0.4 + 0.6 * visFactor), damp)
+        THREE.MathUtils.lerp(discGroup.scale.x, 0.94 * (0.25 + 0.75 * visFactor), damp)
       );
+      discSpinMesh.material.opacity = THREE.MathUtils.lerp(discSpinMesh.material.opacity, visFactor, damp);
+      discGroup.visible = visFactor > 0.02;
+    } else if (discGroup) {
+      discGroup.visible = true;
+      discSpinMesh.material.opacity = 1;
     }
 
     renderer.render(scene, camera);
@@ -1890,57 +1692,122 @@ function startRenderLoop() {
 }
 
 /* ============================================================================
-   🚀 SIGNATURE MULTI-STAGE GSAP SPINDLE-HOLE CAMERA DIVE TRANSITION
+   🚀 CINEMA-GRADE MULTI-STAGE GSAP SPINDLE-HOLE CAMERA DIVE TRANSITION
    ============================================================================ */
 function triggerSignatureDiveIn() {
-  if (appState.diveState !== "shelf" || !discGroup) return;
+  if (appState.diveState !== "shelf" || !discGroup || !sleevesGroup) return;
   appState.diveState = "diving-in";
   playDiveWhoosh(true, appState.soundEnabled);
 
+  const veilEl = document.getElementById("dive-aperture-veil");
+  const animState = { fov: camera.fov, lookY: 0.24, veil: 0 };
+  const baseZ = getBaseCameraZ();
+
   const tl = gsap.timeline({
+    onUpdate: () => {
+      camera.fov = animState.fov;
+      camera.updateProjectionMatrix();
+      camera.lookAt(0, animState.lookY, 0);
+      if (veilEl) veilEl.style.opacity = String(animState.veil);
+    },
     onComplete: () => {
+      if (veilEl) veilEl.style.opacity = "0";
       appState.diveState = "detail";
       openDetailViewDOM();
     }
   });
 
-  // Stage 1: Floating disc centers itself, scales up, and aligns parallel to camera
-  tl.to(discGroup.position, { x: 0, y: 0.48, z: 1.65, duration: 0.46, ease: "power3.out" }, 0);
-  tl.to(discGroup.rotation, { x: 0, y: 0, z: 0, duration: 0.42, ease: "power2.out" }, 0);
-  tl.to(discGroup.scale, { x: 1.75, y: 1.75, z: 1.75, duration: 0.48, ease: "power3.out" }, 0);
+  tl.to(sleevesGroup.position, { z: -1.45, y: -0.22, duration: 0.48, ease: "power3.inOut" }, 0);
+  tl.to(discGroup.position, { x: 0, y: 0.72, z: 2.28, duration: 0.46, ease: "expo.out" }, 0);
+  tl.to(discGroup.rotation, { x: 0, y: 0, z: 0, duration: 0.44, ease: "power3.out" }, 0);
+  tl.to(discGroup.scale, { x: 2.15, y: 2.15, z: 2.15, duration: 0.48, ease: "expo.out" }, 0);
+  tl.to(appState, { spinBoost: 6.2, duration: 0.55, ease: "power2.in" }, 0);
 
-  // Stage 2: Camera accelerates straight through the center spindle hole
-  tl.to(camera.position, { x: 0, y: 0.48, z: 1.48, duration: 0.58, ease: "power3.in" }, 0.38);
+  tl.to(animState, { lookY: 0.72, duration: 0.36, ease: "power2.out" }, 0);
+  tl.to(camera.position, { x: 0, y: 0.72, z: baseZ + 0.32, duration: 0.3, ease: "power2.out" }, 0);
+
+  tl.to(camera.position, { x: 0, y: 0.72, z: 2.04, duration: 0.62, ease: "power4.in" }, 0.34);
+  tl.to(animState, { fov: 54, duration: 0.34, ease: "power2.in" }, 0.34);
+  tl.to(animState, { fov: 26, duration: 0.28, ease: "power3.out" }, 0.68);
+  tl.to(animState, { veil: 1, duration: 0.24, ease: "power2.in" }, 0.74);
 }
 
 function triggerReverseDiveOut() {
-  if (appState.diveState !== "detail" || !discGroup) return;
+  if (appState.diveState !== "detail" || !discGroup || !sleevesGroup) return;
   if (!appState.radioActive) {
     stopTrackSynth();
     appState.playingTrackNum = null;
   }
 
-  document.getElementById("release-detail-view").classList.add("hidden");
-  document.getElementById("shelf-stage-wrap").classList.remove("opacity-0", "pointer-events-none");
+  const ytEl = document.getElementById("detail-yt-iframe");
+  if (ytEl) ytEl.src = "";
 
-  appState.diveState = "diving-out";
+  const detailView = document.getElementById("release-detail-view");
+  const veilEl = document.getElementById("dive-aperture-veil");
   playDiveWhoosh(false, appState.soundEnabled);
 
-  const baseZ = getBaseCameraZ();
-  const tl = gsap.timeline({
+  gsap.to(detailView, {
+    opacity: 0,
+    duration: 0.2,
+    ease: "power2.in",
     onComplete: () => {
-      appState.diveState = "shelf";
+      detailView.classList.add("hidden");
+      detailView.style.opacity = "1";
+      document.getElementById("shelf-stage-wrap").classList.remove("opacity-0", "pointer-events-none");
+
+      appState.diveState = "diving-out";
+      const baseZ = getBaseCameraZ();
+      const animState = { fov: 26, lookY: 0.72, veil: 1 };
+
+      const tl = gsap.timeline({
+        onUpdate: () => {
+          camera.fov = animState.fov;
+          camera.updateProjectionMatrix();
+          camera.lookAt(0, animState.lookY, 0);
+          if (veilEl) veilEl.style.opacity = String(animState.veil);
+        },
+        onComplete: () => {
+          if (veilEl) veilEl.style.opacity = "0";
+          appState.spinBoost = 0;
+          appState.diveState = "shelf";
+        }
+      });
+
+      tl.to(animState, { veil: 0, duration: 0.24, ease: "power2.out" }, 0);
+      tl.to(camera.position, { x: 0, y: 0.72, z: baseZ, duration: 0.72, ease: "expo.out" }, 0.04);
+      tl.to(animState, { fov: 46, duration: 0.24, ease: "power2.out" }, 0.04);
+      tl.to(animState, { fov: 33, duration: 0.48, ease: "power3.out" }, 0.28);
+      tl.to(animState, { lookY: 0.24, duration: 0.65, ease: "power3.out" }, 0.14);
+      tl.to(appState, { spinBoost: 0, duration: 0.68, ease: "power3.out" }, 0.08);
+      tl.to(discGroup.position, { x: 0.88, y: 0.72, z: 0.76, duration: 0.62, ease: "expo.inOut" }, 0.16);
+      tl.to(discGroup.scale, { x: 0.94, y: 0.94, z: 0.94, duration: 0.62, ease: "expo.inOut" }, 0.16);
+      tl.to(sleevesGroup.position, { z: 0, y: 0, duration: 0.65, ease: "expo.out" }, 0.14);
     }
   });
-
-  tl.to(camera.position, { x: 0, y: 0.58, z: baseZ, duration: 0.62, ease: "power3.out" }, 0);
-  tl.to(discGroup.position, { x: 0.98, y: 0.45, z: 0.34, duration: 0.58, ease: "power3.inOut" }, 0.22);
-  tl.to(discGroup.scale, { x: 0.88, y: 0.88, z: 0.88, duration: 0.58, ease: "power3.inOut" }, 0.22);
 }
 
 /* ============================================================================
-   🖥️ HUD, TIMELINE & RELEASE DETAIL DOM SYNCHRONIZATION
+   🖥️ CHRONOLOGICAL TIMELINE, HUD & RELEASE DETAIL DOM SYNC
    ============================================================================ */
+function computeTimelinePositions() {
+  const minY = RULER_YEARS[0];
+  const maxY = RULER_YEARS[RULER_YEARS.length - 1];
+  const span = maxY - minY;
+  const counts = {};
+  appState.releases.forEach((r) => {
+    counts[r.releaseYear] = (counts[r.releaseYear] || 0) + 1;
+  });
+  const seen = {};
+  return appState.releases.map((r) => {
+    const tot = counts[r.releaseYear] || 1;
+    const pos = seen[r.releaseYear] || 0;
+    seen[r.releaseYear] = pos + 1;
+    const sub = tot > 1 ? (pos / (tot - 1) - 0.5) * 0.65 : 0;
+    const yr = Math.max(minY, Math.min(maxY, r.releaseYear + sub));
+    return Math.max(1.5, Math.min(98.5, ((yr - minY) / span) * 100));
+  });
+}
+
 function selectReleaseIndex(nextIndex) {
   if (appState.releases.length === 0) return;
   const clamped = Math.max(0, Math.min(appState.releases.length - 1, nextIndex));
@@ -1950,6 +1817,8 @@ function selectReleaseIndex(nextIndex) {
     updateActiveDiscTexture();
     syncStageHUD();
     if (appState.diveState === "detail") {
+      stopTrackSynth();
+      appState.playingTrackNum = null;
       populateDetailViewDOM();
     }
   }
@@ -1960,7 +1829,7 @@ function syncStageHUD() {
   if (!rel) return;
 
   const isTen = rel.rating >= 10;
-  document.getElementById("hud-platter-title").textContent = `${rel.catalogCode} ${rel.shortTitle}`;
+  document.getElementById("hud-platter-title").textContent = `${rel.catalogCode} ${rel.shortTitle} (${rel.releaseYear})`;
   document.getElementById("hud-platter-score").textContent = isTen ? "👑 10.0" : `★ ${rel.rating.toFixed(1)}`;
 
   document.getElementById("hud-slot-index").textContent = String(appState.activeIndex + 1).padStart(2, "0");
@@ -1988,23 +1857,16 @@ function syncStageHUD() {
   document.getElementById("prev-sleeve-btn").disabled = appState.activeIndex <= 0;
   document.getElementById("next-sleeve-btn").disabled = appState.activeIndex >= appState.releases.length - 1;
 
-  // Timeline coral needle position
-  const minY = RULER_YEARS[0];
-  const maxY = RULER_YEARS[RULER_YEARS.length - 1];
-  const pct = Math.max(1.5, Math.min(98.5, ((rel.releaseYear - minY) / (maxY - minY)) * 100));
+  const positions = computeTimelinePositions();
+  const pct = positions[appState.activeIndex] ?? 50;
   document.getElementById("timeline-coral-needle").style.left = `${pct}%`;
   document.getElementById("timeline-needle-label").textContent = String(rel.releaseYear);
 
   renderTimelineRuler();
 
-  // Resolve media in background
-  resolveExternalMedia(rel).then((media) => {
-    appState.externalMedia[rel.id] = media;
-  });
-
   if (appState.radioActive && appState.soundEnabled) {
-    document.getElementById("radio-banner-text").textContent = `RADIO: ♪ ${rel.songTitle} — ${rel.songArtist}`;
-    startTrackSynth(rel.tracks[0], appState.externalMedia[rel.id]?.songPreviewUrl);
+    document.getElementById("radio-banner-text").textContent = `OFFICIAL OST: ♪ ${rel.songTitle} — ${rel.songArtist}`;
+    startTrackSynth(rel.tracks[0], rel.songPreviewUrl);
   }
 }
 
@@ -2024,12 +1886,12 @@ function renderTimelineRuler() {
     const hasRel = yearSet.has(approxY);
     const isMajor = i % 6 === 0;
     const wave = Math.abs(Math.sin(i * 0.55) * 0.52 + Math.cos(i * 0.23) * 0.38) * (hasRel ? 1 : 0.65);
-    const h = isMajor ? 24 : Math.round(7 + wave * 17);
+    const h = isMajor ? 22 : Math.round(7 + wave * 15);
     const colorClass =
       approxY === activeRel.releaseYear
         ? "bg-[#E05A3A]"
         : hasRel
-        ? "bg-[#181818]/65"
+        ? "bg-[#181818]/70"
         : "bg-[#6E6E6A]/35";
     return `<div style="height:${h}px" class="w-[1.5px] transition-colors ${colorClass}"></div>`;
   }).join("");
@@ -2044,8 +1906,8 @@ function renderTimelineRuler() {
     const cls = isCur
       ? "text-[#E05A3A] font-bold"
       : hasRel
-      ? "text-[#181818] font-medium hover:text-[#E05A3A]"
-      : "text-[#6E6E6A]/60 hover:text-[#181818]";
+      ? "text-[#181818] font-semibold hover:text-[#E05A3A]"
+      : "text-[#6E6E6A]/55 hover:text-[#181818]";
     return `<button type="button" data-timeline-year="${yr}" class="px-0.5 transition-colors ${cls}">${label}</button>`;
   }).join("");
 
@@ -2059,11 +1921,70 @@ function renderTimelineRuler() {
   });
 }
 
+function setDetailMediaTab(tab) {
+  const rel = appState.releases[appState.activeIndex];
+  if (!rel) return;
+
+  document.querySelectorAll("[data-detail-tab]").forEach((b) => {
+    b.classList.toggle("active", b.getAttribute("data-detail-tab") === tab);
+  });
+
+  const mediaBox = document.getElementById("detail-media-box");
+  const coverCanvas = document.getElementById("detail-cover-canvas");
+  const visualWrap = document.getElementById("detail-visual-wrap");
+  const trailerWrap = document.getElementById("detail-trailer-wrap");
+  const ytExternalBar = document.getElementById("detail-yt-external-bar");
+  const ytExternalLink = document.getElementById("detail-yt-external-link");
+  const ytEl = document.getElementById("detail-yt-iframe");
+
+  coverCanvas.classList.toggle("hidden", tab !== "cover");
+  visualWrap.classList.toggle("hidden", tab !== "visual");
+  trailerWrap.classList.toggle("hidden", tab !== "trailer");
+
+  if (tab === "trailer") {
+    mediaBox.classList.remove("aspect-square");
+    mediaBox.classList.add("aspect-video");
+    stopTrackSynth();
+    appState.playingTrackNum = null;
+    renderDetailTracklist(rel);
+
+    ytEl.src = `https://www.youtube-nocookie.com/embed/${rel.youtubeId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
+    ytExternalBar.classList.remove("hidden");
+    ytExternalBar.classList.add("flex");
+    ytExternalLink.href = `https://www.youtube.com/watch?v=${rel.youtubeId}`;
+  } else {
+    mediaBox.classList.remove("aspect-video");
+    mediaBox.classList.add("aspect-square");
+    ytEl.src = "";
+    ytExternalBar.classList.add("hidden");
+    ytExternalBar.classList.remove("flex");
+  }
+}
+
 function openDetailViewDOM() {
   document.getElementById("shelf-stage-wrap").classList.add("opacity-0", "pointer-events-none");
   const detailView = document.getElementById("release-detail-view");
   detailView.classList.remove("hidden");
+  gsap.fromTo(detailView, { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power2.out" });
   populateDetailViewDOM();
+
+  // Auto-play Official Theme Song preview when diving in
+  const rel = appState.releases[appState.activeIndex];
+  if (rel && appState.soundEnabled) {
+    appState.playingTrackNum = "01";
+    startTrackSynth(
+      rel.tracks[0],
+      rel.songPreviewUrl,
+      (prog) => {
+        appState.trackProgress = prog;
+        renderDetailTracklist(rel);
+      },
+      () => {
+        appState.playingTrackNum = null;
+        renderDetailTracklist(rel);
+      }
+    );
+  }
 }
 
 function populateDetailViewDOM() {
@@ -2071,7 +1992,7 @@ function populateDetailViewDOM() {
   if (!rel) return;
 
   const isTen = rel.rating >= 10;
-  document.getElementById("detail-catalog-badge").textContent = rel.catalogCode;
+  document.getElementById("detail-catalog-badge").textContent = `${rel.catalogCode} • ${rel.releaseYear}`;
   document.getElementById("detail-score-badge").textContent = isTen
     ? "👑 10.0 / 10 MASTERPIECE"
     : `PERSONAL RATING: ★ ${rel.rating.toFixed(1)} / 10`;
@@ -2098,15 +2019,16 @@ function populateDetailViewDOM() {
   document.getElementById("credit-score").textContent = `★ ${rel.rating.toFixed(1)} / 10`;
   document.getElementById("detail-audit-score").textContent = `★ ${rel.rating.toFixed(1)} / 10`;
 
-  // Draw procedural 2D cover canvas
+  document.getElementById("detail-visual-img").src = rel.coverUrl;
+
   const coverCanvas = document.getElementById("detail-cover-canvas");
   if (coverCanvas) {
-    const srcTex = getFrontCoverTexture(rel);
-    const ctx = coverCanvas.getContext("2d");
-    ctx.drawImage(srcTex.image, 0, 0, 640, 640);
+    const srcTex = getFrontCoverTexture(rel, null);
+    coverCanvas.getContext("2d").drawImage(srcTex.image, 0, 0, 640, 640);
   }
 
-  // Rating breakdown bars
+  setDetailMediaTab("visual");
+
   const base = rel.rating;
   const clamp = (v) => Math.min(10, Math.max(6.5, Math.round(v * 10) / 10));
   const metrics = [
@@ -2121,7 +2043,7 @@ function populateDetailViewDOM() {
       (m) => `
       <div class="space-y-1">
         <div class="flex justify-between font-mono text-[11px]">
-          <span class="text-[#6E6E6A]">${m.label}</span>
+          <span class="text-[#575752]">${m.label}</span>
           <span class="font-semibold text-[#181818]">${m.score.toFixed(1)}</span>
         </div>
         <div class="w-full h-1.5 bg-[#181818]/10 overflow-hidden">
@@ -2154,17 +2076,20 @@ function renderDetailTracklist(rel) {
         <div data-track-num="${tr.number}" class="py-3.5 px-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer hover:bg-[#181818]/[0.03]">
           <div class="flex items-center gap-3.5 min-w-0">
             <button type="button" class="w-8 h-8 rounded-full border flex items-center justify-center font-mono text-xs shrink-0 ${
-              isPlaying ? "border-[#E05A3A] bg-[#E05A3A] text-white" : "border-[#181818]/35 text-[#181818]"
+              isPlaying ? "border-[#E05A3A] bg-[#E05A3A] text-white" : "border-[#181818]/40 text-[#181818]"
             }">${isPlaying ? "■" : "▶"}</button>
             <span class="font-mono text-xs text-[#6E6E6A] w-6 shrink-0">${tr.number}</span>
             <div class="min-w-0">
-              <div class="font-medium text-sm text-[#181818] truncate">${tr.title}</div>
-              <div class="font-mono text-[11px] text-[#6E6E6A] truncate">${tr.role} • ${tr.bpm} BPM</div>
+              <div class="font-semibold text-sm text-[#181818] truncate flex items-center gap-2">
+                <span class="truncate">${tr.title}</span>
+                ${tr.isOfficialOst ? `<span class="px-1.5 py-0.5 text-[9px] font-mono uppercase bg-[#E05A3A] text-white shrink-0">OFFICIAL</span>` : ""}
+              </div>
+              <div class="font-mono text-[11px] text-[#575752] truncate">${tr.role} • ${tr.bpm} BPM</div>
             </div>
           </div>
           <div class="flex items-center gap-3 self-end sm:self-center shrink-0">
-            <div class="flex items-end gap-[2px] h-7 w-40 sm:w-48 px-1.5 py-1 bg-[#181818]/[0.04] border border-[#181818]/10">${bars}</div>
-            <span class="font-mono text-xs text-[#6E6E6A] w-11 text-right">${tr.duration}</span>
+            <div class="flex items-end gap-[2px] h-7 w-40 sm:w-48 px-1.5 py-1 bg-[#181818]/[0.04] border border-[#181818]/12">${bars}</div>
+            <span class="font-mono text-xs text-[#575752] w-11 text-right">${tr.duration}</span>
           </div>
         </div>
       `;
@@ -2184,7 +2109,7 @@ function renderDetailTracklist(rel) {
       } else {
         appState.playingTrackNum = num;
         appState.trackProgress = 0;
-        const extUrl = num === "01" ? appState.externalMedia[rel.id]?.songPreviewUrl : null;
+        const extUrl = num === "01" ? rel.songPreviewUrl : null;
         startTrackSynth(
           track,
           extUrl,
@@ -2216,19 +2141,20 @@ function renderReleasesModal() {
     cwGrid.innerHTML = ONGOING_RELEASES.map((cw, idx) => {
       const pct = Math.min(100, Math.round((cw.currentEpisode / cw.totalEpisodes) * 100));
       return `
-        <div data-cw-idx="${idx}" class="p-5 border border-[#181818]/20 bg-[#EAEAE8] hover:border-[#E05A3A] cursor-pointer transition-all group">
-          <div class="flex items-center justify-between font-mono text-xs">
-            <span class="text-[#E05A3A] font-bold">● ${cw.catalogCode} — ON-GOING</span>
-            <span class="font-semibold text-[#181818]">Episode ${cw.currentEpisode} / ${cw.totalEpisodes} (${pct}%)</span>
-          </div>
-          <h3 class="mt-1.5 text-xl font-bold text-[#181818] group-hover:text-[#E05A3A]">${cw.titleEnglish}</h3>
-          <p class="text-xs text-[#6E6E6A]">${cw.titleRomaji}</p>
-          <div class="mt-3 w-full h-1.5 bg-[#181818]/10 overflow-hidden">
-            <div class="h-full bg-[#E05A3A]" style="width:${pct}%"></div>
-          </div>
-          <div class="mt-3 flex items-center justify-between font-mono text-[11px] text-[#6E6E6A]">
-            <span>♪ ${cw.songTitle} — ${cw.songArtist}</span>
-            <span class="text-[#181818] font-bold">★ ${cw.rating.toFixed(1)} / 10</span>
+        <div data-cw-idx="${idx}" class="p-4 border border-[#181818]/20 bg-[#EAEAE8] hover:border-[#E05A3A] cursor-pointer transition-all group flex gap-4">
+          <img src="${cw.coverUrl}" alt="${cw.shortTitle}" class="w-16 h-24 object-cover border border-[#181818]/20 shrink-0" />
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between font-mono text-[11px]">
+              <span class="text-[#E05A3A] font-bold">● ${cw.catalogCode} — ON-GOING</span>
+              <span class="font-semibold text-[#181818]">Ep ${cw.currentEpisode}/${cw.totalEpisodes} (${pct}%)</span>
+            </div>
+            <h3 class="mt-1 text-lg font-bold text-[#181818] group-hover:text-[#E05A3A] truncate">${cw.titleEnglish}</h3>
+            <p class="text-xs text-[#6E6E6A] truncate">${cw.titleRomaji}</p>
+            <div class="mt-2.5 w-full h-1.5 bg-[#181818]/10 overflow-hidden"><div class="h-full bg-[#E05A3A]" style="width:${pct}%"></div></div>
+            <div class="mt-2 flex items-center justify-between font-mono text-[11px] text-[#6E6E6A]">
+              <span class="truncate">♪ ${cw.songTitle} — ${cw.songArtist}</span>
+              <span class="text-[#181818] font-bold shrink-0 ml-2">★ ${cw.rating.toFixed(1)}</span>
+            </div>
           </div>
         </div>
       `;
@@ -2259,15 +2185,15 @@ function renderReleasesModal() {
       if (sort === "rating-desc") return b.rating - a.rating;
       if (sort === "year-desc") return b.releaseYear - a.releaseYear;
       if (sort === "title-asc") return a.titleEnglish.localeCompare(b.titleEnglish);
-      return Number(a.id) - Number(b.id);
+      return a.releaseYear - b.releaseYear || a.catalogCode.localeCompare(b.catalogCode);
     });
 
     tableEl.innerHTML = filtered
       .map(
         (rel) => `
-        <div data-rel-id="${rel.id}" class="py-3.5 px-3 flex flex-wrap sm:flex-nowrap items-center justify-between gap-4 hover:bg-[#181818]/[0.04] cursor-pointer group">
+        <div data-rel-id="${rel.id}" class="py-3 px-3 flex flex-wrap sm:flex-nowrap items-center justify-between gap-4 hover:bg-[#181818]/[0.04] cursor-pointer group">
           <div class="flex items-center gap-3 min-w-0">
-            <span class="w-3 h-7 shrink-0 border border-[#181818]/20" style="background:${rel.spineColor}"></span>
+            <img src="${rel.coverUrl}" alt="${rel.shortTitle}" class="w-8 h-11 object-cover border border-[#181818]/20 shrink-0" />
             <span class="text-[#6E6E6A] w-16 shrink-0">${rel.catalogCode}</span>
             <div class="min-w-0 font-sans">
               <div class="font-semibold text-sm text-[#181818] group-hover:text-[#E05A3A] truncate">${rel.titleEnglish}</div>
@@ -2276,7 +2202,7 @@ function renderReleasesModal() {
           </div>
           <div class="flex items-center gap-5 shrink-0">
             <span class="hidden md:inline text-[#6E6E6A]">${rel.genres.slice(0, 2).join(" / ")}</span>
-            <span class="hidden sm:inline text-[#6E6E6A]">${rel.category} • ${rel.releaseYear}</span>
+            <span class="hidden sm:inline text-[#181818] font-medium">${rel.releaseYear} • ${rel.category}</span>
             <span class="px-2.5 py-1 font-bold ${
               rel.rating >= 10 ? "bg-[#E05A3A] text-white" : "bg-[#181818]/10 text-[#181818]"
             }">${rel.rating >= 10 ? "👑 10.0 / 10" : `★ ${rel.rating.toFixed(1)}`}</span>
@@ -2303,18 +2229,21 @@ function renderArtistsModal() {
 
   grid.innerHTML = ALL_RELEASES.map(
     (rel) => `
-    <div data-artist-rel="${rel.id}" class="p-4 border border-[#181818]/20 bg-[#EAEAE8] hover:border-[#E05A3A] cursor-pointer transition-all flex flex-col justify-between gap-3 group">
-      <div>
-        <div class="flex items-center justify-between font-mono text-[11px] text-[#6E6E6A]">
-          <span>${rel.catalogCode} • ${rel.studio}</span>
-          <span class="text-[#E05A3A] font-bold">${rel.bpm} BPM</span>
+    <div data-artist-rel="${rel.id}" class="p-4 border border-[#181818]/20 bg-[#EAEAE8] hover:border-[#E05A3A] cursor-pointer transition-all flex gap-3.5 group">
+      <img src="${rel.coverUrl}" alt="${rel.shortTitle}" class="w-12 h-16 object-cover border border-[#181818]/20 shrink-0" />
+      <div class="flex-1 min-w-0 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between font-mono text-[10px] text-[#6E6E6A]">
+            <span class="truncate">${rel.catalogCode} • ${rel.studio}</span>
+            <span class="text-[#E05A3A] font-bold shrink-0 ml-1">${rel.bpm} BPM</span>
+          </div>
+          <div class="mt-1 text-base font-bold text-[#181818] group-hover:text-[#E05A3A] truncate">${rel.songArtist}</div>
+          <div class="font-mono text-xs text-[#181818] truncate">♪ “${rel.songTitle}”</div>
         </div>
-        <div class="mt-1.5 text-lg font-bold text-[#181818] group-hover:text-[#E05A3A]">${rel.songArtist}</div>
-        <div class="font-mono text-xs text-[#181818]">♪ “${rel.songTitle}”</div>
-      </div>
-      <div class="pt-2.5 border-t border-[#181818]/10 flex items-center justify-between font-mono text-[11px] text-[#6E6E6A]">
-        <span class="truncate">${rel.shortTitle} (${rel.releaseYear})</span>
-        <span class="text-[#181818] font-bold">★ ${rel.rating.toFixed(1)}</span>
+        <div class="pt-2 mt-2 border-t border-[#181818]/10 flex items-center justify-between font-mono text-[10px] text-[#6E6E6A]">
+          <span class="truncate">${rel.shortTitle} (${rel.releaseYear})</span>
+          <span class="text-[#181818] font-bold shrink-0">★ ${rel.rating.toFixed(1)}</span>
+        </div>
       </div>
     </div>
   `
@@ -2335,7 +2264,7 @@ function renderArtistsModal() {
   });
 }
 
-function switchCategory(cat, startIndex = 0) {
+function switchCategory(cat, startIndex) {
   appState.category = cat;
   if (cat === "Movie") {
     appState.releases = WATCHED_RELEASES.filter((r) => r.category === "Movie");
@@ -2351,8 +2280,9 @@ function switchCategory(cat, startIndex = 0) {
     btn.classList.toggle("active", btn.getAttribute("data-cat") === cat);
   });
 
-  appState.activeIndex = startIndex;
-  appState.scrollCurrent = startIndex;
+  const idx = startIndex !== undefined ? startIndex : cat === "all" ? 6 : 0;
+  appState.activeIndex = Math.max(0, Math.min(appState.releases.length - 1, idx));
+  appState.scrollCurrent = appState.activeIndex;
   appState.scrollVelocity = 0;
 
   if (appState.diveState === "detail") {
@@ -2367,7 +2297,6 @@ function switchCategory(cat, startIndex = 0) {
    ⚡ EVENT LISTENERS & POINTER RAYCASTING
    ============================================================================ */
 document.addEventListener("DOMContentLoaded", () => {
-  // Populate genre dropdown
   const genreSelect = document.getElementById("modal-genre-select");
   if (genreSelect) {
     const genres = new Set();
@@ -2382,8 +2311,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   initThreeScene();
   syncStageHUD();
+  preloadOfficialAnimeArtwork();
 
-  // Canvas Drag & Raycast Click / Hover
   const canvasWrap = document.getElementById("three-canvas-container");
   let isDragging = false;
   let dragStartX = 0;
@@ -2400,32 +2329,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.addEventListener("pointermove", (e) => {
     if (appState.diveState !== "shelf") return;
-
     if (isDragging) {
       const dx = e.clientX - dragStartX;
       pointerMovedDistance = Math.abs(dx);
-      const stepOffset = Math.round(-dx / 68);
+      const stepOffset = Math.round(-dx / 64);
       const next = Math.max(0, Math.min(appState.releases.length - 1, dragStartIndex + stepOffset));
-      if (next !== appState.activeIndex) {
-        selectReleaseIndex(next);
-      }
+      if (next !== appState.activeIndex) selectReleaseIndex(next);
       return;
     }
 
-    // Hover raycast on center sleeve or floating disc
     if (!renderer || !camera) return;
     const rect = renderer.domElement.getBoundingClientRect();
     pointerNDC.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
     pointerNDC.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
     raycaster.setFromCamera(pointerNDC, camera);
-
     const targets = [...sleeveEntries.map((s) => s.mesh), discSpinMesh].filter(Boolean);
     const hits = raycaster.intersectObjects(targets, false);
     if (hits.length > 0) {
       const hitObj = hits[0].object;
-      const isCenterHit =
-        hitObj.userData?.isFloatingDisc || hitObj.userData?.sleeveIndex === appState.activeIndex;
-      appState.isHoveredCenter = Boolean(isCenterHit);
+      appState.isHoveredCenter = Boolean(
+        hitObj.userData?.isFloatingDisc || hitObj.userData?.sleeveIndex === appState.activeIndex
+      );
       canvasWrap.style.cursor = "pointer";
     } else {
       appState.isHoveredCenter = false;
@@ -2436,7 +2360,6 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("pointerup", (e) => {
     if (!isDragging) return;
     isDragging = false;
-
     if (pointerMovedDistance < 8 && appState.diveState === "shelf" && renderer) {
       const rect = renderer.domElement.getBoundingClientRect();
       pointerNDC.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
@@ -2455,7 +2378,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Mouse Wheel & Keyboard Navigation
   let wheelCooldown = false;
   window.addEventListener(
     "wheel",
@@ -2496,32 +2418,21 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Flanking 40px Circular Buttons & Center Caption Dive
-  document.getElementById("prev-sleeve-btn")?.addEventListener("click", () => {
-    selectReleaseIndex(appState.activeIndex - 1);
-  });
-  document.getElementById("next-sleeve-btn")?.addEventListener("click", () => {
-    selectReleaseIndex(appState.activeIndex + 1);
-  });
-  document.getElementById("center-caption-trigger")?.addEventListener("click", () => {
-    triggerSignatureDiveIn();
-  });
+  document.getElementById("prev-sleeve-btn")?.addEventListener("click", () => selectReleaseIndex(appState.activeIndex - 1));
+  document.getElementById("next-sleeve-btn")?.addEventListener("click", () => selectReleaseIndex(appState.activeIndex + 1));
+  document.getElementById("center-caption-trigger")?.addEventListener("click", () => triggerSignatureDiveIn());
 
-  // Timeline Scrubber Drag & Click
   const timelineEl = document.getElementById("timeline-scrubber");
   let scrubbingTimeline = false;
   const scrubAtX = (clientX) => {
     if (!timelineEl) return;
     const rect = timelineEl.getBoundingClientRect();
-    const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-    const minY = RULER_YEARS[0];
-    const maxY = RULER_YEARS[RULER_YEARS.length - 1];
-    const targetYear = minY + ratio * (maxY - minY);
-
+    const targetPct = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100));
+    const positions = computeTimelinePositions();
     let bestIdx = 0;
     let bestDist = Infinity;
-    appState.releases.forEach((r, i) => {
-      const d = Math.abs(r.releaseYear - targetYear);
+    positions.forEach((p, i) => {
+      const d = Math.abs(p - targetPct);
       if (d < bestDist) {
         bestDist = d;
         bestIdx = i;
@@ -2541,7 +2452,6 @@ document.addEventListener("DOMContentLoaded", () => {
     scrubbingTimeline = false;
   });
 
-  // Top Navigation Buttons
   document.getElementById("nav-brand-btn")?.addEventListener("click", () => {
     document.getElementById("releases-modal").classList.add("hidden");
     document.getElementById("artists-modal").classList.add("hidden");
@@ -2549,17 +2459,16 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.querySelectorAll("#category-tabs .cat-pill").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      switchCategory(btn.getAttribute("data-cat"), 0);
-    });
+    btn.addEventListener("click", () => switchCategory(btn.getAttribute("data-cat")));
   });
 
   document.getElementById("toggle-art-mode-btn")?.addEventListener("click", () => {
     appState.useOfficialPosters = !appState.useOfficialPosters;
     document.getElementById("art-mode-label").textContent = appState.useOfficialPosters
-      ? "MAL VISUAL"
-      : "SWISS CANVAS";
+      ? "ANIME ART"
+      : "SWISS MINIMAL";
     rebuildSleeveMaterials();
+    updateActiveDiscTexture();
   });
 
   document.getElementById("nav-releases-btn")?.addEventListener("click", () => {
@@ -2600,8 +2509,8 @@ document.addEventListener("DOMContentLoaded", () => {
       banner.classList.add("flex");
       const rel = appState.releases[appState.activeIndex];
       if (rel) {
-        document.getElementById("radio-banner-text").textContent = `RADIO: ♪ ${rel.songTitle} — ${rel.songArtist}`;
-        startTrackSynth(rel.tracks[0], appState.externalMedia[rel.id]?.songPreviewUrl);
+        document.getElementById("radio-banner-text").textContent = `OFFICIAL OST: ♪ ${rel.songTitle} — ${rel.songArtist}`;
+        startTrackSynth(rel.tracks[0], rel.songPreviewUrl);
       }
     } else {
       dot.classList.replace("bg-[#E05A3A]", "bg-[#6E6E6A]");
@@ -2617,61 +2526,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!appState.soundEnabled) stopTrackSynth();
   });
 
-  // Detail View Controls
-  document.getElementById("back-to-shelf-btn")?.addEventListener("click", () => {
-    triggerReverseDiveOut();
-  });
+  document.getElementById("back-to-shelf-btn")?.addEventListener("click", () => triggerReverseDiveOut());
+  document.getElementById("detail-prev-btn")?.addEventListener("click", () => selectReleaseIndex(appState.activeIndex - 1));
+  document.getElementById("detail-next-btn")?.addEventListener("click", () => selectReleaseIndex(appState.activeIndex + 1));
 
-  document.getElementById("detail-prev-btn")?.addEventListener("click", () => {
-    selectReleaseIndex(appState.activeIndex - 1);
-  });
-  document.getElementById("detail-next-btn")?.addEventListener("click", () => {
-    selectReleaseIndex(appState.activeIndex + 1);
-  });
-
+  document.getElementById("detail-visual-wrap")?.addEventListener("click", () => setDetailMediaTab("trailer"));
   document.querySelectorAll("[data-detail-tab]").forEach((tabBtn) => {
-    tabBtn.addEventListener("click", () => {
-      const tab = tabBtn.getAttribute("data-detail-tab");
-      document.querySelectorAll("[data-detail-tab]").forEach((b) => {
-        b.classList.toggle("active", b === tabBtn);
-      });
-
-      const coverCanvas = document.getElementById("detail-cover-canvas");
-      const visualWrap = document.getElementById("detail-visual-wrap");
-      const trailerWrap = document.getElementById("detail-trailer-wrap");
-      const rel = appState.releases[appState.activeIndex];
-      const media = appState.externalMedia[rel?.id] || {};
-
-      coverCanvas.classList.toggle("hidden", tab !== "cover");
-      visualWrap.classList.toggle("hidden", tab !== "visual");
-      trailerWrap.classList.toggle("hidden", tab !== "trailer");
-
-      if (tab === "visual") {
-        const imgEl = document.getElementById("detail-visual-img");
-        if (media.posterUrl) {
-          imgEl.src = media.posterUrl;
-        } else {
-          coverCanvas.classList.remove("hidden");
-          visualWrap.classList.add("hidden");
-        }
-      }
-
-      if (tab === "trailer") {
-        stopTrackSynth();
-        const ytEl = document.getElementById("detail-yt-iframe");
-        const fbEl = document.getElementById("detail-trailer-fallback");
-        if (media.youtubeId) {
-          ytEl.src = `https://www.youtube.com/embed/${media.youtubeId}?autoplay=1&rel=0`;
-          ytEl.classList.remove("hidden");
-          fbEl.classList.add("hidden");
-        } else {
-          ytEl.classList.add("hidden");
-          fbEl.classList.remove("hidden");
-        }
-      } else {
-        const ytEl = document.getElementById("detail-yt-iframe");
-        if (ytEl) ytEl.src = "";
-      }
-    });
+    tabBtn.addEventListener("click", () => setDetailMediaTab(tabBtn.getAttribute("data-detail-tab")));
   });
 });

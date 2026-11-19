@@ -20,23 +20,30 @@ interface TurntableSceneProps {
   diveState: "shelf" | "diving-in" | "detail" | "diving-out";
   onDiveInComplete: () => void;
   onDiveOutComplete: () => void;
+  onDiveVeilChange?: (opacity: number) => void;
   useOfficialPosters: boolean;
   loadedPosterImages: Record<string, HTMLImageElement>;
 }
 
 /**
- * Computes the continuous Accordion Spine-to-Cover 3D position and rotation
- * for sleeve at relative offset `d = index - scrollPos`.
+ * ZERO-CLIPPING Accordion Spine-to-Cover 3D Kinematics:
+ * - Active center sleeve (d = 0): W = 1.90, H = 1.90, T = 0.20, centered at x = -0.34, z = +0.50
+ *   -> X span: [-1.29, +0.61], Z front face: +0.60
+ * - Floating Vinyl Disc: outerRadius = 0.72, parked at x = +0.88 (hover +1.04), z = +0.76 (hover +0.82)
+ *   -> Always +0.16 units IN FRONT OF active cover (zero overlap with sleeve!)
+ *   -> Rightmost edge at rest: +1.60, at hover: +1.76
+ * - Left spine stack (d <= -1): starts at x = -1.72 (inner face -1.62 -> 0.33 gap from cover!)
+ * - Right spine stack (d >= +1): starts at x = +2.14 (inner face +2.04 -> 0.28..0.44 gap from disc!)
+ * Result: 100% mathematically guaranteed ZERO clipping from every angle and hover state.
  */
 function computeAccordionTransform(d: number) {
   const absD = Math.abs(d);
-  // Gaussian bell weight: 1.0 at d=0 (center face-forward sleeve), ~0 for |d| >= 1 (side spine stacks)
   const centerWeight = Math.exp(-(d * d) / 0.14);
 
-  const spinePitch = 0.285;
+  const spinePitch = 0.255;
   const leftStackAnchor = -1.72;
-  const rightStackAnchor = 1.92; // Parted wider on right to frame the protruding floating mini vinyl disc
-  const centerAnchor = -0.16;
+  const rightStackAnchor = 2.14;
+  const centerAnchor = -0.34;
 
   let x = 0;
   if (d <= -1) {
@@ -44,44 +51,34 @@ function computeAccordionTransform(d: number) {
   } else if (d >= 1) {
     x = rightStackAnchor + (d - 1) * spinePitch;
   } else if (d < 0) {
-    // Smooth cubic ease from leftStackAnchor (-1.72) at d=-1 to centerAnchor (-0.16) at d=0
-    const t = d + 1; // 0..1
+    const t = d + 1;
     const smooth = t * t * (3 - 2 * t);
     x = leftStackAnchor + (centerAnchor - leftStackAnchor) * smooth;
   } else {
-    // Smooth cubic ease from centerAnchor (-0.16) at d=0 to rightStackAnchor (+1.92) at d=+1
-    const t = d; // 0..1
+    const t = d;
     const smooth = t * t * (3 - 2 * t);
     x = centerAnchor + (rightStackAnchor - centerAnchor) * smooth;
   }
 
-  // Rotation around Y:
-  // d = 0 -> 0 rad (front cover faces camera)
-  // |d| >= 1 -> +PI/2 rad (90 deg sideways so -X spine face points toward camera) + subtle radial curve
+  // Side stacks rotated 90 deg sideways (+PI/2) so their -X spine faces the camera cleanly
   const spineBaseAngle = Math.PI / 2;
-  const radialFan = -d * 0.026;
+  const radialFan = -d * 0.022;
   const rotY = (1 - centerWeight) * (spineBaseAngle + radialFan);
 
-  // Follow the gentle curve of the turntable platter arc in Z
-  const platterCurveZ = -0.048 * (x * x);
-  const activeStepForwardZ = 0.42 * centerWeight;
-  const z = platterCurveZ + activeStepForwardZ;
+  // Follow the gentle curve of the silver turntable platter arc
+  const platterCurveZ = -0.042 * (x * x);
+  const z = platterCurveZ + 0.5 * centerWeight - 0.14 * (1 - centerWeight);
 
-  // Slight vertical lift for the active face-forward sleeve
-  const y = 0.42 + 0.05 * centerWeight;
+  // Sleeves sit flush above the platter top (y = -0.26 -> center y = 0.69)
+  const y = 0.69 + 0.05 * centerWeight;
 
-  // Visibility falloff so the shelf maintains a crisp 17-case physical stack on the platter arc
-  // (8 left spines + 1 center active cover + 8 right spines = 17 physical sleeves)
-  const visibleWindow = 8.6;
+  // Keep a clean balanced 17-case physical shelf formation (8 left + 1 center + 8 right)
+  const visibleWindow = 8.5;
   const scale = absD > visibleWindow ? Math.max(0.001, 1 - (absD - visibleWindow) * 1.4) : 1;
 
-  return { x, y, z, rotY, centerWeight, scale, isVisible: absD < 9.3 };
+  return { x, y, z, rotY, centerWeight, scale, isVisible: absD < 9.2 };
 }
 
-/**
- * Creates a circular ring geometry with planar UV mapping (0..1 across diameter)
- * so our 1024x1024 procedural vinyl disc texture maps accurately with a true hollow center spindle hole.
- */
 function createHollowDiscGeometry(innerRadius: number, outerRadius: number, segments = 96): THREE.RingGeometry {
   const geom = new THREE.RingGeometry(innerRadius, outerRadius, segments, 2);
   const pos = geom.attributes.position;
@@ -96,97 +93,75 @@ function createHollowDiscGeometry(innerRadius: number, outerRadius: number, segm
 }
 
 /**
- * Curved Perforated Brushed-Metal Turntable Platter Rim
+ * Curved Perforated Brushed Silver-Steel Turntable Platter Rim
+ * Framed neatly below the 17 sleeves so the perforated strobe bevel shines clearly
+ * while leaving crisp bright studio floor space beneath for the Release Caption!
  */
 function PerforatedTurntablePlatter({ scrollRef }: { scrollRef: React.MutableRefObject<number> }) {
   const platterGroupRef = useRef<THREE.Group>(null);
 
-  // Generate 136 repeating rectangular strobe slot transforms around the front bevel of the platter rim
   const strobeSlots = useMemo(() => {
-    const count = 136;
-    const radius = 10.74;
+    const count = 148;
+    const radius = 11.42;
     const items: { pos: [number, number, number]; rotY: number }[] = [];
     for (let i = 0; i < count; i++) {
       const angle = (i / count) * Math.PI * 2;
-      const x = Math.sin(angle) * radius;
-      const z = Math.cos(angle) * radius;
       items.push({
-        pos: [x, -0.02, z],
+        pos: [Math.sin(angle) * radius, -0.03, Math.cos(angle) * radius],
         rotY: angle
       });
     }
     return items;
   }, []);
 
-  useFrame((_, delta) => {
+  useFrame(() => {
     if (!platterGroupRef.current) return;
-    // Subtle continuous platter strobe drift + mechanical response to shelf scrubbing
     platterGroupRef.current.rotation.y =
-      -scrollRef.current * 0.045 + performance.now() * 0.000035;
+      -scrollRef.current * 0.038 + performance.now() * 0.00003;
   });
 
   return (
-    <group position={[0, -0.96, -8.35]}>
+    <group position={[0, -0.49, -9.85]}>
       <group ref={platterGroupRef}>
-        {/* Outer Brushed Silver-Steel Beveled Platter Rim (#B8B9B4) */}
-        <mesh receiveShadow castShadow position={[0, -0.06, 0]}>
-          <cylinderGeometry args={[10.42, 11.02, 0.46, 128]} />
-          <meshStandardMaterial
-            color="#B8B9B4"
-            metalness={0.62}
-            roughness={0.34}
-          />
+        {/* Outer Brushed Silver-Steel Beveled Rim (#B8B9B4) */}
+        <mesh receiveShadow position={[0, -0.04, 0]}>
+          <cylinderGeometry args={[11.12, 11.66, 0.42, 128]} />
+          <meshStandardMaterial color="#B8B9B4" metalness={0.58} roughness={0.32} />
         </mesh>
 
-        {/* Lower Machined Aluminum Lip */}
-        <mesh receiveShadow position={[0, -0.34, 0]}>
-          <cylinderGeometry args={[11.02, 10.88, 0.14, 128]} />
-          <meshStandardMaterial
-            color="#9E9F9A"
-            metalness={0.7}
-            roughness={0.28}
-          />
+        {/* Precision Lower Machined Chamfer Lip */}
+        <mesh receiveShadow position={[0, -0.29, 0]}>
+          <cylinderGeometry args={[11.66, 11.48, 0.1, 128]} />
+          <meshStandardMaterial color="#979892" metalness={0.65} roughness={0.28} />
         </mesh>
 
-        {/* Repeating Rectangular Perforated Strobe Slots along the Front Bevel */}
+        {/* 148 Repeating Rectangular Perforated Strobe Slots along Front Bevel */}
         {strobeSlots.map((slot, idx) => (
           <group key={idx} position={slot.pos} rotation={[0, slot.rotY, 0]}>
-            <mesh rotation={[-0.52, 0, 0]}>
-              <boxGeometry args={[0.25, 0.21, 0.07]} />
-              <meshStandardMaterial
-                color="#181818"
-                metalness={0.2}
-                roughness={0.85}
-              />
+            <mesh rotation={[-0.56, 0, 0]}>
+              <boxGeometry args={[0.23, 0.18, 0.06]} />
+              <meshStandardMaterial color="#181818" metalness={0.18} roughness={0.85} />
             </mesh>
           </group>
         ))}
 
-        {/* Precision Metallic Inner Lip Ring */}
+        {/* Top Machined Aluminum Trim Ring */}
         <mesh receiveShadow position={[0, 0.18, 0]}>
-          <cylinderGeometry args={[10.36, 10.42, 0.05, 128]} />
-          <meshStandardMaterial
-            color="#D0D1CC"
-            metalness={0.75}
-            roughness={0.22}
-          />
+          <cylinderGeometry args={[11.06, 11.12, 0.04, 128]} />
+          <meshStandardMaterial color="#D6D7D2" metalness={0.62} roughness={0.24} />
         </mesh>
 
-        {/* Dark Charcoal Rubber / Felt Platter Mat Surface */}
+        {/* Warm Matte Anodized Light-Silver Platter Surface (high contrast & studio-clean!) */}
         <mesh receiveShadow position={[0, 0.21, 0]}>
-          <cylinderGeometry args={[10.22, 10.28, 0.05, 128]} />
-          <meshStandardMaterial
-            color="#232321"
-            metalness={0.08}
-            roughness={0.88}
-          />
+          <cylinderGeometry args={[10.92, 11.0, 0.04, 128]} />
+          <meshStandardMaterial color="#CECFCA" metalness={0.22} roughness={0.72} />
         </mesh>
 
-        {/* Subtle Concentric Turntable Mat Groove Rings */}
-        {[8.8, 9.4, 9.95].map((r, idx) => (
-          <mesh key={idx} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.238, 0]}>
-            <ringGeometry args={[r - 0.015, r, 128]} />
-            <meshBasicMaterial color="#3A3A37" transparent opacity={0.55} />
+        {/* Concentric Hairline Turn-Table Rings */}
+        {[9.4, 10.0, 10.55].map((r, idx) => (
+          <mesh key={idx} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.232, 0]}>
+            <ringGeometry args={[r - 0.014, r, 128]} />
+            <meshBasicMaterial color="#9A9B95" transparent opacity={0.5} />
           </mesh>
         ))}
       </group>
@@ -195,7 +170,7 @@ function PerforatedTurntablePlatter({ scrollRef }: { scrollRef: React.MutableRef
 }
 
 /**
- * Individual Physical Digipak / Jewel Case Sleeve in the 3D Accordion Shelf
+ * Individual Physical Digipak Sleeve Mesh in the 3D Accordion Shelf
  */
 function DigipakSleeveMesh({
   release,
@@ -219,7 +194,6 @@ function DigipakSleeveMesh({
   posterImg?: HTMLImageElement;
 }) {
   const groupRef = useRef<THREE.Group>(null);
-  const meshRef = useRef<THREE.Mesh>(null);
 
   const spineTex = useMemo(() => getSpineTexture(release), [release]);
   const frontTex = useMemo(
@@ -228,7 +202,6 @@ function DigipakSleeveMesh({
   );
   const backTex = useMemo(() => getBackCoverTexture(release), [release]);
 
-  // 6-face BoxGeometry materials: [+X right, -X spine, +Y top, -Y bottom, +Z front cover, -Z back cover]
   const materials = useMemo(() => {
     const spineMat = new THREE.MeshStandardMaterial({
       map: spineTex,
@@ -237,7 +210,7 @@ function DigipakSleeveMesh({
     });
     const frontMat = new THREE.MeshStandardMaterial({
       map: frontTex,
-      roughness: 0.36,
+      roughness: 0.34,
       metalness: 0.05
     });
     const backMat = new THREE.MeshStandardMaterial({
@@ -263,9 +236,9 @@ function DigipakSleeveMesh({
     if (!isVisible) return;
 
     const isCenter = index === activeIndex;
-    const targetTiltX = isCenter && isHoveredCenter ? -0.055 : 0;
-    const targetTiltY = rotY + (isCenter && isHoveredCenter ? -0.08 : 0);
-    const targetLift = y + (isCenter && isHoveredCenter ? 0.045 : 0);
+    const targetTiltX = isCenter && isHoveredCenter ? -0.05 : 0;
+    const targetTiltY = rotY + (isCenter && isHoveredCenter ? -0.07 : 0);
+    const targetLift = y + (isCenter && isHoveredCenter ? 0.04 : 0);
 
     const damp = Math.min(1, delta * 14);
     groupRef.current.position.x = THREE.MathUtils.lerp(groupRef.current.position.x, x, damp);
@@ -302,7 +275,6 @@ function DigipakSleeveMesh({
   return (
     <group ref={groupRef}>
       <mesh
-        ref={meshRef}
         material={materials}
         castShadow
         receiveShadow
@@ -310,55 +282,71 @@ function DigipakSleeveMesh({
         onPointerOver={handlePointerOver}
         onPointerOut={handlePointerOut}
       >
-        {/* Physical Digipak Sleeve: Width 2.32, Height 2.32, Spine Thickness 0.235 */}
-        <boxGeometry args={[2.32, 2.32, 0.235]} />
+        {/* Physical Digipak Sleeve: W 1.90, H 1.90, Spine Thickness 0.20 */}
+        <boxGeometry args={[1.9, 1.9, 0.2]} />
       </mesh>
     </group>
   );
 }
 
 /**
- * Floating Mini Vinyl / CD Disc overlapping the right edge of the active center sleeve,
- * with a true hollow center spindle hole for the GSAP camera dive transition.
+ * Floating 3D Mini Vinyl / CD Disc with Hollow Center Spindle Hole
+ * Floats CLEANLY in front of the right edge of the active cover (z = +0.76 > cover front +0.60)
+ * and cleanly to the left of the right spine stack (rightmost edge +1.76 < stack +2.04) -> ZERO CLIPPING!
  */
 function FloatingVinylDisc({
   activeRelease,
+  posterImg,
+  useOfficialPosters,
   scrollRef,
   activeIndex,
   isHoveredCenter,
   onHoverCenter,
   onTriggerDive,
-  diveGroupRef
+  diveGroupRef,
+  spinBoostRef
 }: {
   activeRelease: AnimeRelease;
+  posterImg?: HTMLImageElement;
+  useOfficialPosters: boolean;
   scrollRef: React.MutableRefObject<number>;
   activeIndex: number;
   isHoveredCenter: boolean;
   onHoverCenter: (hovered: boolean) => void;
   onTriggerDive: () => void;
   diveGroupRef: React.RefObject<THREE.Group>;
+  spinBoostRef: React.MutableRefObject<number>;
 }) {
   const spinMeshRef = useRef<THREE.Mesh>(null);
-  const discGeometry = useMemo(() => createHollowDiscGeometry(0.088, 0.96, 96), []);
-  const discTexture = useMemo(() => getVinylDiscTexture(activeRelease), [activeRelease]);
+  const discMatRef = useRef<THREE.MeshStandardMaterial>(null);
+
+  const outerRadius = 0.72;
+  const innerRadius = 0.095;
+  const discGeometry = useMemo(
+    () => createHollowDiscGeometry(innerRadius, outerRadius, 96),
+    [innerRadius, outerRadius]
+  );
+  const discTexture = useMemo(
+    () => getVinylDiscTexture(activeRelease, useOfficialPosters ? posterImg : null),
+    [activeRelease, useOfficialPosters, posterImg]
+  );
 
   useFrame((_, delta) => {
     if (spinMeshRef.current) {
-      // Hovering the active sleeve/disc increases spin speed
-      const spinSpeed = isHoveredCenter ? 3.2 : 1.15;
-      spinMeshRef.current.rotation.z -= delta * spinSpeed;
+      const baseSpeed = isHoveredCenter ? 3.2 : 1.15;
+      const totalSpeed = baseSpeed + spinBoostRef.current;
+      spinMeshRef.current.rotation.z -= delta * totalSpeed;
     }
 
     if (diveGroupRef.current && diveGroupRef.current.userData.isDiving !== true) {
-      // Follow the active sleeve settle state
+      // Smoothly tuck in & fade during scrubbing so disc NEVER collides with rotating sleeves
       const settleDiff = Math.abs(activeIndex - scrollRef.current);
-      const visibilityFactor = Math.max(0, 1 - settleDiff * 1.35);
+      const visibilityFactor = Math.max(0, 1 - settleDiff * 2.2);
 
-      // Base position overlapping the right edge of the face-forward active sleeve
-      const targetX = isHoveredCenter ? 1.16 : 0.98;
-      const targetY = 0.45 + Math.sin(performance.now() * 0.0024) * 0.025;
-      const targetZ = 0.34;
-      const targetRotY = isHoveredCenter ? -0.14 : -0.06;
+      const targetX = isHoveredCenter ? 1.04 : 0.88;
+      const targetY = 0.72 + Math.sin(performance.now() * 0.0024) * 0.022;
+      const targetZ = isHoveredCenter ? 0.82 : 0.76; // Cleanly IN FRONT of active cover front face (+0.60)
+      const targetRotY = isHoveredCenter ? -0.14 : -0.05;
 
       const damp = Math.min(1, delta * 12);
       diveGroupRef.current.position.x = THREE.MathUtils.lerp(
@@ -382,15 +370,28 @@ function FloatingVinylDisc({
         damp
       );
 
-      const targetScale = 0.88 * (0.4 + 0.6 * visibilityFactor);
+      const targetScale = 0.94 * (0.25 + 0.75 * visibilityFactor);
       diveGroupRef.current.scale.setScalar(
         THREE.MathUtils.lerp(diveGroupRef.current.scale.x, targetScale, damp)
       );
+
+      if (discMatRef.current) {
+        discMatRef.current.opacity = THREE.MathUtils.lerp(
+          discMatRef.current.opacity,
+          visibilityFactor,
+          damp
+        );
+      }
+      diveGroupRef.current.visible = visibilityFactor > 0.02;
+    } else if (diveGroupRef.current && discMatRef.current) {
+      diveGroupRef.current.visible = true;
+      discMatRef.current.opacity = 1;
     }
   });
 
   return (
-    <group ref={diveGroupRef} position={[0.98, 0.45, 0.34]}>
+    <group ref={diveGroupRef} position={[0.88, 0.72, 0.76]}>
+      {/* Main Vinyl Face with True Hollow Center Spindle Hole */}
       <mesh
         ref={spinMeshRef}
         geometry={discGeometry}
@@ -410,22 +411,26 @@ function FloatingVinylDisc({
         }}
       >
         <meshStandardMaterial
+          ref={discMatRef}
           map={discTexture}
-          roughness={0.24}
-          metalness={0.35}
+          roughness={0.22}
+          metalness={0.38}
+          transparent
+          opacity={1}
           side={THREE.DoubleSide}
         />
       </mesh>
 
-      {/* Precision Inner Metallic Spindle Rim around the hollow center hole (r = 0.088) */}
+      {/* Subtle 3D Outer Rim Edge Ring */}
+      <mesh rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[outerRadius, outerRadius, 0.022, 96, 1, true]} />
+        <meshStandardMaterial color="#1B1B1A" metalness={0.5} roughness={0.35} side={THREE.DoubleSide} />
+      </mesh>
+
+      {/* Precision Inner Metallic Spindle Collar around the Hollow Hole */}
       <mesh>
-        <ringGeometry args={[0.086, 0.106, 64]} />
-        <meshStandardMaterial
-          color="#D2D2CF"
-          metalness={0.85}
-          roughness={0.2}
-          side={THREE.DoubleSide}
-        />
+        <ringGeometry args={[innerRadius - 0.002, innerRadius + 0.022, 64]} />
+        <meshStandardMaterial color="#D8D8D4" metalness={0.88} roughness={0.18} side={THREE.DoubleSide} />
       </mesh>
     </group>
   );
@@ -442,101 +447,121 @@ function ArchiveStageInner({
   diveState,
   onDiveInComplete,
   onDiveOutComplete,
+  onDiveVeilChange,
   useOfficialPosters,
   loadedPosterImages
 }: TurntableSceneProps) {
   const { camera, size } = useThree();
   const scrollRef = useRef<number>(activeIndex);
   const velocityRef = useRef<number>(0);
+  const sleevesGroupRef = useRef<THREE.Group>(null);
   const diveDiscGroupRef = useRef<THREE.Group>(null);
+  const spinBoostRef = useRef<number>(0);
   const [isHoveredCenter, setIsHoveredCenter] = useState(false);
 
-  // Responsive camera FOV / Z distance for mobile and desktop viewports
   const baseCameraZ = useMemo(() => {
-    if (size.width < 640) return 8.2;
-    if (size.width < 1024) return 7.1;
-    return 6.35;
+    if (size.width < 640) return 9.1;
+    if (size.width < 1024) return 7.75;
+    return 6.85;
   }, [size.width]);
 
   useEffect(() => {
     if (diveState === "shelf") {
-      camera.position.set(0, 0.58, baseCameraZ);
-      camera.lookAt(0, 0.36, 0);
+      const persp = camera as THREE.PerspectiveCamera;
+      persp.fov = 33;
+      persp.updateProjectionMatrix();
+      camera.position.set(0, 0.72, baseCameraZ);
+      camera.lookAt(0, 0.24, 0);
     }
   }, [baseCameraZ, camera, diveState]);
 
   // Smooth spring physics driving scrollRef toward activeIndex
   useFrame((_, delta) => {
     const dt = Math.min(0.05, delta);
-    const stiffness = 115;
-    const damping = 18;
+    const stiffness = 120;
+    const damping = 18.5;
     const displacement = activeIndex - scrollRef.current;
     const springForce = displacement * stiffness - velocityRef.current * damping;
     velocityRef.current += springForce * dt;
     scrollRef.current += velocityRef.current * dt;
   });
 
-  // Signature Multi-Stage GSAP Spindle-Hole Camera Dive Timeline
+  // Cinema-Grade Multi-Stage GSAP Dive-In & Reverse Dive-Out Choreography
   useEffect(() => {
     const discGroup = diveDiscGroupRef.current;
-    if (!discGroup) return;
+    const shelfGroup = sleevesGroupRef.current;
+    const persp = camera as THREE.PerspectiveCamera;
+    if (!discGroup || !shelfGroup) return;
+
+    const animState = {
+      fov: persp.fov,
+      veil: 0,
+      lookY: 0.24
+    };
+
+    const syncCamera = () => {
+      persp.fov = animState.fov;
+      persp.updateProjectionMatrix();
+      persp.lookAt(0, animState.lookY, 0);
+      onDiveVeilChange?.(animState.veil);
+    };
 
     if (diveState === "diving-in") {
       discGroup.userData.isDiving = true;
+      animState.fov = persp.fov;
+      animState.veil = 0;
+      animState.lookY = 0.24;
 
       const tl = gsap.timeline({
+        onUpdate: syncCamera,
         onComplete: () => {
+          onDiveVeilChange?.(0);
           onDiveInComplete();
         }
       });
 
-      // Stage 1: Floating disc centers itself, scales up, and aligns parallel to the camera
+      // Stage 1 (0.00s - 0.44s): Shelf gently recedes; vinyl disc sweeps to center, scales up & locks parallel
+      tl.to(
+        shelfGroup.position,
+        { z: -1.45, y: -0.22, duration: 0.48, ease: "power3.inOut" },
+        0
+      );
       tl.to(
         discGroup.position,
-        {
-          x: 0,
-          y: 0.48,
-          z: 1.65,
-          duration: 0.46,
-          ease: "power3.out"
-        },
+        { x: 0, y: 0.72, z: 2.28, duration: 0.46, ease: "expo.out" },
         0
       );
       tl.to(
         discGroup.rotation,
-        {
-          x: 0,
-          y: 0,
-          z: 0,
-          duration: 0.42,
-          ease: "power2.out"
-        },
+        { x: 0, y: 0, z: 0, duration: 0.44, ease: "power3.out" },
         0
       );
       tl.to(
         discGroup.scale,
-        {
-          x: 1.75,
-          y: 1.75,
-          z: 1.75,
-          duration: 0.48,
-          ease: "power3.out"
-        },
+        { x: 2.15, y: 2.15, z: 2.15, duration: 0.48, ease: "expo.out" },
+        0
+      );
+      tl.to(spinBoostRef, { current: 6.2, duration: 0.55, ease: "power2.in" }, 0);
+
+      // Subtle camera anticipation pullback & target lock onto hollow center spindle hole (y = 0.72)
+      tl.to(animState, { lookY: 0.72, duration: 0.36, ease: "power2.out" }, 0);
+      tl.to(
+        camera.position,
+        { x: 0, y: 0.72, z: baseCameraZ + 0.32, duration: 0.3, ease: "power2.out" },
         0
       );
 
-      // Stage 2: Camera aligns with center spindle hole (0, 0.48) and dives straight through z = 1.65
+      // Stage 2 (0.34s - 0.96s): Dynamic FOV warp + acceleration straight THROUGH the hollow spindle hole!
       tl.to(
         camera.position,
-        {
-          x: 0,
-          y: 0.48,
-          z: 1.48,
-          duration: 0.58,
-          ease: "power3.in"
-        },
-        0.38
+        { x: 0, y: 0.72, z: 2.04, duration: 0.62, ease: "power4.in" },
+        0.34
       );
+      tl.to(animState, { fov: 54, duration: 0.34, ease: "power2.in" }, 0.34);
+      tl.to(animState, { fov: 26, duration: 0.28, ease: "power3.out" }, 0.68);
+
+      // Stage 3 (0.74s - 0.96s): Seamless studio veil crossfade as spindle hole fills screen
+      tl.to(animState, { veil: 1, duration: 0.24, ease: "power2.in" }, 0.74);
 
       return () => {
         tl.kill();
@@ -545,59 +570,61 @@ function ArchiveStageInner({
 
     if (diveState === "diving-out") {
       discGroup.userData.isDiving = true;
-      discGroup.position.set(0, 0.48, 1.65);
-      discGroup.scale.setScalar(1.75);
-      camera.position.set(0, 0.48, 1.48);
+      discGroup.position.set(0, 0.72, 2.28);
+      discGroup.rotation.set(0, 0, 0);
+      discGroup.scale.setScalar(2.15);
+      shelfGroup.position.set(0, -0.22, -1.45);
+      camera.position.set(0, 0.72, 2.04);
+
+      animState.fov = 26;
+      animState.veil = 1;
+      animState.lookY = 0.72;
+      syncCamera();
 
       const tl = gsap.timeline({
+        onUpdate: syncCamera,
         onComplete: () => {
           discGroup.userData.isDiving = false;
+          spinBoostRef.current = 0;
+          onDiveVeilChange?.(0);
           onDiveOutComplete();
         }
       });
 
-      // Reverse camera dive back out through the spindle hole
+      // Lift studio veil immediately as we pull back out through the spinning spindle hole
+      tl.to(animState, { veil: 0, duration: 0.24, ease: "power2.out" }, 0);
       tl.to(
         camera.position,
-        {
-          x: 0,
-          y: 0.58,
-          z: baseCameraZ,
-          duration: 0.62,
-          ease: "power3.out"
-        },
-        0
+        { x: 0, y: 0.72, z: baseCameraZ, duration: 0.72, ease: "expo.out" },
+        0.04
       );
+      tl.to(animState, { fov: 46, duration: 0.24, ease: "power2.out" }, 0.04);
+      tl.to(animState, { fov: 33, duration: 0.48, ease: "power3.out" }, 0.28);
+      tl.to(animState, { lookY: 0.24, duration: 0.65, ease: "power3.out" }, 0.14);
 
+      // Glide disc cleanly back into parked right-edge slot & bring shelf smoothly back forward
+      tl.to(spinBoostRef, { current: 0, duration: 0.68, ease: "power3.out" }, 0.08);
       tl.to(
         discGroup.position,
-        {
-          x: 0.98,
-          y: 0.45,
-          z: 0.34,
-          duration: 0.58,
-          ease: "power3.inOut"
-        },
-        0.22
+        { x: 0.88, y: 0.72, z: 0.76, duration: 0.62, ease: "expo.inOut" },
+        0.16
       );
-
       tl.to(
         discGroup.scale,
-        {
-          x: 0.88,
-          y: 0.88,
-          z: 0.88,
-          duration: 0.58,
-          ease: "power3.inOut"
-        },
-        0.22
+        { x: 0.94, y: 0.94, z: 0.94, duration: 0.62, ease: "expo.inOut" },
+        0.16
+      );
+      tl.to(
+        shelfGroup.position,
+        { z: 0, y: 0, duration: 0.65, ease: "expo.out" },
+        0.14
       );
 
       return () => {
         tl.kill();
       };
     }
-  }, [diveState, camera, baseCameraZ, onDiveInComplete, onDiveOutComplete]);
+  }, [diveState, camera, baseCameraZ, onDiveInComplete, onDiveOutComplete, onDiveVeilChange]);
 
   const activeRelease = releases[activeIndex] || releases[0];
 
@@ -613,36 +640,30 @@ function ArchiveStageInner({
   return (
     <>
       {/* Soft Gallery Studio Lighting */}
-      <ambientLight intensity={1.35} color="#FAF9F5" />
+      <ambientLight intensity={1.4} color="#FAF9F5" />
       <directionalLight
-        position={[4.5, 8.5, 6.5]}
-        intensity={1.45}
+        position={[4.5, 9.5, 7.5]}
+        intensity={1.38}
         color="#FFFDF9"
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
         shadow-camera-near={1}
-        shadow-camera-far={25}
-        shadow-camera-left={-7}
-        shadow-camera-right={7}
+        shadow-camera-far={26}
+        shadow-camera-left={-7.5}
+        shadow-camera-right={7.5}
         shadow-camera-top={5}
         shadow-camera-bottom={-5}
-        shadow-bias={-0.0005}
+        shadow-bias={-0.0004}
       />
-      <directionalLight position={[-6, 4, 3]} intensity={0.55} color="#E6E7E2" />
-      <pointLight position={[0, 2.2, 3.2]} intensity={0.4} color="#FFFFFF" />
+      <directionalLight position={[-6, 4.5, 4]} intensity={0.58} color="#EAEAE6" />
+      <pointLight position={[0, 2.4, 3.8]} intensity={0.35} color="#FFFFFF" />
 
-      {/* Curved Perforated Brushed-Metal Turntable Platter Rim */}
+      {/* Curved Perforated Brushed-Silver Turntable Platter Rim */}
       <PerforatedTurntablePlatter scrollRef={scrollRef} />
 
-      {/* Subtle Soft Contact Shadow Strip on the Platter Surface */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.715, -0.1]}>
-        <planeGeometry args={[9.5, 3.4]} />
-        <meshBasicMaterial color="#141413" transparent opacity={0.18} />
-      </mesh>
-
       {/* Accordion Spine-to-Cover 3D Shelf */}
-      <group>
+      <group ref={sleevesGroupRef}>
         {releases.map((release, idx) => (
           <DigipakSleeveMesh
             key={release.id}
@@ -659,16 +680,19 @@ function ArchiveStageInner({
         ))}
       </group>
 
-      {/* Floating Mini Vinyl / CD Disc Overlapping Right Edge of Active Center Sleeve */}
+      {/* Non-Clipping Floating Mini Vinyl / CD Disc Overlapping Right Edge */}
       {activeRelease && (
         <FloatingVinylDisc
           activeRelease={activeRelease}
+          posterImg={loadedPosterImages[activeRelease.id]}
+          useOfficialPosters={useOfficialPosters}
           scrollRef={scrollRef}
           activeIndex={activeIndex}
           isHoveredCenter={isHoveredCenter}
           onHoverCenter={setIsHoveredCenter}
           onTriggerDive={onTriggerDive}
           diveGroupRef={diveDiscGroupRef}
+          spinBoostRef={spinBoostRef}
         />
       )}
     </>
@@ -698,7 +722,7 @@ export default function TurntableScene(props: TurntableSceneProps) {
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!dragStateRef.current.isDragging || props.diveState !== "shelf") return;
     const dx = e.clientX - dragStateRef.current.startX;
-    const stepOffset = Math.round(-dx / 68);
+    const stepOffset = Math.round(-dx / 64);
     const nextIdx = Math.max(
       0,
       Math.min(props.releases.length - 1, dragStateRef.current.startIndex + stepOffset)
@@ -723,7 +747,7 @@ export default function TurntableScene(props: TurntableSceneProps) {
       <Canvas
         shadows
         dpr={[1, 2]}
-        camera={{ position: [0, 0.58, 6.35], fov: 34, near: 0.04, far: 45 }}
+        camera={{ position: [0, 0.72, 6.85], fov: 33, near: 0.04, far: 48 }}
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
       >
         <ArchiveStageInner {...props} />

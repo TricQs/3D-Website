@@ -13,15 +13,41 @@ function configureTexture(tex: THREE.CanvasTexture): THREE.CanvasTexture {
   return tex;
 }
 
-function drawPaperGrain(ctx: CanvasRenderingContext2D, w: number, h: number, alpha = 0.03) {
+function drawPaperGrain(ctx: CanvasRenderingContext2D, w: number, h: number, alpha = 0.028) {
   ctx.save();
   ctx.fillStyle = `rgba(24, 24, 24, ${alpha})`;
-  for (let i = 0; i < 900; i++) {
-    const x = ((i * 7919) % w);
-    const y = ((i * 104729) % h);
+  for (let i = 0; i < 850; i++) {
+    const x = (i * 7919) % w;
+    const y = (i * 104729) % h;
     ctx.fillRect(x, y, 1.5, 1.5);
   }
   ctx.restore();
+}
+
+/**
+ * Draws an image with CSS `object-fit: cover` behavior and slight top focus (0.28)
+ * so anime character faces are framed cleanly without cropping heads.
+ */
+function drawCoverImage(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  dx: number,
+  dy: number,
+  dw: number,
+  dh: number,
+  focusY = 0.28
+) {
+  const iw = img.naturalWidth || img.width;
+  const ih = img.naturalHeight || img.height;
+  if (!iw || !ih) return;
+
+  const scale = Math.max(dw / iw, dh / ih);
+  const sw = dw / scale;
+  const sh = dh / scale;
+  const sx = (iw - sw) / 2;
+  const sy = Math.max(0, Math.min(ih - sh, (ih - sh) * focusY));
+
+  ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
 }
 
 /**
@@ -44,11 +70,9 @@ export function drawProceduralIllustration(
   const accent = release.accentColor;
   const bg = release.coverBgColor;
 
-  // Subtle inner frame tint
   ctx.fillStyle = bg;
   ctx.fillRect(x, y, w, h);
 
-  // Swiss background technical grid
   ctx.strokeStyle = ink;
   ctx.globalAlpha = 0.1;
   ctx.lineWidth = 1;
@@ -72,7 +96,6 @@ export function drawProceduralIllustration(
 
   switch (release.illustrationType) {
     case "vending-machine": {
-      // Soft ambient circle behind vending machine
       ctx.fillStyle = accent;
       ctx.globalAlpha = 0.16;
       ctx.beginPath();
@@ -80,13 +103,11 @@ export function drawProceduralIllustration(
       ctx.fill();
       ctx.globalAlpha = 1;
 
-      // Retro Japanese Vending Machine Cabinet
       const vmW = 250;
       const vmH = 370;
       const vmX = cx - vmW / 2;
       const vmY = cy - vmH / 2 + 8;
 
-      // 3D Isometric Side Depth
       ctx.fillStyle = ink;
       ctx.beginPath();
       ctx.moveTo(vmX + vmW, vmY);
@@ -96,7 +117,6 @@ export function drawProceduralIllustration(
       ctx.closePath();
       ctx.fill();
 
-      // Top Isometric Roof
       ctx.fillStyle = accent;
       ctx.beginPath();
       ctx.moveTo(vmX, vmY);
@@ -106,19 +126,16 @@ export function drawProceduralIllustration(
       ctx.closePath();
       ctx.fill();
 
-      // Front Cabinet Body
       ctx.fillStyle = "#FAF8F5";
       ctx.strokeStyle = ink;
       ctx.lineWidth = 3.5;
       ctx.fillRect(vmX, vmY, vmW, vmH);
       ctx.strokeRect(vmX, vmY, vmW, vmH);
 
-      // Display Window
       ctx.fillStyle = bg;
       ctx.fillRect(vmX + 20, vmY + 22, vmW - 40, 175);
       ctx.strokeRect(vmX + 20, vmY + 22, vmW - 40, 175);
 
-      // 3 Rows of Miniature Cans/Bottles inside Window
       for (let row = 0; row < 3; row++) {
         const shelfY = vmY + 72 + row * 56;
         ctx.strokeStyle = ink;
@@ -138,14 +155,12 @@ export function drawProceduralIllustration(
         }
       }
 
-      // Red Accent Banner Strip & Selection Buttons
       ctx.fillStyle = accent;
       ctx.fillRect(vmX + 20, vmY + 210, vmW - 40, 34);
       ctx.fillStyle = "#FFFFFF";
       ctx.font = "700 14px 'IBM Plex Mono', monospace";
       ctx.fillText("COLD / HOT  •  自動販売機", vmX + 32, vmY + 232);
 
-      // Coin slot & dispenser flap
       ctx.fillStyle = ink;
       ctx.fillRect(vmX + 20, vmY + 285, vmW - 95, 58);
       ctx.strokeStyle = ink;
@@ -158,38 +173,21 @@ export function drawProceduralIllustration(
     }
 
     case "torii-shrine": {
-      // Large Vermilion Sun Disc
       ctx.fillStyle = accent;
       ctx.beginPath();
       ctx.arc(cx, cy - 18, 155, 0, Math.PI * 2);
       ctx.fill();
 
-      // Torii Gate Minimalist Silhouette
       ctx.fillStyle = ink;
-      // Top Kasagi beam (curved slightly via polygon)
       ctx.fillRect(cx - 175, cy - 120, 350, 22);
       ctx.fillRect(cx - 145, cy - 72, 290, 16);
-      // Two vertical pillars
       ctx.fillRect(cx - 105, cy - 100, 24, 245);
       ctx.fillRect(cx + 81, cy - 100, 24, 245);
-      // Center tablet
       ctx.fillRect(cx - 18, cy - 98, 36, 38);
-
-      // Horizontal mist waves at base
-      ctx.strokeStyle = bg;
-      ctx.lineWidth = 4;
-      for (let i = 0; i < 4; i++) {
-        const wy = cy + 80 + i * 16;
-        ctx.beginPath();
-        ctx.moveTo(cx - 180, wy);
-        ctx.lineTo(cx + 180, wy);
-        ctx.stroke();
-      }
       break;
     }
 
     case "comet-sky": {
-      // Concentric Topographic Orbital Rings
       ctx.strokeStyle = ink;
       for (let r = 45; r <= 220; r += 35) {
         ctx.lineWidth = r === 150 ? 2.5 : 1.2;
@@ -197,108 +195,49 @@ export function drawProceduralIllustration(
         ctx.arc(cx, cy, r, 0, Math.PI * 2);
         ctx.stroke();
       }
-
-      // Twin Split Comet Arcs
       ctx.strokeStyle = accent;
       ctx.lineWidth = 5;
       ctx.beginPath();
       ctx.moveTo(x + 60, y + h - 70);
       ctx.quadraticCurveTo(cx - 40, cy - 120, x + w - 65, y + 75);
       ctx.stroke();
-
-      ctx.strokeStyle = ink;
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(x + 85, y + h - 50);
-      ctx.quadraticCurveTo(cx + 30, cy - 60, x + w - 55, y + 115);
-      ctx.stroke();
-
-      // Comet Nucleus
       ctx.fillStyle = accent;
       ctx.beginPath();
       ctx.arc(cx + 58, cy - 52, 16, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = ink;
-      ctx.beginPath();
-      ctx.arc(cx - 48, cy + 34, 11, 0, Math.PI * 2);
       ctx.fill();
       break;
     }
 
     case "arcade-cabinet": {
-      // UFO Catcher / Arcade Monitor Frame
       const boxW = 320;
       const boxH = 320;
       const bx = cx - boxW / 2;
       const by = cy - boxH / 2;
-
       ctx.strokeStyle = ink;
       ctx.lineWidth = 4;
       ctx.strokeRect(bx, by, boxW, boxH);
-
-      // Top Crane Rail & Mechanical Claw
       ctx.fillStyle = accent;
       ctx.fillRect(bx, by, boxW, 38);
-      ctx.strokeStyle = ink;
-      ctx.lineWidth = 3.5;
       ctx.beginPath();
       ctx.moveTo(cx, by + 38);
       ctx.lineTo(cx, cy - 18);
       ctx.stroke();
-
-      // Prongs of the arcade claw
       ctx.beginPath();
       ctx.arc(cx, cy + 16, 44, Math.PI * 0.85, Math.PI * 0.15, true);
       ctx.stroke();
-
-      // Target capsule prize below claw
       ctx.fillStyle = accent;
       ctx.beginPath();
       ctx.arc(cx, cy + 88, 36, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = ink;
-      ctx.stroke();
-
-      // Arcade Joystick & Buttons at bottom
-      ctx.fillStyle = ink;
-      ctx.fillRect(bx + 24, by + boxH - 54, boxW - 48, 34);
-      for (let b = 0; b < 4; b++) {
-        ctx.fillStyle = b % 2 === 0 ? accent : bg;
-        ctx.beginPath();
-        ctx.arc(bx + boxW - 120 + b * 24, by + boxH - 37, 7, 0, Math.PI * 2);
-        ctx.fill();
-      }
       break;
     }
 
     case "magic-circle": {
-      // Bauhaus Alchemical Astrolabe Compass
       ctx.strokeStyle = ink;
       ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.arc(cx, cy, 195, 0, Math.PI * 2);
       ctx.stroke();
-
-      ctx.strokeStyle = accent;
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.arc(cx, cy, 148, 0, Math.PI * 2);
-      ctx.stroke();
-
-      // Degree ticks around outer ring
-      ctx.strokeStyle = ink;
-      ctx.lineWidth = 1.8;
-      for (let deg = 0; deg < 360; deg += 10) {
-        const rad = (deg * Math.PI) / 180;
-        const r1 = deg % 30 === 0 ? 172 : 182;
-        const r2 = 195;
-        ctx.beginPath();
-        ctx.moveTo(cx + Math.cos(rad) * r1, cy + Math.sin(rad) * r1);
-        ctx.lineTo(cx + Math.cos(rad) * r2, cy + Math.sin(rad) * r2);
-        ctx.stroke();
-      }
-
-      // Inscribed dual triangles (Hexagram)
       for (let t = 0; t < 2; t++) {
         ctx.strokeStyle = t === 0 ? ink : accent;
         ctx.lineWidth = 2.8;
@@ -313,7 +252,6 @@ export function drawProceduralIllustration(
         ctx.closePath();
         ctx.stroke();
       }
-
       ctx.fillStyle = accent;
       ctx.beginPath();
       ctx.arc(cx, cy, 26, 0, Math.PI * 2);
@@ -322,41 +260,24 @@ export function drawProceduralIllustration(
     }
 
     case "sakura-crossing": {
-      // Minimalist Railway Crossing & Signal Lights
       ctx.strokeStyle = ink;
       ctx.lineWidth = 6;
-      // Vertical post
       ctx.beginPath();
       ctx.moveTo(cx - 90, y + 60);
       ctx.lineTo(cx - 90, y + h - 40);
       ctx.stroke();
-
-      // Diagonal yellow/coral barrier pole
       ctx.strokeStyle = accent;
       ctx.lineWidth = 10;
       ctx.beginPath();
       ctx.moveTo(cx - 130, cy + 45);
       ctx.lineTo(cx + 195, cy - 85);
       ctx.stroke();
-
-      // Crossbuck X sign
-      ctx.strokeStyle = ink;
-      ctx.lineWidth = 7;
-      ctx.beginPath();
-      ctx.moveTo(cx - 135, cy - 135);
-      ctx.lineTo(cx - 45, cy - 55);
-      ctx.moveTo(cx - 45, cy - 135);
-      ctx.lineTo(cx - 135, cy - 55);
-      ctx.stroke();
-
-      // Geometric Sakura Blossom Petals Drifting
       ctx.fillStyle = accent;
       const petals = [
         [cx + 40, cy - 110, 16],
         [cx + 120, cy - 30, 22],
         [cx + 15, cy + 45, 18],
-        [cx + 145, cy + 95, 14],
-        [cx - 25, cy + 125, 20]
+        [cx + 145, cy + 95, 14]
       ];
       for (const [px, py, pr] of petals) {
         ctx.beginPath();
@@ -367,73 +288,36 @@ export function drawProceduralIllustration(
     }
 
     case "cassette-synth": {
-      // Analog Reel-to-Reel / Cassette Transport Deck
       const deckW = 460;
       const deckH = 270;
       const dx = cx - deckW / 2;
       const dy = cy - deckH / 2;
-
       ctx.fillStyle = ink;
       ctx.fillRect(dx, dy, deckW, deckH);
-
-      // Inner label cutout
       ctx.fillStyle = accent;
       ctx.fillRect(dx + 26, dy + 26, deckW - 52, 68);
-
-      // Dual Tape Reels
       for (const offset of [-115, 115]) {
-        const rx = cx + offset;
-        const ry = cy + 32;
         ctx.fillStyle = bg;
         ctx.beginPath();
-        ctx.arc(rx, ry, 58, 0, Math.PI * 2);
+        ctx.arc(cx + offset, cy + 32, 58, 0, Math.PI * 2);
         ctx.fill();
-
-        ctx.strokeStyle = ink;
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.arc(rx, ry, 24, 0, Math.PI * 2);
-        ctx.stroke();
-
-        for (let s = 0; s < 3; s++) {
-          const a = (s * 120 * Math.PI) / 180;
-          ctx.beginPath();
-          ctx.moveTo(rx + Math.cos(a) * 24, ry + Math.sin(a) * 24);
-          ctx.lineTo(rx + Math.cos(a) * 52, ry + Math.sin(a) * 52);
-          ctx.stroke();
-        }
       }
       break;
     }
 
     case "ocean-tiger": {
-      // Horizon Sun Disc
       ctx.fillStyle = accent;
       ctx.beginPath();
       ctx.arc(cx, cy - 30, 125, 0, Math.PI * 2);
       ctx.fill();
-
-      // Layered Modernist Ocean Wave Striations
       for (let row = 0; row < 6; row++) {
-        const wy = cy + 15 + row * 32;
         ctx.fillStyle = row % 2 === 0 ? ink : bg;
-        ctx.fillRect(x + 60, wy, w - 120, 18);
-      }
-
-      // Diving depth ruler along right edge
-      ctx.strokeStyle = ink;
-      ctx.lineWidth = 2;
-      for (let ty = y + 40; ty < y + h - 40; ty += 18) {
-        ctx.beginPath();
-        ctx.moveTo(x + w - 90, ty);
-        ctx.lineTo(x + w - 60, ty);
-        ctx.stroke();
+        ctx.fillRect(x + 60, cy + 15 + row * 32, w - 120, 18);
       }
       break;
     }
 
     case "school-desk": {
-      // Sunlit Architectural Window Mullion Grid & Diagonal Light Projection
       ctx.fillStyle = accent;
       ctx.globalAlpha = 0.22;
       ctx.beginPath();
@@ -444,19 +328,9 @@ export function drawProceduralIllustration(
       ctx.closePath();
       ctx.fill();
       ctx.globalAlpha = 1;
-
-      // Window Frame
       ctx.strokeStyle = ink;
       ctx.lineWidth = 4;
       ctx.strokeRect(cx - 150, cy - 150, 240, 240);
-      ctx.beginPath();
-      ctx.moveTo(cx - 30, cy - 150);
-      ctx.lineTo(cx - 30, cy + 90);
-      ctx.moveTo(cx - 150, cy - 30);
-      ctx.lineTo(cx + 90, cy - 30);
-      ctx.stroke();
-
-      // Minimalist Paper Airplane Vector
       ctx.fillStyle = accent;
       ctx.beginPath();
       ctx.moveTo(cx + 145, cy - 65);
@@ -469,61 +343,21 @@ export function drawProceduralIllustration(
 
     case "polar-wave":
     default: {
-      // Dual Interlocking Opposite Spheres (10/10 Polar Opposites motif)
       ctx.fillStyle = ink;
       ctx.beginPath();
       ctx.arc(cx - 68, cy, 130, 0, Math.PI * 2);
       ctx.fill();
-
       ctx.fillStyle = accent;
       ctx.beginPath();
       ctx.arc(cx + 68, cy, 130, 0, Math.PI * 2);
       ctx.fill();
-
-      // Overlap lens intersection in background color
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(cx - 68, cy, 130, 0, Math.PI * 2);
-      ctx.clip();
-      ctx.fillStyle = bg;
-      ctx.beginPath();
-      ctx.arc(cx + 68, cy, 130, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-
-      // Outer orbit ring
-      ctx.strokeStyle = ink;
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.arc(cx, cy, 210, 0, Math.PI * 2);
-      ctx.stroke();
       break;
     }
   }
 
-  // Swiss Registration Crosshairs at 4 corners of illustration frame
-  ctx.strokeStyle = ink;
-  ctx.lineWidth = 2;
-  const corners = [
-    [x + 18, y + 18],
-    [x + w - 18, y + 18],
-    [x + 18, y + h - 18],
-    [x + w - 18, y + h - 18]
-  ];
-  for (const [qx, qy] of corners) {
-    ctx.beginPath();
-    ctx.moveTo(qx - 8, qy);
-    ctx.lineTo(qx + 8, qy);
-    ctx.moveTo(qx, qy - 8);
-    ctx.lineTo(qx, qy + 8);
-    ctx.stroke();
-  }
-
-  // Outer Frame Border
   ctx.strokeStyle = ink;
   ctx.lineWidth = 2.5;
   ctx.strokeRect(x, y, w, h);
-
   ctx.restore();
 }
 
@@ -539,13 +373,10 @@ export function getSpineTexture(release: AnimeRelease): THREE.CanvasTexture {
   canvas.height = 1024;
   const ctx = canvas.getContext("2d")!;
 
-  // Base archival spine color
   ctx.fillStyle = release.spineColor;
   ctx.fillRect(0, 0, 256, 1024);
-
   drawPaperGrain(ctx, 256, 1024, 0.04);
 
-  // Subtle physical bookbind crease highlights on left and right edges
   const grad = ctx.createLinearGradient(0, 0, 256, 0);
   grad.addColorStop(0, "rgba(0,0,0,0.24)");
   grad.addColorStop(0.08, "rgba(255,255,255,0.12)");
@@ -556,8 +387,6 @@ export function getSpineTexture(release: AnimeRelease): THREE.CanvasTexture {
 
   ctx.fillStyle = release.spineTextColor;
   ctx.strokeStyle = release.spineTextColor;
-
-  // Top Catalog Code Box
   ctx.lineWidth = 2;
   ctx.strokeRect(28, 36, 200, 56);
   ctx.font = "700 22px 'IBM Plex Mono', monospace";
@@ -565,17 +394,21 @@ export function getSpineTexture(release: AnimeRelease): THREE.CanvasTexture {
   ctx.textBaseline = "middle";
   ctx.fillText(release.catalogCode, 128, 64);
 
-  // Coral status indicator dot for 10/10 Masterpiece or On-Going
+  // Release Year Stamp below catalog code on spine
+  ctx.font = "700 20px 'IBM Plex Mono', monospace";
+  ctx.globalAlpha = 0.85;
+  ctx.fillText(String(release.releaseYear), 128, 122);
+  ctx.globalAlpha = 1;
+
   if (release.rating >= 9.0 || release.isOngoing) {
     ctx.fillStyle = "#E05A3A";
     ctx.beginPath();
-    ctx.arc(128, 122, 10, 0, Math.PI * 2);
+    ctx.arc(128, 160, 9, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  // Vertical Spine Title & Artist (Rotated 90 deg clockwise)
   ctx.save();
-  ctx.translate(128, 515);
+  ctx.translate(128, 535);
   ctx.rotate(Math.PI / 2);
 
   ctx.fillStyle = release.spineTextColor;
@@ -584,13 +417,12 @@ export function getSpineTexture(release: AnimeRelease): THREE.CanvasTexture {
   ctx.textBaseline = "bottom";
   ctx.fillText(release.shortTitle.toUpperCase(), 0, -4);
 
-  ctx.globalAlpha = 0.75;
+  ctx.globalAlpha = 0.78;
   ctx.font = "500 20px 'IBM Plex Mono', monospace";
   ctx.textBaseline = "top";
   ctx.fillText(`${release.songArtist.toUpperCase()}  •  ${release.releaseYear}`, 0, 8);
   ctx.restore();
 
-  // Bottom Personal Rating Stamp on Spine
   ctx.fillStyle = release.spineTextColor;
   ctx.globalAlpha = 0.2;
   ctx.fillRect(28, 895, 200, 2);
@@ -598,7 +430,7 @@ export function getSpineTexture(release: AnimeRelease): THREE.CanvasTexture {
 
   ctx.font = "700 26px 'IBM Plex Mono', monospace";
   ctx.textAlign = "center";
-  ctx.fillText(`★ ${release.rating.toFixed(1)}`, 128, 945);
+  ctx.fillText(release.rating >= 10 ? "★ 10.0" : `★ ${release.rating.toFixed(1)}`, 128, 945);
 
   const tex = configureTexture(new THREE.CanvasTexture(canvas));
   spineTextureCache.set(release.id, tex);
@@ -607,13 +439,14 @@ export function getSpineTexture(release: AnimeRelease): THREE.CanvasTexture {
 
 /**
  * Generates the Square Front Cover Texture (1024 x 1024)
- * Supports optional official anime poster overlay while defaulting to 100% procedural Swiss canvas art
+ * Displays FULL-BLEED OFFICIAL ANIME ARTWORK framed in luxury Swiss archival typography by default,
+ * with instant procedural vector fallback while loading or when toggled to Swiss Minimal mode.
  */
 export function getFrontCoverTexture(
   release: AnimeRelease,
   externalPosterImg?: HTMLImageElement | null
 ): THREE.CanvasTexture {
-  const cacheKey = `${release.id}_${externalPosterImg ? "img" : "proc"}`;
+  const cacheKey = `${release.id}_${externalPosterImg ? "animeArt_v2" : "swissProc_v2"}`;
   const cached = frontTextureCache.get(cacheKey);
   if (cached) return cached;
 
@@ -626,106 +459,156 @@ export function getFrontCoverTexture(
   const ink = release.coverInkColor;
   const accent = release.accentColor;
 
-  // Base cover stock
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, 1024, 1024);
-  drawPaperGrain(ctx, 1024, 1024, 0.035);
-
-  // Outer editorial border hairline
-  ctx.strokeStyle = ink;
-  ctx.lineWidth = 3;
-  ctx.strokeRect(36, 36, 952, 952);
-
-  // Top Header Strip (Swiss Archival Metadata)
-  ctx.fillStyle = ink;
-  ctx.font = "700 22px 'IBM Plex Mono', monospace";
-  ctx.textAlign = "left";
-  ctx.fillText(`DISC ARCHIVE  —  ${release.catalogCode}`, 68, 86);
-
-  ctx.font = "500 19px 'IBM Plex Mono', monospace";
-  ctx.globalAlpha = 0.72;
-  ctx.fillText(`${release.category.toUpperCase()}  •  ${release.studio.toUpperCase()}  •  ${release.releaseYear}`, 68, 118);
-  ctx.globalAlpha = 1;
-
-  // Top-Right Personal Score Pill
-  const scoreBadgeText = release.isOngoing
-    ? `EP ${release.currentEpisode}/${release.totalEpisodes} • ★ ${release.rating.toFixed(1)}`
-    : release.rating >= 10
-    ? `👑 10.0 / 10`
-    : `SCORE ★ ${release.rating.toFixed(1)} / 10`;
-
-  ctx.fillStyle = accent;
-  ctx.fillRect(670, 62, 286, 56);
-  ctx.fillStyle = "#FFFFFF";
-  ctx.font = "700 22px 'IBM Plex Mono', monospace";
-  ctx.textAlign = "center";
-  ctx.fillText(scoreBadgeText, 813, 97);
-
-  // Top Divider Rule
-  ctx.fillStyle = ink;
-  ctx.fillRect(68, 144, 888, 2.5);
-
-  // Central Artwork Zone (68, 170, 888, 535)
   if (externalPosterImg) {
-    // Draw procedural background first, then frame the official key visual cleanly on the right/center
-    drawProceduralIllustration(ctx, release, 68, 170, 888, 535);
-    ctx.save();
+    // LUXURY FULL-BLEED ANIME COLLECTOR'S EDITION SLEEVE
+    ctx.fillStyle = "#161615";
+    ctx.fillRect(0, 0, 1024, 1024);
+
+    // Draw official anime wallpaper/key visual full-bleed across the entire sleeve
+    drawCoverImage(ctx, externalPosterImg, 0, 0, 1024, 1024, 0.24);
+
+    // Subtle top & bottom editorial gradient scrims for crisp Swiss legibility
+    const topGrad = ctx.createLinearGradient(0, 0, 0, 200);
+    topGrad.addColorStop(0, "rgba(18, 18, 17, 0.82)");
+    topGrad.addColorStop(1, "rgba(18, 18, 17, 0.0)");
+    ctx.fillStyle = topGrad;
+    ctx.fillRect(0, 0, 1024, 200);
+
+    const botGrad = ctx.createLinearGradient(0, 620, 0, 1024);
+    botGrad.addColorStop(0, "rgba(16, 16, 15, 0.0)");
+    botGrad.addColorStop(0.45, "rgba(16, 16, 15, 0.78)");
+    botGrad.addColorStop(1, "rgba(16, 16, 15, 0.96)");
+    ctx.fillStyle = botGrad;
+    ctx.fillRect(0, 620, 1024, 404);
+
+    // Swiss Hairline Inner Margin Frame
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.32)";
+    ctx.lineWidth = 2.5;
+    ctx.strokeRect(28, 28, 968, 968);
+
+    // Top-Left Catalog & Release Year Badge
+    ctx.fillStyle = "#FAF9F6";
+    ctx.font = "700 22px 'IBM Plex Mono', monospace";
+    ctx.textAlign = "left";
+    ctx.fillText(`DISC ARCHIVE  —  ${release.catalogCode}`, 56, 76);
+
+    ctx.fillStyle = "rgba(250, 249, 246, 0.78)";
+    ctx.font = "500 18px 'IBM Plex Mono', monospace";
+    ctx.fillText(`${release.releaseYear}  •  ${release.category.toUpperCase()}  •  ${release.studio.toUpperCase()}`, 56, 108);
+
+    // Top-Right Personal Score Badge (High-Contrast Coral)
+    const scoreBadgeText = release.isOngoing
+      ? `EP ${release.currentEpisode}/${release.totalEpisodes} • ★ ${release.rating.toFixed(1)}`
+      : release.rating >= 10
+      ? "👑 10.0 / 10"
+      : `★ ${release.rating.toFixed(1)} / 10`;
+
+    ctx.fillStyle = "#E05A3A";
+    ctx.fillRect(712, 48, 256, 54);
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = "700 23px 'IBM Plex Mono', monospace";
+    ctx.textAlign = "center";
+    ctx.fillText(scoreBadgeText, 840, 83);
+    ctx.textAlign = "left";
+
+    // Bottom Typography Overlay
+    ctx.fillStyle = "#E05A3A";
     ctx.beginPath();
-    ctx.rect(520, 194, 412, 487);
-    ctx.clip();
-    const scale = Math.max(412 / externalPosterImg.width, 487 / externalPosterImg.height);
-    const dw = externalPosterImg.width * scale;
-    const dh = externalPosterImg.height * scale;
-    ctx.drawImage(externalPosterImg, 520 + (412 - dw) / 2, 194 + (487 - dh) / 2, dw, dh);
-    ctx.strokeStyle = ink;
-    ctx.lineWidth = 4;
-    ctx.strokeRect(520, 194, 412, 487);
-    ctx.restore();
+    ctx.arc(66, 804, 8, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "rgba(250, 249, 246, 0.9)";
+    ctx.font = "600 19px 'IBM Plex Mono', monospace";
+    ctx.fillText(
+      `${release.genres.join(" / ").toUpperCase()}  •  ${release.bpm} BPM  •  ${release.ageRating}`,
+      88,
+      811
+    );
+
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = "800 54px 'Inter', 'Helvetica Neue', sans-serif";
+    const displayTitle = release.titleEnglish.length > 26 ? release.shortTitle : release.titleEnglish;
+    ctx.fillText(displayTitle, 56, 882);
+
+    ctx.fillStyle = "rgba(234, 234, 232, 0.82)";
+    ctx.font = "500 22px 'Inter', 'Helvetica Neue', sans-serif";
+    ctx.fillText(release.titleRomaji, 56, 922);
+
+    ctx.fillStyle = "#F5A894";
+    ctx.font = "600 20px 'IBM Plex Mono', monospace";
+    ctx.fillText(`♪ ${release.songTitle.toUpperCase()} — ${release.songArtist.toUpperCase()}`, 56, 966);
   } else {
+    // SWISS MINIMAL PROCEDURAL CANVAS FALLBACK
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, 1024, 1024);
+    drawPaperGrain(ctx, 1024, 1024, 0.035);
+
+    ctx.strokeStyle = ink;
+    ctx.lineWidth = 3;
+    ctx.strokeRect(36, 36, 952, 952);
+
+    ctx.fillStyle = ink;
+    ctx.font = "700 22px 'IBM Plex Mono', monospace";
+    ctx.textAlign = "left";
+    ctx.fillText(`DISC ARCHIVE  —  ${release.catalogCode}`, 68, 86);
+
+    ctx.font = "500 19px 'IBM Plex Mono', monospace";
+    ctx.globalAlpha = 0.72;
+    ctx.fillText(
+      `${release.releaseYear}  •  ${release.category.toUpperCase()}  •  ${release.studio.toUpperCase()}`,
+      68,
+      118
+    );
+    ctx.globalAlpha = 1;
+
+    const scoreBadgeText = release.isOngoing
+      ? `EP ${release.currentEpisode}/${release.totalEpisodes} • ★ ${release.rating.toFixed(1)}`
+      : release.rating >= 10
+      ? "👑 10.0 / 10"
+      : `SCORE ★ ${release.rating.toFixed(1)} / 10`;
+
+    ctx.fillStyle = accent;
+    ctx.fillRect(670, 62, 286, 56);
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = "700 22px 'IBM Plex Mono', monospace";
+    ctx.textAlign = "center";
+    ctx.fillText(scoreBadgeText, 813, 97);
+
+    ctx.fillStyle = ink;
+    ctx.fillRect(68, 144, 888, 2.5);
+
     drawProceduralIllustration(ctx, release, 68, 170, 888, 535);
+
+    ctx.fillStyle = ink;
+    ctx.fillRect(68, 732, 888, 2.5);
+
+    ctx.fillStyle = "#E05A3A";
+    ctx.beginPath();
+    ctx.arc(80, 768, 9, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = ink;
+    ctx.font = "700 20px 'IBM Plex Mono', monospace";
+    ctx.textAlign = "left";
+    ctx.fillText(
+      `${release.genres.join(" / ").toUpperCase()}   —   ${release.bpm} BPM   —   ${release.ageRating}`,
+      102,
+      775
+    );
+
+    ctx.font = "800 58px 'Inter', 'Helvetica Neue', sans-serif";
+    const displayTitle = release.titleEnglish.length > 26 ? release.shortTitle : release.titleEnglish;
+    ctx.fillText(displayTitle, 68, 848);
+
+    ctx.globalAlpha = 0.78;
+    ctx.font = "500 24px 'Inter', 'Helvetica Neue', sans-serif";
+    ctx.fillText(release.titleRomaji, 68, 892);
+
+    ctx.globalAlpha = 1;
+    ctx.font = "600 21px 'IBM Plex Mono', monospace";
+    ctx.fillStyle = accent;
+    ctx.fillText(`♪ ${release.songTitle.toUpperCase()} — ${release.songArtist.toUpperCase()}`, 68, 942);
   }
-
-  // Bottom Swiss Editorial Typography Block
-  ctx.fillStyle = ink;
-  ctx.fillRect(68, 732, 888, 2.5);
-
-  // Coral dot + Genre & Musical Tempo Spec
-  ctx.fillStyle = "#E05A3A";
-  ctx.beginPath();
-  ctx.arc(80, 768, 9, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = ink;
-  ctx.font = "700 20px 'IBM Plex Mono', monospace";
-  ctx.textAlign = "left";
-  ctx.fillText(
-    `${release.genres.join(" / ").toUpperCase()}   —   ${release.bpm} BPM   —   ${release.ageRating}`,
-    102,
-    775
-  );
-
-  // Main Neo-Grotesque Release Title
-  ctx.font = "800 58px 'Inter', 'Helvetica Neue', sans-serif";
-  const displayTitle =
-    release.titleEnglish.length > 26 ? release.shortTitle : release.titleEnglish;
-  ctx.fillText(displayTitle, 68, 848);
-
-  // Romaji & Theme Song Artist Line
-  ctx.globalAlpha = 0.78;
-  ctx.font = "500 24px 'Inter', 'Helvetica Neue', sans-serif";
-  ctx.fillText(`${release.titleRomaji}`, 68, 892);
-
-  ctx.globalAlpha = 1;
-  ctx.font = "600 21px 'IBM Plex Mono', monospace";
-  ctx.fillStyle = accent;
-  ctx.fillText(`♪ ${release.songTitle.toUpperCase()} — ${release.songArtist.toUpperCase()}`, 68, 942);
-
-  // Physical edge bevel shading
-  const edgeGrad = ctx.createLinearGradient(0, 0, 1024, 1024);
-  edgeGrad.addColorStop(0, "rgba(255,255,255,0.08)");
-  edgeGrad.addColorStop(1, "rgba(0,0,0,0.12)");
-  ctx.fillStyle = edgeGrad;
-  ctx.fillRect(0, 0, 1024, 1024);
 
   const tex = configureTexture(new THREE.CanvasTexture(canvas));
   frontTextureCache.set(cacheKey, tex);
@@ -753,7 +636,7 @@ export function getBackCoverTexture(release: AnimeRelease): THREE.CanvasTexture 
 
   ctx.fillStyle = release.coverInkColor;
   ctx.font = "700 28px 'IBM Plex Mono', monospace";
-  ctx.fillText(`${release.catalogCode}  //  ARCHIVE DOSSIER & TRACKLIST`, 84, 118);
+  ctx.fillText(`${release.catalogCode}  //  ${release.releaseYear} ARCHIVE TRACKLIST`, 84, 118);
 
   ctx.fillRect(84, 146, 856, 3);
 
@@ -776,10 +659,14 @@ export function getBackCoverTexture(release: AnimeRelease): THREE.CanvasTexture 
 
 /**
  * Generates the Floating Mini Vinyl / CD Disc Texture (1024 x 1024)
- * With realistic micro-grooves, anisotropic optical sheen, and color-matched center label
+ * Embeds a circular artwork medallion inside the center label when anime artwork is loaded
  */
-export function getVinylDiscTexture(release: AnimeRelease): THREE.CanvasTexture {
-  const cached = discTextureCache.get(release.id);
+export function getVinylDiscTexture(
+  release: AnimeRelease,
+  externalPosterImg?: HTMLImageElement | null
+): THREE.CanvasTexture {
+  const cacheKey = `${release.id}_${externalPosterImg ? "img" : "proc"}`;
+  const cached = discTextureCache.get(cacheKey);
   if (cached) return cached;
 
   const canvas = document.createElement("canvas");
@@ -790,88 +677,79 @@ export function getVinylDiscTexture(release: AnimeRelease): THREE.CanvasTexture 
   const cx = 512;
   const cy = 512;
 
-  // Base deep vinyl carbon black
-  ctx.fillStyle = "#141413";
+  // Deep obsidian vinyl pressing
+  ctx.fillStyle = "#131312";
   ctx.beginPath();
-  ctx.arc(cx, cy, 504, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 508, 0, Math.PI * 2);
   ctx.fill();
 
-  // Diagonal anisotropic vinyl groove reflection sheen
+  // Anisotropic vinyl optical highlight wedges
   ctx.save();
   ctx.translate(cx, cy);
-  for (let a = 0; a < 2; a++) {
-    const angle = a * Math.PI;
-    const grad = ctx.createConicGradient(angle, 0, 0);
-    grad.addColorStop(0, "rgba(255,255,255,0.0)");
-    grad.addColorStop(0.12, "rgba(255,255,255,0.13)");
-    grad.addColorStop(0.24, "rgba(255,255,255,0.0)");
-    grad.addColorStop(0.5, "rgba(255,255,255,0.0)");
-    grad.addColorStop(0.62, "rgba(255,255,255,0.13)");
-    grad.addColorStop(0.74, "rgba(255,255,255,0.0)");
-    grad.addColorStop(1, "rgba(255,255,255,0.0)");
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    ctx.arc(0, 0, 496, 0, Math.PI * 2);
-    ctx.fill();
-  }
+  const grad = ctx.createConicGradient(0.4, 0, 0);
+  grad.addColorStop(0, "rgba(255,255,255,0)");
+  grad.addColorStop(0.1, "rgba(255,255,255,0.16)");
+  grad.addColorStop(0.2, "rgba(255,255,255,0)");
+  grad.addColorStop(0.5, "rgba(255,255,255,0)");
+  grad.addColorStop(0.6, "rgba(255,255,255,0.16)");
+  grad.addColorStop(0.7, "rgba(255,255,255,0)");
+  grad.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(0, 0, 498, 0, Math.PI * 2);
+  ctx.fill();
   ctx.restore();
 
-  // Concentric Vinyl Micro-Grooves
-  for (let r = 205; r < 490; r += 3.5) {
-    ctx.strokeStyle = r % 35 < 4 ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.045)";
+  // Fine vinyl micro-grooves
+  for (let r = 212; r < 494; r += 3.5) {
+    ctx.strokeStyle = r % 35 < 4 ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.045)";
     ctx.lineWidth = 1.2;
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.stroke();
   }
 
-  // Color-Matched Center Label (r = 192)
-  ctx.fillStyle = release.coverBgColor;
-  ctx.beginPath();
-  ctx.arc(cx, cy, 192, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Upper half accent band on center label
+  // Center label (r = 198)
   ctx.save();
   ctx.beginPath();
-  ctx.arc(cx, cy, 192, Math.PI, Math.PI * 2);
-  ctx.closePath();
-  ctx.fillStyle = release.accentColor;
-  ctx.fill();
+  ctx.arc(cx, cy, 198, 0, Math.PI * 2);
+  ctx.clip();
+
+  if (externalPosterImg) {
+    drawCoverImage(ctx, externalPosterImg, cx - 198, cy - 198, 396, 396, 0.25);
+    ctx.fillStyle = "rgba(18, 18, 17, 0.42)";
+    ctx.fillRect(cx - 198, cy - 198, 396, 396);
+  } else {
+    ctx.fillStyle = release.coverBgColor;
+    ctx.fillRect(cx - 198, cy - 198, 396, 396);
+    ctx.fillStyle = release.accentColor;
+    ctx.fillRect(cx - 198, cy - 198, 396, 198);
+  }
   ctx.restore();
 
-  // Outer Label Ring Border
-  ctx.strokeStyle = release.coverInkColor;
-  ctx.lineWidth = 4;
+  ctx.strokeStyle = "#E05A3A";
+  ctx.lineWidth = 5;
   ctx.beginPath();
-  ctx.arc(cx, cy, 184, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 194, 0, Math.PI * 2);
   ctx.stroke();
 
-  // Catalog Code & Score on Center Label
+  // Crisp White Typography on Center Label
   ctx.fillStyle = "#FFFFFF";
   ctx.font = "700 24px 'IBM Plex Mono', monospace";
   ctx.textAlign = "center";
-  ctx.fillText(release.catalogCode, cx, cy - 115);
+  ctx.fillText(release.catalogCode, cx, cy - 116);
 
-  ctx.font = "700 19px 'IBM Plex Mono', monospace";
-  ctx.fillText(`★ ${release.rating.toFixed(1)} / 10`, cx, cy - 84);
+  ctx.font = "700 20px 'IBM Plex Mono', monospace";
+  ctx.fillText(`★ ${release.rating.toFixed(1)} / 10`, cx, cy - 86);
 
-  // Lower half label title & artist
-  ctx.fillStyle = release.coverInkColor;
+  ctx.fillStyle = externalPosterImg ? "#FFFFFF" : release.coverInkColor;
   ctx.font = "800 22px 'Inter', sans-serif";
-  ctx.fillText(release.shortTitle.slice(0, 14), cx, cy + 102);
+  ctx.fillText(release.shortTitle.slice(0, 15), cx, cy + 108);
 
   ctx.font = "600 16px 'IBM Plex Mono', monospace";
-  ctx.fillText(`${release.releaseYear} • ${release.bpm} BPM`, cx, cy + 132);
-
-  // Metallic spindle collar around center hole (r = 56..68)
-  ctx.strokeStyle = "#B8B9B4";
-  ctx.lineWidth = 8;
-  ctx.beginPath();
-  ctx.arc(cx, cy, 62, 0, Math.PI * 2);
-  ctx.stroke();
+  ctx.fillText(`${release.releaseYear} • ${release.bpm} BPM`, cx, cy + 138);
 
   const tex = configureTexture(new THREE.CanvasTexture(canvas));
-  discTextureCache.set(release.id, tex);
+  discTextureCache.set(cacheKey, tex);
   return tex;
 }

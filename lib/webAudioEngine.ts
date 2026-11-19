@@ -4,11 +4,8 @@ export interface ResolvedExternalMedia {
   posterUrl?: string;
   bannerUrl?: string;
   youtubeId?: string;
-  opVideoUrl?: string;
   songPreviewUrl?: string;
 }
-
-const CACHE_KEY = "disc_archive_anime_media_v1";
 
 let sharedAudioCtx: AudioContext | null = null;
 let activeSynthInterval: ReturnType<typeof setInterval> | null = null;
@@ -18,7 +15,9 @@ let htmlAudioPlayer: HTMLAudioElement | null = null;
 function getAudioContext(): AudioContext | null {
   if (typeof window === "undefined") return null;
   if (!sharedAudioCtx) {
-    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    const AudioCtx =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     if (AudioCtx) {
       sharedAudioCtx = new AudioCtx();
     }
@@ -43,7 +42,7 @@ export function playMechanicalStepSound(enabled = true) {
     osc.frequency.setValueAtTime(195, now);
     osc.frequency.exponentialRampToValueAtTime(52, now + 0.028);
 
-    gain.gain.setValueAtTime(0.055, now);
+    gain.gain.setValueAtTime(0.05, now);
     gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.03);
 
     osc.connect(gain);
@@ -63,27 +62,35 @@ export function playDiveTransitionSound(divingIn = true, enabled = true) {
 
     const now = ctx.currentTime;
     const osc = ctx.createOscillator();
+    const sub = ctx.createOscillator();
     const filter = ctx.createBiquadFilter();
     const gain = ctx.createGain();
 
     osc.type = "sawtooth";
-    filter.type = "lowpass";
-    filter.frequency.setValueAtTime(divingIn ? 240 : 1100, now);
-    filter.frequency.exponentialRampToValueAtTime(divingIn ? 1400 : 180, now + 0.55);
+    sub.type = "sine";
 
-    osc.frequency.setValueAtTime(divingIn ? 95 : 260, now);
-    osc.frequency.exponentialRampToValueAtTime(divingIn ? 290 : 88, now + 0.55);
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(divingIn ? 220 : 1400, now);
+    filter.frequency.exponentialRampToValueAtTime(divingIn ? 1850 : 180, now + 0.65);
+
+    osc.frequency.setValueAtTime(divingIn ? 88 : 280, now);
+    osc.frequency.exponentialRampToValueAtTime(divingIn ? 280 : 82, now + 0.65);
+    sub.frequency.setValueAtTime(divingIn ? 55 : 140, now);
+    sub.frequency.exponentialRampToValueAtTime(divingIn ? 140 : 48, now + 0.65);
 
     gain.gain.setValueAtTime(0.001, now);
-    gain.gain.linearRampToValueAtTime(0.045, now + 0.12);
-    gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.58);
+    gain.gain.linearRampToValueAtTime(0.045, now + 0.14);
+    gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.72);
 
     osc.connect(filter);
+    sub.connect(filter);
     filter.connect(gain);
     gain.connect(ctx.destination);
 
     osc.start(now);
-    osc.stop(now + 0.6);
+    sub.start(now);
+    osc.stop(now + 0.74);
+    sub.stop(now + 0.74);
   } catch {
     // Ignore
   }
@@ -105,8 +112,9 @@ export function stopAllTrackPreviews() {
 }
 
 /**
- * Plays a multi-voice Web Audio API analog synth sequence for a given track
- * (and optionally plays the real 30-second iTunes OST preview if available for Track 01)
+ * Plays the REAL official anime theme song (when `useRealOstUrl` is passed for Track 01)
+ * OR a rich multi-voice Web Audio API polyphonic synth sequence for score tracks,
+ * with synchronized real-time progress and waveform bar visualization.
  */
 export function startTrackSynthPreview(
   track: ArchiveTrack,
@@ -120,9 +128,9 @@ export function startTrackSynthPreview(
 
   const ctx = getAudioContext();
   const startTime = performance.now();
-  const totalDurationMs = 24000; // 24s preview cycle
+  const synthDurationMs = 24000;
+  let playingRealAudio = false;
 
-  // If real OST preview URL is provided and user clicked Track 01, try playing it with Web Audio synth fallback
   if (options.useRealOstUrl && typeof window !== "undefined") {
     try {
       if (!htmlAudioPlayer) {
@@ -130,11 +138,20 @@ export function startTrackSynthPreview(
         htmlAudioPlayer.crossOrigin = "anonymous";
       }
       htmlAudioPlayer.src = options.useRealOstUrl;
-      htmlAudioPlayer.volume = 0.72;
+      htmlAudioPlayer.volume = 0.78;
+      playingRealAudio = true;
+
+      htmlAudioPlayer.onended = () => {
+        stopAllTrackPreviews();
+        options.onEnded?.();
+      };
+
       htmlAudioPlayer.play().catch(() => {
+        playingRealAudio = false;
         runProceduralSynthLoop(ctx, track);
       });
     } catch {
+      playingRealAudio = false;
       runProceduralSynthLoop(ctx, track);
     }
   } else {
@@ -143,19 +160,24 @@ export function startTrackSynthPreview(
 
   activeProgressInterval = setInterval(() => {
     const elapsed = performance.now() - startTime;
-    const progress = Math.min(1, elapsed / totalDurationMs);
-    const t = elapsed * 0.006;
+    let progress = Math.min(1, elapsed / synthDurationMs);
+
+    if (playingRealAudio && htmlAudioPlayer && htmlAudioPlayer.duration > 0) {
+      progress = Math.min(1, htmlAudioPlayer.currentTime / htmlAudioPlayer.duration);
+    }
+
+    const t = elapsed * 0.0075;
     const levels = Array.from({ length: 28 }, (_, i) => {
       const wave =
-        Math.sin(t + i * 0.45 + track.waveformSeed) * 0.35 +
-        Math.cos(t * 1.7 - i * 0.3) * 0.25 +
-        0.45;
-      return Math.max(0.12, Math.min(1, wave));
+        Math.sin(t + i * 0.45 + track.waveformSeed) * 0.36 +
+        Math.cos(t * 1.8 - i * 0.31) * 0.28 +
+        0.46;
+      return Math.max(0.14, Math.min(1, wave));
     });
 
     options.onProgress?.(progress, levels);
 
-    if (progress >= 1) {
+    if (!playingRealAudio && progress >= 1) {
       stopAllTrackPreviews();
       options.onEnded?.();
     }
@@ -165,7 +187,7 @@ export function startTrackSynthPreview(
 function runProceduralSynthLoop(ctx: AudioContext | null, track: ArchiveTrack) {
   if (!ctx) return;
 
-  const stepMs = Math.max(180, Math.round((60 / track.bpm) * 500)); // Eighth-note arpeggio pulse
+  const stepMs = Math.max(180, Math.round((60 / track.bpm) * 500));
   let step = 0;
 
   const triggerStep = () => {
@@ -175,7 +197,6 @@ function runProceduralSynthLoop(ctx: AudioContext | null, track: ArchiveTrack) {
       const freq = notes[step % notes.length];
       const bassFreq = notes[0] * 0.5;
 
-      // Lead Warm Rhodes / Poly Synth Voice
       const osc = ctx.createOscillator();
       const subOsc = ctx.createOscillator();
       const filter = ctx.createBiquadFilter();
@@ -214,9 +235,6 @@ function runProceduralSynthLoop(ctx: AudioContext | null, track: ArchiveTrack) {
   activeSynthInterval = setInterval(triggerStep, stepMs);
 }
 
-/**
- * Generates deterministic bar heights for the track waveform scrubbers
- */
 export function generateWaveformBars(seed: number, count = 48): number[] {
   return Array.from({ length: count }, (_, i) => {
     const v1 = Math.abs(Math.sin(seed * 1.7 + i * 0.43));
@@ -225,96 +243,17 @@ export function generateWaveformBars(seed: number, count = 48): number[] {
   });
 }
 
-function readLocalMediaCache(): Record<string, ResolvedExternalMedia> {
-  if (typeof window === "undefined") return {};
-  try {
-    const raw = localStorage.getItem(CACHE_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch {
-    return {};
-  }
-}
-
-function writeLocalMediaCache(key: string, data: Partial<ResolvedExternalMedia>) {
-  if (typeof window === "undefined") return;
-  try {
-    const all = readLocalMediaCache();
-    all[key] = { ...(all[key] || {}), ...data };
-    localStorage.setItem(CACHE_KEY, JSON.stringify(all));
-  } catch {
-    // Ignore storage quota
-  }
-}
-
-export async function resolveAnimeExternalMedia(release: AnimeRelease): Promise<ResolvedExternalMedia> {
-  const key = release.jikanQuery || release.titleRomaji;
-  const cached = readLocalMediaCache()[key] || {};
-
-  // 1. Jikan v4 (Official MyAnimeList Poster & YouTube Trailer)
-  if (!cached.posterUrl || !cached.youtubeId) {
-    try {
-      const res = await fetch(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(key)}&limit=1`);
-      if (res.ok) {
-        const json = await res.json();
-        const found = json?.data?.[0];
-        if (found) {
-          const posterUrl = found.images?.jpg?.large_image_url || found.images?.jpg?.image_url;
-          const youtubeId = found.trailer?.youtube_id;
-          const bannerUrl = found.trailer?.images?.maximum_image_url || posterUrl;
-          if (posterUrl) cached.posterUrl = posterUrl;
-          if (youtubeId) cached.youtubeId = youtubeId;
-          if (bannerUrl) cached.bannerUrl = bannerUrl;
-          writeLocalMediaCache(key, cached);
-        }
-      }
-    } catch {
-      // Offline / rate-limit fallback remains 100% procedural
-    }
-  }
-
-  // 2. iTunes 30-second AAC Theme Song Preview
-  if (!cached.songPreviewUrl) {
-    try {
-      const term = release.songSearchQuery || `${release.songTitle} ${release.songArtist}`;
-      const res = await fetch(
-        `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=music&entity=song&limit=1`
-      );
-      if (res.ok) {
-        const json = await res.json();
-        const previewUrl = json?.results?.[0]?.previewUrl;
-        if (previewUrl) {
-          cached.songPreviewUrl = previewUrl;
-          writeLocalMediaCache(key, cached);
-        }
-      }
-    } catch {
-      // Ignore
-    }
-  }
-
-  // 3. AnimeThemes.moe HD OP Video
-  if (!cached.opVideoUrl) {
-    try {
-      const cleanName = release.titleRomaji.replace(/\(.*?\)/g, "").trim();
-      const res = await fetch(
-        `https://api.animethemes.moe/anime?filter[name]=${encodeURIComponent(
-          cleanName
-        )}&include=animethemes.animethemeentries.videos&page[size]=1`
-      );
-      if (res.ok) {
-        const json = await res.json();
-        const themes = json?.anime?.[0]?.animethemes || [];
-        const op = themes.find((t: { type?: string }) => t.type === "OP") || themes[0];
-        const link = op?.animethemeentries?.[0]?.videos?.[0]?.link;
-        if (link) {
-          cached.opVideoUrl = link;
-          writeLocalMediaCache(key, cached);
-        }
-      }
-    } catch {
-      // Ignore
-    }
-  }
-
-  return cached;
+/**
+ * Returns the pre-verified official AniList cover/banner, YouTube trailer/OP ID,
+ * and Apple Music/iTunes official vocal OP preview directly from the release dataset.
+ */
+export async function resolveAnimeExternalMedia(
+  release: AnimeRelease
+): Promise<ResolvedExternalMedia> {
+  return {
+    posterUrl: release.coverUrl,
+    bannerUrl: release.bannerUrl || release.coverUrl,
+    youtubeId: release.youtubeId,
+    songPreviewUrl: release.songPreviewUrl
+  };
 }
