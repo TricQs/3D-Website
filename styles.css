@@ -1,0 +1,101 @@
+/* ============================================================================
+   DISC ARCHIVE — SWISS EDITORIAL MINIMALISM & ANALOG TURNTABLE STUDIO STYLES
+   Palette:
+   - Studio Backdrop: #EAEAE8
+   - Bottom Vignette: #D2D2CF
+   - Deep Charcoal Ink: #181818
+   - Muted Slate Metadata: #6E6E6A
+   - Brushed Silver-Steel Platter Rim: #B8B9B4
+   - Vermilion / Coral Accent Dot: #E05A3A
+   ============================================================================ */
+
+:root {
+  --studio-bg: #EAEAE8;
+  --studio-vignette: #D2D2CF;
+  --studio-ink: #181818;
+  --studio-slate: #6E6E6A;
+  --studio-platter: #B8B9B4;
+  --studio-coral: #E05A3A;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--studio-bg);
+  color: var(--studio-ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.studio-backdrop {
+  background: radial-gradient(
+    circle at 50% 38%,
+    #EAEAE8 0%,
+    #E2E2DF 58%,
+    #D2D2CF 100%
+  );
+}
+
+.studio-grain-overlay {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  opacity: 0.032;
+  background-image: radial-gradient(#181818 0.75px, transparent 0.75px),
+    radial-gradient(#181818 0.75px, #EAEAE8 0.75px);
+  background-size: 24px 24px;
+  background-position: 0 0, 12px 12px;
+}
+
+.cat-pill {
+  color: var(--studio-slate);
+  transition: all 0.18s ease;
+}
+
+.cat-pill:hover {
+  color: var(--studio-ink);
+}
+
+.cat-pill.active {
+  background-color: var(--studio-ink);
+  color: var(--studio-bg);
+  font-weight: 600;
+}
+
+.hud-nav-link.active {
+  color: var(--studio-coral);
+  font-weight: 600;
+  border-bottom: 1.5px solid var(--studio-coral);
+}
+
+.detail-media-tab.active {
+  border-bottom-color: var(--studio-coral);
+  color: var(--studio-ink);
+  font-weight: 700;
+}
+
+/* Custom Minimalist Scrollbar for Detail & Index Overlays */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #EAEAE8;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #B8B9B4;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #181818;
+}

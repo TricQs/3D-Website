@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DISC ARCHIVE — Interactive 3D Anime Rating &amp; Soundtrack Showcase</title>
+
+  <!-- Neo-Grotesque Sans (Inter) + Crisp Uppercase Monospace (IBM Plex Mono) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Tailwind CSS CDN + Custom Swiss Studio Styles -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            studio: {
+              bg: "#EAEAE8",
+              vignette: "#D2D2CF",
+              ink: "#181818",
+              slate: "#6E6E6A",
+              platter: "#B8B9B4",
+              coral: "#E05A3A"
+            }
+          },
+          fontFamily: {
+            sans: ["Inter", "Helvetica Neue", "Helvetica", "Arial", "sans-serif"],
+            mono: ["IBM Plex Mono", "JetBrains Mono", "monospace"]
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Three.js & GSAP for 60fps 3D Turntable Platter, Accordion Shelf & Spindle-Hole Camera Dive -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+</head>
+<body class="studio-backdrop text-[#181818] font-sans antialiased overflow-hidden select-none">
+  <!-- Subtle Tactile Gallery Studio Grain -->
+  <div class="studio-grain-overlay" aria-hidden="true"></div>
+
+  <!-- ====================================================================
+       1. TOP MINIMALIST SWISS EDITORIAL HUD NAVIGATION BAR
+       ==================================================================== -->
+  <header class="fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-5 md:px-9 h-16 border-b border-[#181818]/10 bg-[#EAEAE8]/85 backdrop-blur-md">
+    <!-- Top-Left: DISC ARCHIVE + Category Filters -->
+    <div class="flex items-center gap-4">
+      <button
+        type="button"
+        id="nav-brand-btn"
+        class="font-mono text-xs md:text-[13px] font-semibold tracking-[0.18em] uppercase text-[#181818] hover:text-[#E05A3A] transition-colors flex items-center gap-2"
+      >
+        <span>DISC ARCHIVE</span>
+        <span class="text-[10px] text-[#6E6E6A] font-normal hidden sm:inline">/ ANIME RATING</span>
+      </button>
+
+      <div class="hidden lg:flex items-center gap-1 pl-3 border-l border-[#181818]/15 font-mono text-[11px]" id="category-tabs">
+        <button type="button" data-cat="all" class="cat-pill active px-2.5 py-1 uppercase tracking-wider">ALL (26)</button>
+        <button type="button" data-cat="TV Series" class="cat-pill px-2.5 py-1 uppercase tracking-wider">SERIES (22)</button>
+        <button type="button" data-cat="Movie" class="cat-pill px-2.5 py-1 uppercase tracking-wider">FILMS (4)</button>
+        <button type="button" data-cat="watching" class="cat-pill px-2.5 py-1 uppercase tracking-wider">ON-GOING (2)</button>
+      </div>
+    </div>
+
+    <!-- Top-Center: Coral dot (●) + ON THE PLATTER — ANM-001 YAMADA-KUN -->
+    <div class="hidden md:flex items-center gap-2.5 font-mono text-[11px] lg:text-xs tracking-[0.14em] uppercase">
+      <span class="inline-block w-2 h-2 rounded-full bg-[#E05A3A] animate-pulse" aria-hidden="true"></span>
+      <span class="text-[#6E6E6A]">ON THE PLATTER</span>
+      <span class="text-[#6E6E6A]">—</span>
+      <span id="hud-platter-title" class="font-semibold text-[#181818]">ANM-001 YAMADA-KUN</span>
+      <span id="hud-platter-score" class="px-1.5 py-0.5 text-[10px] bg-[#181818]/10 text-[#181818] font-semibold">★ 8.0</span>
+    </div>
+
+    <!-- Top-Right: Navigation Links (Releases, Artists, Radio) -->
+    <nav class="flex items-center gap-5 md:gap-7 text-xs md:text-[13px] font-medium tracking-tight">
+      <button
+        type="button"
+        id="toggle-art-mode-btn"
+        title="Switch between Procedural Swiss Illustrations and Official MyAnimeList Posters on 3D Sleeves"
+        class="hidden sm:inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider px-2.5 py-1 border border-[#181818]/20 text-[#6E6E6A] hover:text-[#181818] hover:border-[#181818] transition-colors"
+      >
+        <span>SLEEVE:</span>
+        <strong id="art-mode-label" class="text-[#181818]">SWISS CANVAS</strong>
+      </button>
+
+      <button type="button" id="nav-releases-btn" class="hud-nav-link py-1 transition-colors hover:text-[#E05A3A]">
+        Releases
+      </button>
+      <button type="button" id="nav-artists-btn" class="hud-nav-link py-1 transition-colors hover:text-[#E05A3A]">
+        Artists
+      </button>
+      <button type="button" id="nav-radio-btn" class="hud-nav-link inline-flex items-center gap-1.5 py-1 transition-colors hover:text-[#E05A3A]">
+        <span id="radio-status-dot" class="w-1.5 h-1.5 rounded-full bg-[#6E6E6A]"></span>
+        <span>Radio</span>
+      </button>
+    </nav>
+  </header>
+
+  <!-- ====================================================================
+       2. CORE 3D SCENE & TURNTABLE PLATTER STAGE
+       ==================================================================== -->
+  <main id="shelf-stage-wrap" class="relative w-screen h-screen transition-opacity duration-500">
+    <!-- Three.js WebGL Mount Container -->
+    <div id="three-canvas-container" class="w-full h-full cursor-grab active:cursor-grabbing"></div>
+
+    <!-- Top-Left Editorial Shelf Slot & Score Counter -->
+    <div class="pointer-events-none fixed top-20 left-5 md:left-9 z-20 hidden sm:flex flex-col gap-1 font-mono text-[11px] uppercase tracking-widest text-[#6E6E6A]">
+      <div>
+        SHELF SLOT <span id="hud-slot-index" class="text-[#181818] font-semibold">01</span> /
+        <span id="hud-slot-total">26</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span>PERSONAL SCORE:</span>
+        <span id="hud-corner-score" class="text-[#181818] font-bold">★ 8.0 / 10</span>
+      </div>
+      <div id="hud-ongoing-badge" class="text-[#E05A3A] font-semibold hidden"></div>
+    </div>
+
+    <!-- Floating Radio Mode Live Status Bar (Top-Right below header) -->
+    <div
+      id="radio-live-banner"
+      class="fixed top-20 right-5 md:right-9 z-20 hidden items-center gap-3 px-3.5 py-2 bg-[#181818] text-[#EAEAE8] font-mono text-[11px] uppercase tracking-wider shadow-lg"
+    >
+      <span class="w-2 h-2 rounded-full bg-[#E05A3A] animate-pulse"></span>
+      <span id="radio-banner-text">RADIO: ♪ KUCHIZUKE DIAMOND — WEAVER</span>
+      <button
+        type="button"
+        id="radio-mute-btn"
+        class="px-2 py-0.5 bg-[#EAEAE8]/15 hover:bg-[#E05A3A] text-[10px] transition-colors"
+      >
+        MUTE
+      </button>
+    </div>
+
+    <!-- ====================================================================
+         3. CENTER-BOTTOM RELEASE CAPTION & FLANKING 40PX CIRCULAR CONTROLS
+         ==================================================================== -->
+    <section
+      aria-label="Active Release Caption and Controls"
+      class="pointer-events-none fixed bottom-24 md:bottom-28 left-0 right-0 z-20 flex items-center justify-center px-4"
+    >
+      <div class="pointer-events-auto flex items-center justify-between w-full max-w-2xl gap-4 md:gap-8">
+        <!-- Left Circular 40px Button (←) -->
+        <button
+          type="button"
+          id="prev-sleeve-btn"
+          aria-label="Previous Release"
+          class="w-10 h-10 rounded-full border border-[#181818]/35 flex items-center justify-center text-[#181818] hover:border-[#181818] hover:bg-[#181818] hover:text-[#EAEAE8] disabled:opacity-25 disabled:pointer-events-none transition-all shrink-0"
+        >
+          <span class="text-base leading-none">←</span>
+        </button>
+
+        <!-- Center Release Caption -->
+        <div
+          id="center-caption-trigger"
+          class="flex flex-col items-center text-center cursor-pointer group"
+          title="Click active cover or disc to dive through the spindle hole"
+        >
+          <div class="flex items-center gap-2 font-mono text-[11px] md:text-xs tracking-[0.16em] uppercase text-[#181818]">
+            <span class="inline-block w-2 h-2 rounded-full bg-[#E05A3A]"></span>
+            <span id="caption-catalog-genre">ANM-001 — ROMANCE / COMEDY</span>
+            <span id="caption-rating-tag" class="text-[#E05A3A] font-semibold">★ 8.0</span>
+          </div>
+
+          <h1
+            id="caption-main-title"
+            class="mt-1 text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-[#181818] group-hover:text-[#E05A3A] transition-colors line-clamp-1"
+          >
+            Yamada-kun and the Seven Witches
+          </h1>
+
+          <p id="caption-subtitle" class="mt-0.5 text-xs sm:text-sm text-[#6E6E6A] font-normal">
+            Yamada-kun to 7-nin no Majo • ♪ WEAVER, 2015
+          </p>
+
+          <span class="mt-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-[#6E6E6A] group-hover:text-[#181818] transition-colors">
+            [ CLICK SLEEVE OR DISC TO DIVE IN ↗ ]
+          </span>
+        </div>
+
+        <!-- Right Circular 40px Button (→) -->
+        <button
+          type="button"
+          id="next-sleeve-btn"
+          aria-label="Next Release"
+          class="w-10 h-10 rounded-full border border-[#181818]/35 flex items-center justify-center text-[#181818] hover:border-[#181818] hover:bg-[#181818] hover:text-[#EAEAE8] disabled:opacity-25 disabled:pointer-events-none transition-all shrink-0"
+        >
+          <span class="text-base leading-none">→</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         4. BOTTOM INTERACTIVE YEAR WAVEFORM TIMELINE
+         ==================================================================== -->
+    <footer class="fixed bottom-0 left-0 right-0 z-20 h-20 px-4 md:px-10 pb-3 pt-2 bg-gradient-to-t from-[#D2D2CF]/90 via-[#EAEAE8]/75 to-transparent backdrop-blur-[2px] flex flex-col justify-end">
+      <div id="timeline-scrubber" class="relative w-full h-14 cursor-ew-resize flex flex-col justify-end select-none">
+        <!-- Coral Needle Indicator Aligned to Active Release's Year -->
+        <div
+          id="timeline-coral-needle"
+          class="pointer-events-none absolute top-0 bottom-4 z-20 transition-all duration-300 ease-out"
+          style="left: 45%;"
+        >
+          <div class="relative -translate-x-1/2 flex flex-col items-center">
+            <div
+              id="timeline-needle-label"
+              class="px-1.5 py-0.5 bg-[#E05A3A] text-[#FAF9F6] font-mono text-[10px] font-bold tracking-wider shadow-sm"
+            >
+              2015
+            </div>
+            <div class="w-[2px] h-8 bg-[#E05A3A]"></div>
+          </div>
+        </div>
+
+        <!-- Dense Vertical Tick Marks of Varying Heights -->
+        <div id="timeline-ticks-row" class="w-full flex items-end justify-between h-7 px-1 border-b border-[#181818]/20"></div>
+
+        <!-- Year Labels Row -->
+        <div
+          id="timeline-years-row"
+          class="w-full flex items-center justify-between pt-1.5 font-mono text-[10px] md:text-[11px] tracking-wider uppercase text-[#6E6E6A]"
+        ></div>
+      </div>
+    </footer>
+  </main>
+
+  <!-- ====================================================================
+       5. RELEASE DETAIL VIEW (CROSSFADED AFTER SPINDLE-HOLE CAMERA DIVE)
+       ==================================================================== -->
+  <section
+    id="release-detail-view"
+    aria-label="Anime Release Detail View"
+    class="fixed inset-0 z-40 pt-16 overflow-y-auto bg-[#EAEAE8]/95 backdrop-blur-md hidden"
+  >
+    <div class="max-w-6xl mx-auto px-5 md:px-10 py-8 md:py-12">
+      <!-- Top Bar with "← Back to Shelf" Button -->
+      <div class="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-[#181818]/15">
+        <button
+          type="button"
+          id="back-to-shelf-btn"
+          class="inline-flex items-center gap-2.5 px-4 py-2 border border-[#181818] bg-[#181818] text-[#EAEAE8] hover:bg-[#E05A3A] hover:border-[#E05A3A] font-mono text-xs uppercase tracking-[0.15em] transition-colors"
+        >
+          <span>←</span>
+          <span>Back to Shelf</span>
+        </button>
+
+        <div class="flex items-center gap-3 font-mono text-xs uppercase tracking-widest">
+          <span id="detail-catalog-badge" class="px-2.5 py-1 border border-[#181818]/25 text-[#181818] font-semibold">
+            ANM-001
+          </span>
+          <span id="detail-score-badge" class="px-2.5 py-1 bg-[#E05A3A] text-white font-bold">
+            PERSONAL RATING: ★ 8.0 / 10
+          </span>
+          <span id="detail-ongoing-pill" class="px-2.5 py-1 bg-[#181818] text-[#EAEAE8] hidden"></span>
+        </div>
+
+        <div class="flex items-center gap-2 font-mono text-xs">
+          <button type="button" id="detail-prev-btn" class="px-3 py-1.5 border border-[#181818]/25 hover:border-[#181818]">
+            ← PREV
+          </button>
+          <button type="button" id="detail-next-btn" class="px-3 py-1.5 border border-[#181818]/25 hover:border-[#181818]">
+            NEXT →
+          </button>
+        </div>
+      </div>
+
+      <!-- Two-Column Swiss Editorial Dossier -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12 pt-8">
+        <!-- Left Column (5 Cols): Procedural Sleeve / Key Visual / Trailer + Rating Breakdown -->
+        <div class="lg:col-span-5 flex flex-col gap-6">
+          <div class="flex items-center border-b border-[#181818]/15 font-mono text-[11px] uppercase tracking-wider">
+            <button type="button" data-detail-tab="cover" class="detail-media-tab active px-3.5 py-2 border-b-2 border-[#E05A3A] text-[#181818] font-bold">
+              Swiss Sleeve
+            </button>
+            <button type="button" data-detail-tab="visual" class="detail-media-tab px-3.5 py-2 border-b-2 border-transparent text-[#6E6E6A]">
+              Official Key Visual
+            </button>
+            <button type="button" data-detail-tab="trailer" class="detail-media-tab px-3.5 py-2 border-b-2 border-transparent text-[#6E6E6A]">
+              OP / Trailer Video
+            </button>
+          </div>
+
+          <div class="relative w-full aspect-square bg-[#181818] overflow-hidden border border-[#181818]/20 shadow-lg">
+            <canvas id="detail-cover-canvas" width="640" height="640" class="w-full h-full"></canvas>
+            <div id="detail-visual-wrap" class="w-full h-full hidden relative bg-[#181818]">
+              <img id="detail-visual-img" alt="Official Anime Key Visual" class="w-full h-full object-cover" />
+            </div>
+            <div id="detail-trailer-wrap" class="w-full h-full hidden bg-[#181818] flex items-center justify-center">
+              <video id="detail-op-video" controls playsinline loop class="w-full h-full object-contain hidden"></video>
+              <iframe
+                id="detail-yt-iframe"
+                title="Anime Trailer"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen
+                class="w-full h-full border-0 hidden"
+              ></iframe>
+              <div id="detail-trailer-fallback" class="p-6 text-center font-mono text-xs text-[#EAEAE8]/80 hidden">
+                <p class="mb-2 text-[#E05A3A] uppercase">● WEB AUDIO SYNTHESIS READY</p>
+                <p>Click any track bar on the right to audition the soundtrack.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Personal Rating Breakdown Card -->
+          <div class="p-5 border border-[#181818]/15 bg-[#EAEAE8]/60">
+            <div class="flex items-center justify-between pb-3 mb-4 border-b border-[#181818]/15">
+              <span class="font-mono text-xs uppercase tracking-widest text-[#6E6E6A]">ANIME RATING AUDIT</span>
+              <span id="detail-audit-score" class="font-mono text-sm font-bold text-[#181818]">★ 8.0 / 10</span>
+            </div>
+            <div id="detail-rating-bars" class="space-y-3"></div>
+          </div>
+        </div>
+
+        <!-- Right Column (7 Cols): Title, Synopsis, Playable Web Audio Synth Tracklist & Credits -->
+        <div class="lg:col-span-7 flex flex-col justify-between gap-8">
+          <div>
+            <div class="flex flex-wrap items-center gap-2 font-mono text-xs uppercase tracking-[0.16em] text-[#E05A3A]">
+              <span>●</span>
+              <span id="detail-genres">ROMANCE / COMEDY</span>
+              <span class="text-[#6E6E6A]">—</span>
+              <span id="detail-year-bpm" class="text-[#181818]">2015 • 138 BPM • F MAJOR</span>
+            </div>
+
+            <h1 id="detail-title-en" class="mt-2 text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-[#181818]">
+              Yamada-kun and the Seven Witches
+            </h1>
+            <p id="detail-title-romaji" class="mt-1 text-base md:text-lg text-[#6E6E6A]">
+              Yamada-kun to 7-nin no Majo — ♪ Kuchizuke Diamond (WEAVER)
+            </p>
+
+            <p id="detail-synopsis" class="mt-5 text-sm md:text-base leading-relaxed text-[#181818]/90"></p>
+
+            <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <blockquote id="detail-quote-1" class="p-3.5 border-l-2 border-[#E05A3A] bg-[#181818]/[0.03] font-mono text-[11px] uppercase tracking-wider text-[#181818]"></blockquote>
+              <blockquote id="detail-quote-2" class="p-3.5 border-l-2 border-[#181818] bg-[#181818]/[0.03] font-mono text-[11px] uppercase tracking-wider text-[#181818]"></blockquote>
+            </div>
+
+            <!-- Playable Tracklist with Web Audio Synth Preview Bars -->
+            <div class="mt-8">
+              <div class="flex items-center justify-between pb-2.5 border-b border-[#181818]">
+                <span class="font-mono text-xs font-bold uppercase tracking-[0.16em]">
+                  SOUNDTRACK &amp; SYNTH PREVIEW BARS
+                </span>
+                <span class="font-mono text-[11px] uppercase text-[#6E6E6A]">
+                  CLICK ANY TRACK FOR WEB AUDIO SYNTHESIS
+                </span>
+              </div>
+              <div id="detail-tracklist" class="divide-y divide-[#181818]/12"></div>
+            </div>
+          </div>
+
+          <!-- Archival Credits Grid -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-5 border-t border-[#181818]/15 font-mono text-xs">
+            <div>
+              <div class="text-[10px] text-[#6E6E6A] uppercase">CATALOG / FORMAT</div>
+              <div id="credit-cat-format" class="mt-0.5 font-semibold text-[#181818]">ANM-001 • TV Series</div>
+            </div>
+            <div>
+              <div class="text-[10px] text-[#6E6E6A] uppercase">ANIMATION STUDIO</div>
+              <div id="credit-studio" class="mt-0.5 font-semibold text-[#181818]">LIDENFILMS</div>
+            </div>
+            <div>
+              <div class="text-[10px] text-[#6E6E6A] uppercase">RELEASE / AGE RATING</div>
+              <div id="credit-year-age" class="mt-0.5 font-semibold text-[#181818]">2015 • PG-13</div>
+            </div>
+            <div>
+              <div class="text-[10px] text-[#6E6E6A] uppercase">PERSONAL ARCHIVE SCORE</div>
+              <div id="credit-score" class="mt-0.5 font-bold text-[#E05A3A]">★ 8.0 / 10</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       6. "RELEASES" FULL ARCHIVE INDEX & CURRENTLY WATCHING DRAWER
+       ==================================================================== -->
+  <aside
+    id="releases-modal"
+    aria-label="Complete Anime Rating Releases Index"
+    class="fixed inset-0 z-50 pt-16 bg-[#EAEAE8]/95 backdrop-blur-md overflow-y-auto hidden"
+  >
+    <div class="max-w-6xl mx-auto px-5 md:px-10 py-8">
+      <div class="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-[#181818]/15">
+        <div>
+          <div class="font-mono text-xs uppercase tracking-[0.18em] text-[#E05A3A]">
+            ● COMPLETE DISC ARCHIVE &amp; ANIME WATCHLIST
+          </div>
+          <h2 class="text-2xl md:text-3xl font-bold tracking-tight text-[#181818]">
+            26 Watched Releases &amp; 2 On-Going Series
+          </h2>
+        </div>
+
+        <button
+          type="button"
+          id="close-releases-modal-btn"
+          class="px-4 py-2 border border-[#181818] bg-[#181818] text-[#EAEAE8] hover:bg-[#E05A3A] hover:border-[#E05A3A] font-mono text-xs uppercase tracking-widest transition-colors"
+        >
+          Close Index ✕
+        </button>
+      </div>
+
+      <!-- Currently Watching (On-Going Personal Progress) -->
+      <div class="mt-6">
+        <div class="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.16em] text-[#181818] mb-3">
+          <span class="w-2 h-2 rounded-full bg-[#E05A3A] animate-pulse"></span>
+          <span>CURRENTLY WATCHING (ON-GOING PERSONAL PROGRESS)</span>
+        </div>
+        <div id="modal-cw-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+      </div>
+
+      <!-- Search, Genre & Sort Bar -->
+      <div class="mt-8 flex flex-wrap items-center gap-3 pb-4 border-b border-[#181818]">
+        <input
+          type="text"
+          id="modal-search-input"
+          placeholder="Search title, Romaji, catalog code, or artist..."
+          class="flex-1 min-w-[220px] px-3.5 py-2 bg-white/70 border border-[#181818]/25 font-mono text-xs text-[#181818] placeholder:text-[#6E6E6A] focus:outline-none focus:border-[#181818]"
+        />
+        <select
+          id="modal-genre-select"
+          class="px-3.5 py-2 bg-white/70 border border-[#181818]/25 font-mono text-xs text-[#181818]"
+        >
+          <option value="All">All Genres</option>
+        </select>
+        <select
+          id="modal-sort-select"
+          class="px-3.5 py-2 bg-white/70 border border-[#181818]/25 font-mono text-xs text-[#181818]"
+        >
+          <option value="catalog">Sort: Catalog Order (ANM-001 → 026)</option>
+          <option value="rating-desc">Sort: Highest Rated (10.0 → 7.0)</option>
+          <option value="year-desc">Sort: Newest Release Year</option>
+          <option value="title-asc">Sort: Title (A → Z)</option>
+        </select>
+      </div>
+
+      <!-- Complete 26 Watched Anime Rows -->
+      <div id="modal-releases-table" class="divide-y divide-[#181818]/12 font-mono text-xs"></div>
+
+      <!-- Personal FYI Note & Warm Closing Footer -->
+      <div class="mt-10 p-6 border border-[#181818]/20 bg-[#D2D2CF]/40 space-y-2 text-sm text-[#181818]">
+        <p>
+          <strong>💡 FYI / Archivist Note:</strong> Honestly, there are still so many other anime I've watched that
+          have slipped my mind! Whenever I remember their titles, I'll definitely add them to this archive—and I might
+          even rewatch some of these series and movies just for the nostalgia!
+        </p>
+        <p class="text-[#6E6E6A]">
+          ✨ Thank you for visiting my personal Anime Rating Disc Archive! Hope you found your next great watch here.
+        </p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ====================================================================
+       7. "ARTISTS" OST & ANIME THEME SONG DIRECTORY DRAWER
+       ==================================================================== -->
+  <aside
+    id="artists-modal"
+    aria-label="Anime OST Artists Directory"
+    class="fixed inset-0 z-50 pt-16 bg-[#EAEAE8]/95 backdrop-blur-md overflow-y-auto hidden"
+  >
+    <div class="max-w-6xl mx-auto px-5 md:px-10 py-8">
+      <div class="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-[#181818]/15">
+        <div>
+          <div class="font-mono text-xs uppercase tracking-[0.18em] text-[#E05A3A]">
+            ● ANIME SOUNDTRACK ARTISTS &amp; STUDIOS
+          </div>
+          <h2 class="text-2xl md:text-3xl font-bold tracking-tight text-[#181818]">
+            Opening Themes, Composers &amp; Studios
+          </h2>
+        </div>
+
+        <button
+          type="button"
+          id="close-artists-modal-btn"
+          class="px-4 py-2 border border-[#181818] bg-[#181818] text-[#EAEAE8] hover:bg-[#E05A3A] hover:border-[#E05A3A] font-mono text-xs uppercase tracking-widest transition-colors"
+        >
+          Close Artists ✕
+        </button>
+      </div>
+
+      <div id="modal-artists-grid" class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </div>
+  </aside>
+
+  <script src="script.js"></script>
+</body>
+</html>
