@@ -19,6 +19,7 @@ export interface ArchiveTrack {
   notes: number[];
   waveformSeed: number;
   isOfficialOst?: boolean;
+  previewUrl?: string;
 }
 
 export interface AnimeRelease {
@@ -121,53 +122,769 @@ const CHORD_BANK: number[][] = [
   [277.18, 329.63, 415.3, 493.88, 622.25]
 ];
 
+const OFFICIAL_TRACKS_BY_ID: Record<string, { title: string; artist: string; previewUrl: string }[]> = {
+  "1": [
+    {
+      "title": "くちづけDiamond",
+      "artist": "WEAVER",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/80/c4/90/80c4904b-7485-686d-bf5d-c279dd24188d/mzaf_10698822257358362061.plus.aac.p.m4a"
+    },
+    {
+      "title": "くちづけDiamond (LIVE)",
+      "artist": "WEAVER",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/93/83/67/9383678b-dfd7-da9c-85c9-7a19faa3d989/mzaf_12909180013204887028.plus.aac.p.m4a"
+    },
+    {
+      "title": "Shall we dance〜くちづけDiamond (LIVE)",
+      "artist": "WEAVER",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/99/75/fb/9975fb89-de16-5f5f-6df2-b012b853c90b/mzaf_17551312488002729651.plus.aac.p.m4a"
+    },
+    {
+      "title": "Beloved",
+      "artist": "WEAVER",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/26/c8/df/26c8df3e-56d8-d5b5-1a5a-49d643fc76b0/mzaf_18425117046241338032.plus.aac.p.m4a"
+    },
+    {
+      "title": "Inception",
+      "artist": "WEAVER",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/20/66/ca/2066caa2-c662-f4d8-1452-93cff8da683f/mzaf_2716632395375623549.plus.aac.p.m4a"
+    }
+  ],
+  "2": [
+    {
+      "title": "恋人以上、好き未満 (Full Size)",
+      "artist": "=LOVE",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/44/67/cb/4467cb87-4231-b75a-b4f9-4bfd729c7a41/mzaf_13539162494623898650.plus.aac.p.m4a"
+    },
+    {
+      "title": "恋人以上、好き未満 (=LOVE ARENA TOUR 2025「～Timeless Tales～」)",
+      "artist": "=LOVE",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ce/bc/1f/cebc1fa1-e11d-4a09-dbba-0ce33ddc4b74/mzaf_14066876057770121556.plus.aac.p.m4a"
+    },
+    {
+      "title": "恋人以上、好き未満 (=LOVE 8th ANNIVERSARY PREMIUM TOUR)",
+      "artist": "=LOVE",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/4e/ce/b6/4eceb6d9-05fc-6023-80bc-97ac8d80b28c/mzaf_4333175518401490154.plus.aac.p.m4a"
+    },
+    {
+      "title": "恋人以上、好き未満 (TV Size)",
+      "artist": "=LOVE",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/e0/4c/be/e04cbef6-5e67-85af-226b-ba90bc9a5081/mzaf_14938006972721253808.plus.aac.p.m4a"
+    },
+    {
+      "title": "とくべチュ、して",
+      "artist": "=LOVE",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/00/af/f2/00aff2da-500a-cae3-22d1-e0160e29204b/mzaf_6307710514933024967.plus.aac.p.m4a"
+    }
+  ],
+  "3": [
+    {
+      "title": "SURVIVE",
+      "artist": "MindaRyn",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/9f/61/ff/9f61ffe6-e59d-59bf-e2a5-a5740bd7e1ac/mzaf_8165454170293598556.plus.aac.p.m4a"
+    },
+    {
+      "title": "Fireworks",
+      "artist": "MindaRyn",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/4a/08/d2/4a08d2db-8867-3a01-5919-373b31c46a3d/mzaf_6403195680951941636.plus.aac.p.m4a"
+    },
+    {
+      "title": "The Reason of Kindness (English Version)",
+      "artist": "MindaRyn",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/e0/f9/aa/e0f9aa64-3b88-76f1-41a6-a5c4c485b1db/mzaf_11677860719770396752.plus.aac.p.m4a"
+    },
+    {
+      "title": "Remaining Story",
+      "artist": "MindaRyn",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/76/36/78/76367821-8afb-e1d6-e0cf-f3e825ccda6d/mzaf_16180693394954479069.plus.aac.p.m4a"
+    },
+    {
+      "title": "KUUSOU MESOROGII (English Version)",
+      "artist": "MindaRyn",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview116/v4/8e/f7/e7/8ef7e78b-4c75-b0fa-2447-581754cefc4b/mzaf_10520766103010161288.plus.aac.p.m4a"
+    }
+  ],
+  "4": [
+    {
+      "title": "ワタシノテンシ (Cover)",
+      "artist": "CocoTsuki",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/33/34/79/33347921-4ec9-6bac-7b86-e08cafff53d2/mzaf_2923877196214728477.plus.aac.p.m4a"
+    },
+    {
+      "title": "月の天使",
+      "artist": "CHAQLA.",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/cf/64/bc/cf64bc48-e6f4-deb1-35d5-c4ce8723bec2/mzaf_15583980525055094753.plus.aac.p.m4a"
+    },
+    {
+      "title": "月の光",
+      "artist": "川越好博",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/c9/10/dc/c910dcd7-431f-528c-393b-5c238a5422fb/mzaf_3437454154400018632.plus.aac.p.m4a"
+    },
+    {
+      "title": "Pray",
+      "artist": "[Alexandros]",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/fd/b8/4d/fdb84dba-f885-533c-f61e-6d6d5847bac3/mzaf_15202257343005143730.plus.aac.p.m4a"
+    },
+    {
+      "title": "answer",
+      "artist": "Janne Da Arc",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/04/f4/57/04f45710-483d-7c77-d006-f04d96010cdd/mzaf_14612406285185217171.plus.aac.p.m4a"
+    }
+  ],
+  "5": [
+    {
+      "title": "Donna Hoshizora Yori Mo, Donna Omoide Yori Mo (From \"Imouto sae Ireba Ii\") [Ending]",
+      "artist": "Fonzi M",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/90/0e/0e/900e0e34-7f88-4f28-5506-2a81befe04b2/mzaf_13214241906341084344.plus.aac.p.m4a"
+    },
+    {
+      "title": "明日の君さえいればいい。",
+      "artist": "ChouCho",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/59/b6/d2/59b6d20e-c85a-f5b2-9f79-9acc8dbcdb59/mzaf_4446349734059029313.plus.aac.p.m4a"
+    },
+    {
+      "title": "明日の君さえいればいい。 (Acoustic Album \"naked garden\" Ver.)",
+      "artist": "ChouCho",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/0a/3f/bd/0a3fbd87-af13-bd66-f47a-905d9362f4c5/mzaf_17690654521689884135.plus.aac.p.m4a"
+    },
+    {
+      "title": "アンダンテ",
+      "artist": "ChouCho",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/75/2a/dd/752add36-aba1-b640-d7f8-e7520025d9e4/mzaf_11144937223416869631.plus.aac.p.m4a"
+    },
+    {
+      "title": "明日の君さえいればいい。 (TV SIZE)",
+      "artist": "ChouCho",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview118/v4/59/c6/36/59c6368e-272f-06f1-312a-d95e644898aa/mzaf_7307430442645450981.plus.aac.p.m4a"
+    }
+  ],
+  "6": [
+    {
+      "title": "Papapa (From \"Oresuki: Ore wo Suki nano wa Omae dake ka yo\") [Opening]",
+      "artist": "Fonzi M",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/fe/66/7b/fe667bb1-9938-c73b-3d17-b2fcd73ded32/mzaf_3845652231522774784.plus.aac.p.m4a"
+    },
+    {
+      "title": "Hanakotoba (From \"Ore wo Suki nano wa Omae dake ka yo\")",
+      "artist": "Steve Hansen",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/40/4b/86/404b8613-8d25-4272-c898-eea180cb3f2b/mzaf_3644602209253144651.plus.aac.p.m4a"
+    },
+    {
+      "title": "パパパ",
+      "artist": "Steve Hansen",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/be/9e/31/be9e31bf-047c-3df0-231a-c133265b860d/mzaf_10999197111142291022.plus.aac.p.m4a"
+    },
+    {
+      "title": "Labyrinth",
+      "artist": "RAZOR",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/22/d5/cd/22d5cddf-a98f-75fc-ddad-d05ad73cf81d/mzaf_1991191645922371093.plus.aac.p.m4a"
+    },
+    {
+      "title": "Eternal Destination",
+      "artist": "MINMI, TMG & 4WD",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/e0/47/04/e04704f5-9a25-5484-42fa-e100fa93971e/mzaf_14614972781345340461.plus.aac.p.m4a"
+    }
+  ],
+  "7": [
+    {
+      "title": "あのね、",
+      "artist": "ポルカドットスティングレイ",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/eb/e9/f2/ebe9f23b-d68f-e971-3684-301c5f4ac1ac/mzaf_12586668274530331524.plus.aac.p.m4a"
+    },
+    {
+      "title": "ねてもさめても",
+      "artist": "ポルカドットスティングレイ",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/8e/ba/b3/8ebab32a-9d14-459a-cc8a-5072ad9acbb9/mzaf_16400766503623144093.plus.aac.p.m4a"
+    },
+    {
+      "title": "DENKOUSEKKA",
+      "artist": "ポルカドットスティングレイ",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/9d/9e/da/9d9edad1-abfc-5625-1842-211beef0402c/mzaf_12143963573980163883.plus.aac.p.m4a"
+    },
+    {
+      "title": "エレクトリック・パブリック",
+      "artist": "ポルカドットスティングレイ",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/3f/ac/13/3fac134d-407d-e5ae-983c-0f30c7ad9500/mzaf_673991187519765564.plus.aac.p.m4a"
+    },
+    {
+      "title": "リドー",
+      "artist": "ポルカドットスティングレイ",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f4/cf/2f/f4cf2f55-c1bc-d3a3-4ab2-0235eacdf409/mzaf_12745061973797487490.plus.aac.p.m4a"
+    }
+  ],
+  "8": [
+    {
+      "title": "残念系隣人部★★☆(星二つ半)",
+      "artist": "友達つくり隊/三日月夜空(CV:井上麻里奈)、柏崎星奈(CV:伊藤かな恵)、 楠幸村(CV:山本希望)、志熊理科(CV:福圓美里)、羽瀬川小鳩(CV:花澤香 菜)、高山マリア(CV:井口裕香)",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/46/3b/46/463b469f-7932-c7cd-127e-fa5797ffbe51/mzaf_9331505858828125381.plus.aac.p.m4a"
+    },
+    {
+      "title": "TVアニメ「僕は友達が少ない」オープニングテーマ「残念系隣人部★★☆(星ふたつ半)(TVサイズ)」",
+      "artist": "TOM-H@CK",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/c2/e7/a4/c2e7a42c-50d3-73b1-e0d7-d3d640872888/mzaf_13155000197396596269.plus.aac.p.m4a"
+    },
+    {
+      "title": "残念系隣人部★★☆(星二つ半) オリジナルカラオケ",
+      "artist": "友達つくり隊/三日月夜空(CV:井上麻里奈)、柏崎星奈(CV:伊藤かな恵)、 楠幸村(CV:山本希望)、志熊理科(CV:福圓美里)、羽瀬川小鳩(CV:花澤香 菜)、高山マリア(CV:井口裕香)",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/a7/55/4f/a7554f43-63c1-4d1b-1ca3-b09241638690/mzaf_16144212266088032333.plus.aac.p.m4a"
+    },
+    {
+      "title": "残念系隣人部★★☆",
+      "artist": "ANIME PROJECT",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/Music/v4/ff/4e/aa/ff4eaa4c-2beb-89d2-721f-bce0589c2a98/mzaf_3103245856644361038.plus.aac.p.m4a"
+    },
+    {
+      "title": "笑顔のデッサン",
+      "artist": "三日月夜空(CV:井上麻里奈)、柏崎星奈(CV:伊藤かな恵)",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/17/5a/c4/175ac412-e8c7-fc75-0ee2-eb1b3e5900da/mzaf_9202665197653078259.plus.aac.p.m4a"
+    }
+  ],
+  "9": [
+    {
+      "title": "Kishuku Gakkou no Juliet RAP",
+      "artist": "AeAone",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview114/v4/48/f1/47/48f147bc-4311-4e33-569f-d534bde89c2e/mzaf_17502360879918715097.plus.aac.p.m4a"
+    },
+    {
+      "title": "Kishuku Gakkou no Juliet | Opening (Love wth You)",
+      "artist": "Just Let That Sh*t Go",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/37/c8/74/37c87442-37d6-446a-dc03-e6db3fe69dba/mzaf_10001675570626272367.plus.aac.p.m4a"
+    },
+    {
+      "title": "Love with You",
+      "artist": "fripSide",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/b3/51/99/b35199fb-33fc-fd85-6fd1-a020a2d8be93/mzaf_9717050700522262997.plus.aac.p.m4a"
+    },
+    {
+      "title": "Love with You<Phase2> (20th Anniversary Festival) [Live]",
+      "artist": "fripSide",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/79/a9/ae/79a9ae92-7cd4-ca54-22b0-3649fddb6f30/mzaf_13519758861802008241.plus.aac.p.m4a"
+    },
+    {
+      "title": "Blue Moon",
+      "artist": "fripSide",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/3b/f4/6c/3bf46c86-6480-6b30-4fd7-64ab5dca6495/mzaf_17349727270845411020.plus.aac.p.m4a"
+    }
+  ],
+  "10": [
+    {
+      "title": "I SAY YES(主題歌/ゼロの使い魔~双月の騎士~(TVアニメ))(カバー)",
+      "artist": "YURIE",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/fb/53/a7/fb53a779-8b29-6bfb-e1ca-0a751c26a74c/mzaf_1687469877260158986.plus.aac.p.m4a"
+    },
+    {
+      "title": "First kiss (ゼロの使い魔 OP)",
+      "artist": "Kanae",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/8f/e5/b7/8fe5b7a9-91bd-a87e-b4f8-d63ed9d657ee/mzaf_2488651955026471644.plus.aac.p.m4a"
+    },
+    {
+      "title": "First Kiss (主題歌/ゼロの使い魔(TVアニメ))(カバー)",
+      "artist": "YURIE",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/22/03/40/22034073-f7b8-5985-1141-472fa96f5043/mzaf_3702811055522076896.plus.aac.p.m4a"
+    },
+    {
+      "title": "YOU'RE THE ONE(主題歌/ゼロの使い魔~三美姫の輪舞~(TVアニメ)) feat.たまゆら(カバー)",
+      "artist": "DJ Sa9",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/84/13/cc/8413ccef-3e00-9cc2-5421-75631ae68a91/mzaf_18196265185344865535.plus.aac.p.m4a"
+    },
+    {
+      "title": "I say yes / Ichiko (marimba short) ゼロの使い魔",
+      "artist": "アニソン倶楽部♪ JAPAN",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/e2/0c/d4/e20cd478-4dad-9d61-cb7f-b0b6b8ee5f53/mzaf_2293024403880262778.plus.aac.p.m4a"
+    }
+  ],
+  "11": [
+    {
+      "title": "質問、恋って何でしょうか? (feat. ハコニワリリィ)",
+      "artist": "MARUMOCHI from HoneyWorks",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/0f/85/c9/0f85c911-2932-31e0-893b-13cb49b77067/mzaf_6950154421065402166.plus.aac.p.m4a"
+    },
+    {
+      "title": "質問、恋って何でしょうか? (feat. Hanon)",
+      "artist": "MARUMOCHI from HoneyWorks",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/b0/0d/40/b00d40f9-1c7b-4964-5410-05daa0a52ee8/mzaf_18108244798710156328.plus.aac.p.m4a"
+    },
+    {
+      "title": "質問、恋って何でしょうか? (feat. Kotoha)",
+      "artist": "MARUMOCHI from HoneyWorks",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f1/45/b6/f145b64c-5498-97c0-5bcf-b32350caa1d8/mzaf_8192090738412714184.plus.aac.p.m4a"
+    },
+    {
+      "title": "質問、恋って何でしょうか? (feat. ハコニワリリィ) [TV size ver.]",
+      "artist": "MARUMOCHI from HoneyWorks",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/8a/46/2f/8a462fff-1950-0360-ce5d-8ce66b5690d4/mzaf_8384651782156835284.plus.aac.p.m4a"
+    },
+    {
+      "title": "質問、恋って何でしょうか? (feat. 犬塚日葵(CV:鈴代紗弓))",
+      "artist": "MARUMOCHI from HoneyWorks",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/94/1f/41/941f418f-0a3d-3296-8371-17762f89bccb/mzaf_4527108558179615328.plus.aac.p.m4a"
+    }
+  ],
+  "12": [
+    {
+      "title": "やわく恋して ～ずっと僕らでいられますように～ (Live at 横浜スタジアム 2025.8.2)",
+      "artist": "ももいろクローバーZ",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/7d/c8/9c/7dc89c4e-469b-0d47-58d9-591ad9d0b114/mzaf_1962518942424014895.plus.aac.p.m4a"
+    },
+    {
+      "title": "やわく恋して ～ずっと僕らでいられますように～",
+      "artist": "ももいろクローバーZ",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/9d/17/ec/9d17ec1b-b6b1-a745-9b94-7d7dac5a4833/mzaf_17775663850520350052.plus.aac.p.m4a"
+    },
+    {
+      "title": "DNA狂詩曲",
+      "artist": "ももいろクローバーZ",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/83/52/0c/83520c4f-ec60-ca1e-cca8-38dcae12aac5/mzaf_4239246706309089976.plus.aac.p.m4a"
+    },
+    {
+      "title": "DNA狂詩曲 -ZZ ver.-",
+      "artist": "ももいろクローバーZ",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/11/ec/68/11ec688b-7c13-914e-0e2b-49ddc1c594be/mzaf_2682565929503641639.plus.aac.p.m4a"
+    },
+    {
+      "title": "僕等のセンチュリー",
+      "artist": "ももいろクローバーZ",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/79/7d/ff/797dff1a-77da-39f5-fa4e-a86251bb1bb7/mzaf_8955373725244769945.plus.aac.p.m4a"
+    }
+  ],
+  "13": [],
+  "14": [
+    {
+      "title": "Futari No Start Button",
+      "artist": "リリー・ベイカー(CV:天城サリー) & 草壁葵衣(CV:小山内怜央)",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/3b/60/c0/3b60c018-71fe-4795-51d0-1b249b9fcc32/mzaf_14180398115083916745.plus.aac.p.m4a"
+    },
+    {
+      "title": "Futariquest!",
+      "artist": "ちろぴの",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/c7/cb/35/c7cb355b-0361-ec2f-4acd-e64a1a03d2ca/mzaf_9519220161210714109.plus.aac.p.m4a"
+    },
+    {
+      "title": "Hajimari No Uta",
+      "artist": "Poppo",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/77/9e/c7/779ec732-c6e7-4032-bd7c-11e42acf7375/mzaf_9666919914609705633.plus.aac.p.m4a"
+    },
+    {
+      "title": "One More Play (feat. Mayui)",
+      "artist": "T-J",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/9c/e3/6a/9ce36a10-1d63-f23e-a900-5ab505c325c9/mzaf_870221201430594997.plus.aac.p.m4a"
+    },
+    {
+      "title": "I Want to Marry a Microwave",
+      "artist": "KaedeMusic",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/3f/a0/0c/3fa00cdf-a4fc-0562-4886-02cd03911886/mzaf_7438891477836890099.plus.aac.p.m4a"
+    }
+  ],
+  "15": [
+    {
+      "title": "Yuki No Oto (Yubisaki to Renren Opening )",
+      "artist": "Binou SZ",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview116/v4/10/eb/6b/10eb6bb8-cb19-25af-242f-df2944e773e2/mzaf_5375316700555201097.plus.aac.p.m4a"
+    },
+    {
+      "title": "スノースプリング (From \"ゆびさきと恋々\") [カバー]",
+      "artist": "Anneka Music",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview112/v4/93/1b/ab/931bab37-9a28-15cd-0cfa-41c1262e4429/mzaf_7539253019081237516.plus.aac.p.m4a"
+    },
+    {
+      "title": "A Sign of Affection (Opening  Yuki no Ne) Yubisaki to Renren",
+      "artist": "Dimension Anime",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview122/v4/02/36/c0/0236c06d-cd88-d519-b6e2-e53bc30bc0cf/mzaf_15469547955912405068.plus.aac.p.m4a"
+    },
+    {
+      "title": "Nuestro mundo  Yubisaki to Renren  A Sign of Affection",
+      "artist": "NeithanMc",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/5d/b3/ee/5db3ee87-d667-1151-6de2-c0c3910b8ca7/mzaf_16013425146784936244.plus.aac.p.m4a"
+    },
+    {
+      "title": "A Sign of Affection  Opening 1  Yubisaki to Renren",
+      "artist": "Just Let That Sh*t Go",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/3a/1a/b9/3a1ab9c3-61d2-0920-d38b-aa7609d4dc35/mzaf_16743277957419394211.plus.aac.p.m4a"
+    }
+  ],
+  "16": [
+    {
+      "title": "Crescendo",
+      "artist": "ASTERISM",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/e9/26/fd/e926fd09-49cf-dd11-92d3-5cc2217c5537/mzaf_1705471967308512988.plus.aac.p.m4a"
+    },
+    {
+      "title": "ロックは死なない",
+      "artist": "22/7",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/d4/0f/24/d40f24e8-8efe-0063-c4f0-203057b53132/mzaf_15158454842903284490.plus.aac.p.m4a"
+    }
+  ],
+  "17": [
+    {
+      "title": "ODD NUMBER",
+      "artist": "Yoshino",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/98/32/9f/98329f59-06bd-bd13-ac13-e36daecb95f0/mzaf_1364021365327521390.plus.aac.p.m4a"
+    },
+    {
+      "title": "ハローとグッバイ",
+      "artist": "鯨木",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f4/8d/91/f48d9120-8713-4bd6-edaa-6bfdb9701ad8/mzaf_13995483587802065300.plus.aac.p.m4a"
+    },
+    {
+      "title": "Sleep Walking Orchestra",
+      "artist": "BUMP OF CHICKEN",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/a8/55/db/a855db7c-762d-67a6-8d1c-9db333893ef9/mzaf_13857001201116124281.plus.aac.p.m4a"
+    },
+    {
+      "title": "Lilac",
+      "artist": "IU",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/be/62/d2/be62d240-fe27-0514-9e20-b29645cc3dcb/mzaf_8930037822844249227.plus.aac.p.m4a"
+    },
+    {
+      "title": "ノニサクウタ",
+      "artist": "Mrs. GREEN APPLE",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/0a/96/b7/0a96b7dd-13c7-71ee-fa67-ab206be9528a/mzaf_4944176604236879570.plus.aac.p.m4a"
+    }
+  ],
+  "18": [
+    {
+      "title": "ボタン",
+      "artist": "PENGUIN RESEARCH",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/44/43/f0/4443f00d-c804-ba56-c43a-bf79a2d40028/mzaf_2294137931653674743.plus.aac.p.m4a"
+    },
+    {
+      "title": "ReLIFE",
+      "artist": "海崎新太(CV.小野賢章)",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/a1/17/9d/a1179d38-c4b4-2fc3-8b2a-02c0ff57e204/mzaf_10499511006491450229.plus.aac.p.m4a"
+    },
+    {
+      "title": "RELIFE",
+      "artist": "RUNG HYANG",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/35/b3/72/35b37261-afe4-5cbf-3589-f141f1bf6dd9/mzaf_3481373705033673767.plus.aac.p.m4a"
+    },
+    {
+      "title": "Relife!",
+      "artist": "Rushex, Navjaxx & MONTAGEM",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f2/ec/28/f2ec283b-dcce-d789-0c8b-c43ff7a41b1a/mzaf_14122983518407755213.plus.aac.p.m4a"
+    },
+    {
+      "title": "RELIFE (feat. Yackle & Show Chick Boy)",
+      "artist": "立仙愛理",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/2a/1d/c5/2a1dc553-0b2f-a861-7272-6776e92d4fe5/mzaf_8449687809821949182.plus.aac.p.m4a"
+    }
+  ],
+  "19": [
+    {
+      "title": "まなざしは光",
+      "artist": "キタニタツヤ",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/1d/eb/bd/1debbd79-705c-79c3-7b57-689628483627/mzaf_234292626159871160.plus.aac.p.m4a"
+    },
+    {
+      "title": "まなざし",
+      "artist": "Honey L Days",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/7d/7f/77/7d7f776e-53d7-4ea8-5e36-9689c527f40b/mzaf_7884214821252625080.plus.aac.p.m4a"
+    },
+    {
+      "title": "まなざし (Live from ZOZO MARINE STADIUM 2025)",
+      "artist": "SUPER BEAVER",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/2c/4e/82/2c4e821d-855a-b6bf-ec65-f5d58ef5a582/mzaf_5082847583418597428.plus.aac.p.m4a"
+    },
+    {
+      "title": "Where Our Blue Is",
+      "artist": "Tatsuya Kitani",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/92/c9/7a/92c97ab2-5fdd-d00b-34eb-b2b58cd3c610/mzaf_15460441178714099183.plus.aac.p.m4a"
+    },
+    {
+      "title": "Fatal",
+      "artist": "GEMN, Kento Nakajima & Tatsuya Kitani",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/19/5f/a0/195fa0a8-5f36-1f01-fefc-ab45ddb203ba/mzaf_1909407659469478863.plus.aac.p.m4a"
+    }
+  ],
+  "20": [
+    {
+      "title": "TVアニメ「ニセコイ」オープニングテーマ (STEP)",
+      "artist": "CANDY BAND",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/27/a7/0d/27a70db0-1efe-0e5a-e577-9d92d08b5be3/mzaf_10865803798471155802.plus.aac.p.m4a"
+    },
+    {
+      "title": "CLICK",
+      "artist": "ClariS",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/9c/42/ff/9c42ffce-7cac-aa67-2c93-563daeed8940/mzaf_13028682713551074548.plus.aac.p.m4a"
+    },
+    {
+      "title": "STEP",
+      "artist": "ClariS",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/60/e2/46/60e246da-fabe-ae82-aace-7edc9b1210b9/mzaf_950641041905031662.plus.aac.p.m4a"
+    },
+    {
+      "title": "Rally Go Round",
+      "artist": "LiSA",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/de/1e/37/de1e37d0-87f9-98dc-9a5c-6b5fdb6f1364/mzaf_5797894343634137259.plus.aac.p.m4a"
+    },
+    {
+      "title": "Nisekoi (JIRIM IN PANT$ Remix Version)",
+      "artist": "Laptopboyboy",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/5b/f2/0c/5bf20c4c-8df4-137a-9434-5ba4892243da/mzaf_4415253874888593581.plus.aac.p.m4a"
+    }
+  ],
+  "21": [],
+  "22": [
+    {
+      "title": "Walking with you",
+      "artist": "Novelbright",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/e7/cc/64/e7cc64b9-f1bd-454f-1632-60014d0c8083/mzaf_14347820585037570997.plus.aac.p.m4a"
+    },
+    {
+      "title": "ツキミソウ",
+      "artist": "Novelbright",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/c4/f1/c0/c4f1c07a-b6bc-1b09-105b-ea9cc9f8aabd/mzaf_1208978176308982864.plus.aac.p.m4a"
+    },
+    {
+      "title": "愛とか恋とか",
+      "artist": "Novelbright",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/06/17/1a/06171a8a-3d54-fcba-9dbb-40bf5fcf4903/mzaf_14019629773222528245.plus.aac.p.m4a"
+    },
+    {
+      "title": "アイビー",
+      "artist": "Novelbright",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/67/e9/71/67e9712d-c9ec-7b80-c473-566e9e7026ca/mzaf_13513832982156126783.plus.aac.p.m4a"
+    },
+    {
+      "title": "透明",
+      "artist": "Novelbright",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/15/06/e9/1506e916-1197-f827-2f15-81c3b01cf3ff/mzaf_1656077387332112316.plus.aac.p.m4a"
+    }
+  ],
+  "23": [
+    {
+      "title": "君の名は…(だってしょうがないじゃない)",
+      "artist": "DABO",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/be/05/1c/be051c68-b843-09fa-f236-900b1843c5b3/mzaf_17150075874945355390.plus.aac.p.m4a"
+    },
+    {
+      "title": "僕のすべては君のもの",
+      "artist": "M!LK",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/30/db/69/30db69c4-0cb5-c185-1ab4-aa51a4bd4553/mzaf_6118104685493205899.plus.aac.p.m4a"
+    },
+    {
+      "title": "きっと大丈夫",
+      "artist": "Little Glee Monster",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/70/e5/ed/70e5ed39-c129-e760-95b5-bcbbabf114fc/mzaf_7221459118728140721.plus.aac.p.m4a"
+    },
+    {
+      "title": "Clock Strikes",
+      "artist": "ONE OK ROCK",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/ed/9f/ca/ed9fca40-82bd-a58d-ee7c-c25e34a36a3d/mzaf_1058779618435486381.plus.aac.p.m4a"
+    },
+    {
+      "title": "Good Vibes Only (feat. JP THE WAVY & EXILE SHOKICHI)",
+      "artist": "SALU",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/a5/c4/7f/a5c47f76-515a-b6ec-0eaf-855eec5427e0/mzaf_16809429808816379560.plus.aac.p.m4a"
+    }
+  ],
+  "24": [
+    {
+      "title": "lit",
+      "artist": "牛尾憲輔",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/48/3b/80/483b80fb-7dab-efc2-85b6-203515a8722f/mzaf_7738641777029768152.plus.aac.p.m4a"
+    },
+    {
+      "title": "Koe No Katachi - Lit",
+      "artist": "Theishter",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/48/f2/7d/48f27d42-3b5e-e567-279e-caf9fe5e2d18/mzaf_17328171652716222071.plus.aac.p.m4a"
+    },
+    {
+      "title": "See You Again (電影《聲之形》主題曲)",
+      "artist": "リア・ドウ",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/02/0c/13/020c13bf-c336-1fb3-5f2a-a1a51e802618/mzaf_1049806549874353313.plus.aac.p.m4a"
+    },
+    {
+      "title": "恋をしたのは 「聲の形」より ORIGINAL COVER",
+      "artist": "NIYARI計画",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/a7/b2/1d/a7b21d94-d28b-c936-5059-353128e7630c/mzaf_13012567008041661110.plus.aac.p.m4a"
+    },
+    {
+      "title": "聲の形",
+      "artist": "やるき",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/ac/5e/24/ac5e2407-269b-d44f-572d-a55ef2504bc2/mzaf_9096242416688585351.plus.aac.p.m4a"
+    }
+  ],
+  "25": [
+    {
+      "title": "Josee to Tora to Sakana-tachi",
+      "artist": "Pasipavs",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/cb/6f/31/cb6f3175-bae1-a7db-7de6-4809231d9520/mzaf_13839034177115434687.plus.aac.p.m4a"
+    },
+    {
+      "title": "蒼のワルツ",
+      "artist": "Eve",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/a1/17/b4/a117b473-ffb1-6c7e-771f-b50804b4004f/mzaf_3218237334022403632.plus.aac.p.m4a"
+    },
+    {
+      "title": "宵の明星",
+      "artist": "Eve",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/79/38/51/7938511b-8e8c-c7f5-48bf-328c098d717f/mzaf_4319072536985724973.plus.aac.p.m4a"
+    },
+    {
+      "title": "廻廻奇譚",
+      "artist": "Eve",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/bd/68/58/bd6858fc-1dc4-4791-93db-72d4f2639838/mzaf_16592428111742478189.plus.aac.p.m4a"
+    },
+    {
+      "title": "心海",
+      "artist": "Eve",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/7a/c8/fd/7ac8fd15-93b0-967a-a26d-cb39957deb6d/mzaf_11445574096920082929.plus.aac.p.m4a"
+    }
+  ],
+  "26": [
+    {
+      "title": "秒速5センチメートル",
+      "artist": "kona",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview114/v4/2d/c6/da/2dc6da91-ca3b-3886-6ed9-b89440d1a761/mzaf_15778050104478837105.plus.aac.p.m4a"
+    },
+    {
+      "title": "byousoku 5 centimeter",
+      "artist": "enchanter & vanrssh",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/c8/98/cd/c898cd43-7b2f-346b-7116-083af6109cbc/mzaf_11274881079094228302.plus.aac.p.m4a"
+    },
+    {
+      "title": "One more time, One more chance",
+      "artist": "山崎まさよし",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/98/09/4c/98094c33-072b-36a5-3c8d-21a9d7d45c36/mzaf_11500047042945065618.plus.aac.p.m4a"
+    },
+    {
+      "title": "One more time,One more chance",
+      "artist": "山崎まさよし",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/b7/bc/54/b7bc545b-8186-24f3-9a89-64f006b1d4e1/mzaf_16849402651922362128.plus.aac.p.m4a"
+    },
+    {
+      "title": "One more time, One more chance ('From 'Boku To Kimi' Soundtrack)",
+      "artist": "山崎まさよし",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/5f/e1/1c/5fe11c45-b421-29e8-f83d-589daa0efae7/mzaf_9199035089977639277.plus.aac.p.m4a"
+    }
+  ],
+  "cw-1": [
+    {
+      "title": "あなたの花の色",
+      "artist": "aiko",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/c2/4b/de/c24bde06-939d-d707-e477-a93fd315f2f3/mzaf_8399683614149580354.plus.aac.p.m4a"
+    },
+    {
+      "title": "Same Blue",
+      "artist": "Official髭男dism",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/0e/5d/92/0e5d92f5-17b1-0b46-af7d-f72ad7e78614/mzaf_17020336874762690964.plus.aac.p.m4a"
+    },
+    {
+      "title": "然らば",
+      "artist": "マカロニえんぴつ",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/3b/29/28/3b29287c-fe81-2564-ae3b-7c9219c6ad25/mzaf_13684848009191995626.plus.aac.p.m4a"
+    },
+    {
+      "title": "コントラスト",
+      "artist": "TOMOO",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/3d/f9/07/3df90767-fcf3-8019-7bf3-3e52d724b580/mzaf_18416944046661926938.plus.aac.p.m4a"
+    },
+    {
+      "title": "恋色",
+      "artist": "大間々昂",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/fb/a8/16/fba816cd-249f-01d4-87f1-22f2d49d8f8e/mzaf_8784821207482436854.plus.aac.p.m4a"
+    }
+  ],
+  "cw-2": [
+    {
+      "title": "1番輝く星",
+      "artist": "アーリャ(CV:上坂すみれ)",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/1a/eb/03/1aeb034d-9826-8aa4-142b-bda5dad45c36/mzaf_7693415494682986218.plus.aac.p.m4a"
+    },
+    {
+      "title": "CHE.R.RY",
+      "artist": "アーリャ(CV:上坂すみれ)",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/40/c1/8e/40c18ef5-054c-3c79-0be2-4434a6a522fd/mzaf_15644626656175567114.plus.aac.p.m4a"
+    },
+    {
+      "title": "ワールドイズマイン",
+      "artist": "アーリャ(CV:上坂すみれ)",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/3d/03/a6/3d03a631-a3fc-675f-3029-29e6852e552c/mzaf_7934578759692318076.plus.aac.p.m4a"
+    },
+    {
+      "title": "可愛くてごめん",
+      "artist": "アーリャ(CV:上坂すみれ)",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/47/c7/3c/47c73c5b-b6da-6696-cd78-75ecee2da87c/mzaf_13557816712117716055.plus.aac.p.m4a"
+    },
+    {
+      "title": "学園天国",
+      "artist": "アーリャ(CV:上坂すみれ)",
+      "previewUrl": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/82/f4/b0/82f4b0a7-7ced-fb65-e984-456461883642/mzaf_18221218883823294.plus.aac.p.m4a"
+    }
+  ]
+};
+
 function buildTracksForAnime(entry: RawAnimeEntry, index: number): ArchiveTrack[] {
+  const extras = OFFICIAL_TRACKS_BY_ID[entry.id] || [];
+  const track01Url = entry.songPreviewUrl || extras[0]?.previewUrl || "";
+  const getExtra = (slot: number, fallbackTitle: string, fallbackRole: string) => {
+    const ex = extras[slot];
+    return {
+      title: ex?.title || fallbackTitle,
+      role: ex ? `OFFICIAL • ${ex.artist}` : fallbackRole,
+      previewUrl: ex?.previewUrl || track01Url
+    };
+  };
+  const t2 = getExtra(1, `${entry.shortTitle} — Theme II`, `OST • ${entry.studio}`);
+  const t3 = getExtra(2, `${entry.shortTitle} — Ending / Insert`, "Official Soundtrack");
+  const t4 = getExtra(3, `${entry.shortTitle} — Character / Scene`, `Score • ★ ${entry.rating.toFixed(1)}`);
+  const t5 = getExtra(4, `${entry.songTitle} (Reprise)`, `Official • ${entry.songArtist}`);
+
   return [
     {
       number: "01",
       title: `${entry.songTitle} (Official Theme)`,
-      role: `OFFICIAL OP / OST • ${entry.songArtist}`,
+      role: `OFFICIAL OP • ${entry.songArtist}`,
       duration: "00:30",
       bpm: entry.bpm,
       notes: CHORD_BANK[index % CHORD_BANK.length],
       waveformSeed: index * 13 + 1,
-      isOfficialOst: true
+      isOfficialOst: true,
+      previewUrl: track01Url
     },
     {
       number: "02",
-      title: `${entry.shortTitle} — Main Overture`,
-      role: `Synth Suite • ${entry.studio}`,
-      duration: "03:18",
-      bpm: Math.max(84, entry.bpm - 18),
+      title: t2.title,
+      role: t2.role,
+      duration: "00:30",
+      bpm: Math.max(84, entry.bpm - 12),
       notes: CHORD_BANK[(index + 2) % CHORD_BANK.length],
-      waveformSeed: index * 13 + 2
+      waveformSeed: index * 13 + 2,
+      isOfficialOst: true,
+      previewUrl: t2.previewUrl
     },
     {
       number: "03",
-      title: entry.genres[0] ? `${entry.genres[0]} Motif in ${entry.keySignature}` : "Character Leitmotif",
-      role: "Scene Score • Side A",
-      duration: "02:44",
-      bpm: Math.max(76, entry.bpm - 28),
+      title: t3.title,
+      role: t3.role,
+      duration: "00:30",
+      bpm: Math.max(76, entry.bpm - 20),
       notes: CHORD_BANK[(index + 4) % CHORD_BANK.length],
-      waveformSeed: index * 13 + 3
+      waveformSeed: index * 13 + 3,
+      isOfficialOst: true,
+      previewUrl: t3.previewUrl
     },
     {
       number: "04",
-      title: "Climax & Turning Point",
-      role: `Episode Highlight • ★ ${entry.rating.toFixed(1)}`,
-      duration: "04:05",
-      bpm: Math.min(168, entry.bpm + 10),
+      title: t4.title,
+      role: t4.role,
+      duration: "00:30",
+      bpm: Math.min(168, entry.bpm + 8),
       notes: CHORD_BANK[(index + 1) % CHORD_BANK.length],
-      waveformSeed: index * 13 + 4
+      waveformSeed: index * 13 + 4,
+      isOfficialOst: true,
+      previewUrl: t4.previewUrl
     },
     {
       number: "05",
-      title: `${entry.songTitle} (Analog Synth Dub)`,
-      role: "Ending Reprise • Side B",
-      duration: "02:56",
-      bpm: Math.max(72, Math.round(entry.bpm * 0.75)),
+      title: t5.title,
+      role: t5.role,
+      duration: "00:30",
+      bpm: Math.max(72, Math.round(entry.bpm * 0.8)),
       notes: CHORD_BANK[(index + 5) % CHORD_BANK.length],
-      waveformSeed: index * 13 + 5
+      waveformSeed: index * 13 + 5,
+      isOfficialOst: true,
+      previewUrl: t5.previewUrl
     }
   ];
 }

@@ -628,7 +628,7 @@ export default function DiscArchiveShowcase() {
     setTrackCurrentSec((seekRatio ?? 0) * 30);
     setTrackDurationSec(30);
     startTrackSynthPreview(track, {
-      useRealOstUrl: track.number === "01" ? activeRelease.songPreviewUrl : undefined,
+      useRealOstUrl: track.previewUrl || activeRelease.songPreviewUrl,
       fadeInMs: 280,
       fadeOutPrevMs: 120,
       startRatio: seekRatio ?? 0,
