@@ -57,9 +57,8 @@ export default function DiscArchiveShowcase() {
   const [diveVeilOpacity, setDiveVeilOpacity] = useState<number>(0);
   const [activeModal, setActiveModal] = useState<ActiveModal>("none");
 
-  // Radio is ON by default on website load, playing YouTube's most popular iconic hits with fade-in/out!
+  // Radio is ON by default on website load, playing the active disc's Official Theme Song with fade-in/out!
   const [radioActive, setRadioActive] = useState<boolean>(true);
-  const [radioHitIndex, setRadioHitIndex] = useState<number>(0);
   const [radioBlockedNeedsGesture, setRadioBlockedNeedsGesture] = useState<boolean>(false);
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
 
@@ -122,7 +121,6 @@ export default function DiscArchiveShowcase() {
 
   const safeIndex = Math.max(0, Math.min(releases.length - 1, activeIndex));
   const activeRelease = releases[safeIndex] || releases[0];
-  const currentRadioHit = POPULAR_RADIO_HITS[radioHitIndex % POPULAR_RADIO_HITS.length];
 
   // Preload CORS-safe official anime cover & wide banner images for 3D sleeves + 20% vinyl OP motion reel
   const loadCorsSafeMediaImages = useCallback((rel: AnimeRelease) => {
@@ -203,33 +201,17 @@ export default function DiscArchiveShowcase() {
     );
   }, [activeRelease?.id, diveState]);
 
-  // Launch Popular YouTube Mega-Hit Radio track with smooth fade-out -> fade-in crossfade
-  const playPopularRadioHit = useCallback(
-    (hitIdx: number, fadeOutPrevMs = 260) => {
-      if (!soundEnabled || !radioActive) return;
-      const hit = POPULAR_RADIO_HITS[hitIdx % POPULAR_RADIO_HITS.length];
-      if (!hit) return;
+  // Play the currently viewed disc's own Official Theme Song with smooth fade-out -> fade-in crossfade
+  const playActiveDiscRadio = useCallback(
+    (rel: AnimeRelease | undefined, fadeOutPrevMs = 260) => {
+      if (!soundEnabled || !radioActive || !rel) return;
 
-      const radioTrack: ArchiveTrack = {
-        number: "FM",
-        title: hit.title,
-        role: `${hit.artist} • ${hit.views}`,
-        duration: "00:30",
-        bpm: 132,
-        notes: [261.63, 329.63, 392.0, 493.88],
-        waveformSeed: hitIdx + 7,
-        isOfficialOst: true
-      };
-
-      startTrackSynthPreview(radioTrack, {
-        useRealOstUrl: hit.previewUrl,
+      const track = rel.tracks[0];
+      startTrackSynthPreview(track, {
+        useRealOstUrl: rel.songPreviewUrl,
         fadeInMs: 620,
         fadeOutPrevMs,
-        loop: false,
-        onEnded: () => {
-          // Auto-advance to the next popular YouTube mega-hit continuously!
-          setRadioHitIndex((prev) => (prev + 1) % POPULAR_RADIO_HITS.length);
-        },
+        loop: true,
         onPlayBlocked: () => {
           setRadioBlockedNeedsGesture(true);
         }
@@ -238,18 +220,18 @@ export default function DiscArchiveShowcase() {
     [radioActive, soundEnabled]
   );
 
-  // Trigger Radio automatically on initial load & crossfade cleanly when radioHitIndex changes on the shelf
+  // Trigger Radio automatically on initial load & crossfade cleanly when activeRelease changes on the shelf
   useEffect(() => {
-    if (diveState !== "shelf" || !radioActive || !soundEnabled) return;
-    playPopularRadioHit(radioHitIndex, 280);
-  }, [diveState, radioActive, radioHitIndex, soundEnabled, playPopularRadioHit]);
+    if (diveState !== "shelf" || !radioActive || !soundEnabled || !activeRelease) return;
+    playActiveDiscRadio(activeRelease, 280);
+  }, [diveState, radioActive, activeRelease, soundEnabled, playActiveDiscRadio]);
 
   // One-time browser autoplay unlock on first user click/scroll/keypress so Radio fades in seamlessly!
   useEffect(() => {
     if (!radioBlockedNeedsGesture || !radioActive || !soundEnabled || diveState !== "shelf") return;
     const unlock = () => {
       setRadioBlockedNeedsGesture(false);
-      playPopularRadioHit(radioHitIndex, 0);
+      playActiveDiscRadio(activeRelease, 0);
     };
     window.addEventListener("pointerdown", unlock, { once: true });
     window.addEventListener("keydown", unlock, { once: true });
@@ -259,7 +241,7 @@ export default function DiscArchiveShowcase() {
       window.removeEventListener("keydown", unlock);
       window.removeEventListener("wheel", unlock);
     };
-  }, [radioBlockedNeedsGesture, radioActive, soundEnabled, diveState, radioHitIndex, playPopularRadioHit]);
+  }, [radioBlockedNeedsGesture, radioActive, soundEnabled, diveState, activeRelease, playActiveDiscRadio]);
 
   const selectReleaseIndex = useCallback(
     (nextIndex: number) => {
@@ -268,13 +250,9 @@ export default function DiscArchiveShowcase() {
       if (clamped !== activeIndex) {
         setActiveIndex(clamped);
         playMechanicalStepSound(soundEnabled);
-        // When browsing discs on the shelf with Radio ON, smoothly fade-out -> fade-in to a matching popular hit!
-        if (diveState === "shelf" && radioActive && soundEnabled) {
-          setRadioHitIndex(clamped % POPULAR_RADIO_HITS.length);
-        }
       }
     },
-    [activeIndex, diveState, radioActive, releases.length, soundEnabled]
+    [activeIndex, releases.length, soundEnabled]
   );
 
   /**
@@ -718,9 +696,6 @@ export default function DiscArchiveShowcase() {
     setActiveIndex(finalIdx);
     setCategoryWaveKey((k) => k + 1);
     playMechanicalStepSound(soundEnabled);
-    if (radioActive && soundEnabled && diveState === "shelf") {
-      setRadioHitIndex((prev) => (prev + 1) % POPULAR_RADIO_HITS.length);
-    }
     if (diveState === "detail") {
       setDiveState("shelf");
     }
@@ -910,31 +885,19 @@ export default function DiscArchiveShowcase() {
           )}
         </div>
 
-        {/* Top-Right Live Popular YouTube Mega-Hits Radio FM Bar (ON by Default!) */}
-        {radioActive && diveState === "shelf" && currentRadioHit && (
-          <div className="fixed top-20 right-5 md:right-9 z-20 flex items-center gap-2.5 px-3.5 py-2 bg-[#181818]/92 backdrop-blur-md text-[#EAEAE8] font-mono text-[10px] md:text-[11px] uppercase tracking-wider shadow-lg">
+        {/* Top-Right High-Contrast Active Disc Official OST Radio Bar (ON by Default!) */}
+        {radioActive && diveState === "shelf" && activeRelease && (
+          <div className="fixed top-20 right-5 md:right-9 z-20 flex items-center gap-3 px-4 py-2.5 bg-[#181818] text-[#FAF9F6] border border-[#181818] font-mono text-[10px] md:text-[11px] uppercase tracking-wider shadow-xl">
             <span className="w-2 h-2 rounded-full bg-[#E05A3A] animate-pulse shrink-0" />
-            <div className="flex flex-col leading-tight max-w-[190px] sm:max-w-[260px]">
-              <span className="truncate font-semibold text-white">
-                RADIO FM: ♪ {currentRadioHit.title}
+            <div className="flex flex-col leading-tight max-w-[200px] sm:max-w-[260px]">
+              <span className="truncate font-bold text-[#FFFFFF]">
+                NOW PLAYING: ♪ {activeRelease.songTitle}
               </span>
-              <span className="text-[9px] text-[#B8B9B4] truncate">
-                {currentRadioHit.artist} • {currentRadioHit.views}
+              <span className="text-[9px] text-[#D2D2CF] truncate">
+                {activeRelease.songArtist} • {activeRelease.shortTitle}
                 {radioBlockedNeedsGesture ? " • CLICK ANYWHERE TO UNMUTE" : ""}
               </span>
             </div>
-            <button
-              type="button"
-              onClick={() => {
-                setSoundEnabled(true);
-                setRadioBlockedNeedsGesture(false);
-                setRadioHitIndex((prev) => (prev + 1) % POPULAR_RADIO_HITS.length);
-              }}
-              title="Next Popular YouTube Hit"
-              className="px-2 py-1 bg-[#EAEAE8]/15 hover:bg-[#E05A3A] text-[10px] transition-colors shrink-0"
-            >
-              NEXT ⏭
-            </button>
             <button
               type="button"
               onClick={() => {
@@ -944,10 +907,10 @@ export default function DiscArchiveShowcase() {
                   stopAllTrackPreviews(200);
                 } else {
                   setRadioBlockedNeedsGesture(false);
-                  playPopularRadioHit(radioHitIndex, 0);
+                  playActiveDiscRadio(activeRelease, 0);
                 }
               }}
-              className="px-2 py-1 bg-[#EAEAE8]/15 hover:bg-[#E05A3A] text-[10px] transition-colors shrink-0"
+              className="px-2.5 py-1 bg-[#E05A3A] hover:bg-[#FFFFFF] hover:text-[#181818] text-[#FFFFFF] font-bold text-[10px] transition-colors shrink-0"
             >
               {soundEnabled ? "MUTE" : "PLAY"}
             </button>

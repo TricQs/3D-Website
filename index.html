@@ -117,27 +117,20 @@
       <div id="hud-ongoing-badge" class="text-[#E05A3A] font-semibold hidden"></div>
     </div>
 
-    <!-- Floating Radio Mode Live Status Bar (ON by Default with YouTube Top-Viewed Mega-Hits!) -->
+    <!-- Floating Radio Mode Live Status Bar (ON by Default, High Contrast, Plays Active Disc's Official OST!) -->
     <div
       id="radio-live-banner"
-      class="fixed top-20 right-5 md:right-9 z-20 flex items-center gap-2.5 px-3.5 py-2 bg-[#181818]/92 backdrop-blur-md text-[#EAEAE8] font-mono text-[10px] md:text-[11px] uppercase tracking-wider shadow-lg"
+      class="fixed top-20 right-5 md:right-9 z-20 flex items-center gap-3 px-4 py-2.5 bg-[#181818] text-[#FAF9F6] border border-[#181818] font-mono text-[10px] md:text-[11px] uppercase tracking-wider shadow-xl"
     >
       <span class="w-2 h-2 rounded-full bg-[#E05A3A] animate-pulse shrink-0"></span>
       <div class="flex flex-col leading-tight max-w-[200px] sm:max-w-[260px]">
-        <span id="radio-banner-text" class="truncate font-semibold text-white">RADIO FM: ♪ IDOL (アイドル)</span>
-        <span id="radio-banner-sub" class="text-[9px] text-[#B8B9B4] truncate">YOASOBI • 580M+ views</span>
+        <span id="radio-banner-text" class="truncate font-bold text-[#FFFFFF]">NOW PLAYING: ♪ ZENZENZENSE</span>
+        <span id="radio-banner-sub" class="text-[9px] text-[#D2D2CF] truncate">RADWIMPS • YOUR NAME.</span>
       </div>
       <button
         type="button"
-        id="radio-next-btn"
-        class="px-2 py-1 bg-[#EAEAE8]/15 hover:bg-[#E05A3A] text-[10px] transition-colors shrink-0"
-      >
-        NEXT ⏭
-      </button>
-      <button
-        type="button"
         id="radio-mute-btn"
-        class="px-2 py-1 bg-[#EAEAE8]/15 hover:bg-[#E05A3A] text-[10px] transition-colors shrink-0"
+        class="px-2.5 py-1 bg-[#E05A3A] hover:bg-[#FFFFFF] hover:text-[#181818] text-[#FFFFFF] font-bold text-[10px] transition-colors shrink-0"
       >
         MUTE
       </button>

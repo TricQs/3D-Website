@@ -240,12 +240,11 @@ function DigipakSleeveMesh({
         hoverRotY = pointerRef.current.x * 0.14;
         hoverRotX = -pointerRef.current.y * 0.09;
       } else {
-        // Inactive side spine sleeve lifts up, pulls slightly forward, and peeks gently toward the cursor!
-        hoverLiftY = 0.26;
-        hoverPullZ = 0.36;
-        // Turn cover slightly toward camera/cursor depending on left vs right stack
-        hoverRotY = d > 0 ? -0.34 : 0.34;
-        hoverRotX = -0.05 - pointerRef.current.y * 0.05;
+        // Inactive side spine sleeve lifts cleanly straight up on Y-axis only (no turning/peeking)
+        hoverLiftY = 0.24;
+        hoverPullZ = 0;
+        hoverRotY = 0;
+        hoverRotX = 0;
       }
     }
 

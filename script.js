@@ -1478,32 +1478,29 @@ function playFadeVolume(audio, from, to, ms, onDone) {
   requestAnimationFrame(step);
 }
 
-function playPopularRadio(hitIdx) {
+function playPopularRadio() {
   if (!appState.radioActive || !appState.soundEnabled || appState.diveState !== "shelf") return;
-  const hit = POPULAR_RADIO_HITS[hitIdx % POPULAR_RADIO_HITS.length];
-  if (!hit) return;
+  const rel = appState.releases[appState.activeIndex];
+  if (!rel) return;
   const txt = document.getElementById("radio-banner-text");
   const sub = document.getElementById("radio-banner-sub");
-  if (txt) txt.textContent = `RADIO FM: ♪ ${hit.title}`;
-  if (sub) sub.textContent = `${hit.artist} • ${hit.views}`;
+  if (txt) txt.textContent = `NOW PLAYING: ♪ ${rel.songTitle}`;
+  if (sub) sub.textContent = `${rel.songArtist} • ${rel.shortTitle}`;
 
   const launch = () => {
     if (!ostAudio) {
       ostAudio = new Audio();
       ostAudio.crossOrigin = "anonymous";
     }
-    ostAudio.src = hit.previewUrl;
+    ostAudio.loop = true;
+    ostAudio.src = rel.songPreviewUrl;
     ostAudio.volume = 0;
-    ostAudio.onended = () => {
-      appState.radioHitIndex = (appState.radioHitIndex + 1) % POPULAR_RADIO_HITS.length;
-      playPopularRadio(appState.radioHitIndex);
-    };
     ostAudio.play().then(() => {
       playFadeVolume(ostAudio, 0, 0.72, 600);
     }).catch(() => {
-      if (sub) sub.textContent = `${hit.artist} • CLICK ANYWHERE TO UNMUTE`;
+      if (sub) sub.textContent = `${rel.songArtist} • CLICK ANYWHERE TO UNMUTE`;
       const unlock = () => {
-        playPopularRadio(appState.radioHitIndex);
+        playPopularRadio();
       };
       window.addEventListener("pointerdown", unlock, { once: true });
       window.addEventListener("keydown", unlock, { once: true });
@@ -1834,11 +1831,11 @@ function startRenderLoop() {
           hoverRotY = appState.pointerX * 0.14;
           hoverRotX = -appState.pointerY * 0.09;
         } else {
-          // Hovering inactive side cover lifts it up & peeks gently toward the cursor!
-          hoverLiftY = 0.26;
-          hoverPullZ = 0.36;
-          hoverRotY = d > 0 ? -0.34 : 0.34;
-          hoverRotX = -0.05 - appState.pointerY * 0.05;
+          // Hovering inactive side cover lifts cleanly straight up on Y-axis only
+          hoverLiftY = 0.24;
+          hoverPullZ = 0;
+          hoverRotY = 0;
+          hoverRotX = 0;
         }
       }
 
@@ -2112,8 +2109,7 @@ function selectReleaseIndex(nextIndex) {
     updateActiveDiscTexture();
     syncStageHUD();
     if (appState.diveState === "shelf" && appState.radioActive && appState.soundEnabled) {
-      appState.radioHitIndex = clamped % POPULAR_RADIO_HITS.length;
-      playPopularRadio(appState.radioHitIndex);
+      playPopularRadio();
     }
   }
 }
@@ -2155,6 +2151,11 @@ function syncStageHUD() {
   const pct = positions[appState.activeIndex] ?? 50;
   document.getElementById("timeline-coral-needle").style.left = `${pct}%`;
   document.getElementById("timeline-needle-label").textContent = String(rel.releaseYear);
+
+  const txt = document.getElementById("radio-banner-text");
+  const sub = document.getElementById("radio-banner-sub");
+  if (txt) txt.textContent = `NOW PLAYING: ♪ ${rel.songTitle}`;
+  if (sub) sub.textContent = `${rel.songArtist} • ${rel.shortTitle}`;
 
   renderTimelineRuler();
 
@@ -2629,8 +2630,7 @@ function switchCategory(cat, startIndex) {
   gsap.to(appState, { waveProgress: 1, duration: 0.78, ease: "power3.out" });
   syncStageHUD();
   if (appState.radioActive && appState.soundEnabled && appState.diveState === "shelf") {
-    appState.radioHitIndex = (appState.radioHitIndex + 1) % POPULAR_RADIO_HITS.length;
-    playPopularRadio(appState.radioHitIndex);
+    playPopularRadio();
   }
 }
 
@@ -2653,7 +2653,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initThreeScene();
   syncStageHUD();
   preloadOfficialAnimeArtwork();
-  playPopularRadio(appState.radioHitIndex);
+  playPopularRadio();
 
   const canvasWrap = document.getElementById("three-canvas-container");
   let isDragging = false;
@@ -2866,17 +2866,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  document.getElementById("radio-next-btn")?.addEventListener("click", () => {
-    appState.soundEnabled = true;
-    appState.radioHitIndex = (appState.radioHitIndex + 1) % POPULAR_RADIO_HITS.length;
-    playPopularRadio(appState.radioHitIndex);
-  });
-
   document.getElementById("radio-mute-btn")?.addEventListener("click", () => {
     appState.soundEnabled = !appState.soundEnabled;
     document.getElementById("radio-mute-btn").textContent = appState.soundEnabled ? "MUTE" : "PLAY";
     if (!appState.soundEnabled) stopTrackSynth();
-    else playPopularRadio(appState.radioHitIndex);
+    else playPopularRadio();
   });
 
   document.getElementById("back-to-shelf-btn")?.addEventListener("click", () => triggerReverseDiveOut());
